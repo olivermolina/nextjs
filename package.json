@@ -60,7 +60,7 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
-    "@babel/core": "^7.18.9",
+    "@babel/core": "^7.19.1",
     "@next/eslint-plugin-next": "^12.2.5",
     "@playwright/test": "^1.19.2",
     "@storybook/addon-actions": "^6.5.12",
