@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String         @id @default(uuid())
+  email          String         @unique
+  ContestEntries ContestEntry[]
+  Bets           Bet[]
+  username       String?        @unique
+  state          String?
+  phone          Int?
+  DOB            DateTime?
+}
+
+model ContestEntry {
+  id         String  @id @default(uuid())
+  contest    Contest @relation(fields: [contestsId], references: [id])
+  bets       Bet[]
+  tokens     Decimal
+  User       User    @relation(fields: [userId], references: [id])
+  userId     String
+  contestsId String
+}
+
+enum BetStatus {
+  PENDING
+  WIN
+  LOSS
+  PUSH
+}
+
+enum BetType {
+  TEASER
+  STRAIGHT
+  PARLAY
+}
+
+enum BetLegType {
+  OVER_ODDS
+  UNDER_ODDS
+  SPREAD_AWAY_ODDS
+  SPREAD_HOME_ODDS
+  MONEYLINE_AWAY_ODDS
+  MONEYLINE_HOME_ODDS
+}
+
+model BetLeg {
+  id             String     @id @default(uuid())
+  offer          Offer      @relation(fields: [offersId], references: [id])
+  type           BetLegType
+  odds           Int
+  total          Int
+  spreadHomeLine Int
+  spreadAwayLine Int
+  offersId       String
+
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model Bet {
+  id               String       @id @default(uuid())
+  stake            Decimal      @db.Decimal(10, 2)
+  status           BetStatus
+  owner            User         @relation(fields: [userId], references: [id])
+  payout           Decimal      @db.Decimal(10, 2)
+  type             BetType
+  legs             Json         @default("\"[]\"")
+  odds             Int
+  ContestEntries   ContestEntry @relation(fields: [contestEntriesId], references: [id])
+  contestEntriesId String
+  userId           String
+
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model Contest {
+  id             String         @id @default(uuid())
+  name           String         @db.VarChar(255)
+  description    String
+  // Whether or not a contest can be joined
+  isActive       Boolean
+  // Date of which the contest can be played in
+  startDate      DateTime       @db.Timestamptz(6)
+  // Date of which no more bets can be placed in this contest
+  endDate        DateTime       @db.Timestamptz(6)
+  type           String         @db.VarChar(255)
+  bgImageUrl     String         @db.VarChar(255)
+  ContestEntries ContestEntry[]
+
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+enum League {
+  NFL
+  NBA
+  NCAAB
+  MLB
+  NHL
+  NCAAF
+  WNBA
+  TENNIS
+  MMA
+  WBC
+}
+
+model Offer {
+  id                  String   @id @default(uuid())
+  league              League
+  season              Int
+  seasonType          String   @db.VarChar(255)
+  total               Decimal  @db.Decimal(10, 2)
+  overOdds            Decimal  @db.Decimal(10, 2)
+  underOdds           Decimal  @db.Decimal(10, 2)
+  spreadAway          Decimal  @db.Decimal(10, 2)
+  spreadHome          Decimal  @db.Decimal(10, 2)
+  spreadAwayOdds      Decimal  @db.Decimal(10, 2)
+  spreadHomeOdds      Decimal  @db.Decimal(10, 2)
+  moneylineAwayOdds   Decimal  @db.Decimal(10, 2)
+  moneylineHomeOdds   Decimal  @db.Decimal(10, 2)
+  gameId              String   @db.VarChar(255)
+  city                String   @db.VarChar(255)
+  arenaName           String   @db.VarChar(255)
+  state               String   @db.VarChar(255)
+  status              String   @db.VarChar(255)
+  awayTeam            String   @db.VarChar(255)
+  homeTeam            String   @db.VarChar(255)
+  gameTime            DateTime @db.Timestamptz(6)
+  awayScore           Int
+  homeScore           Int
+  currentPeriod       Int
+  periodTimeRemaining String   @db.VarChar(255)
+  awayPeriods         Json
+  homePeriods         Json
+  BetLeg              BetLeg[]
+
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+enum ContestType {
+  MATCH
+  FANTASY
+}
