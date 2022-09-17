@@ -61,7 +61,7 @@ const explainers = [
 
 const LandingLayoutContainer: React.FC = () => {
   return (
-    <LandingLayout showHeaderActions>
+    <LandingLayout>
       <Content cards={cards} explainers={explainers} />
     </LandingLayout>
   );

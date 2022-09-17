@@ -54,8 +54,5 @@ const LandingLayout = (props: Props) => {
   );
 };
 
-LandingLayout.defaultProps = {
-  showHeaderActions: false,
-};
-
+// @ts-ignore
 export default LandingLayout;

@@ -9,17 +9,12 @@ export default {
   component: LandingHeader,
   // More on argTypes: https://storybook.js.org/docs/react/api/argtypes
   argTypes: {
-    argTypes: {
-      showHeaderActions: {
-        options: [true, false],
-        control: { type: 'radio' },
-      },
-    },
+    argTypes: {},
   },
 } as ComponentMeta<typeof LandingHeader>;
 
 // More on component templates: https://storybook.js.org/docs/react/writing-stories/introduction#using-args
-const Template: ComponentStory<typeof LandingHeader> = (args) => (
+const Template: ComponentStory<typeof LandingHeader> = () => (
   <div className="bg-wave-img text-white flex flex-col h-full">
     <LandingHeader />
   </div>
@@ -27,6 +22,4 @@ const Template: ComponentStory<typeof LandingHeader> = (args) => (
 
 export const Header = Template.bind({});
 // More on args: https://storybook.js.org/docs/react/writing-stories/args
-Header.args = {
-  showHeaderActions: true,
-};
+Header.args = {};

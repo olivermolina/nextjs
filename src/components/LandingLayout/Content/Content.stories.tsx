@@ -14,14 +14,7 @@ export default {
   title: 'Lockspread/LandingLayout',
   component: Main,
   // More on argTypes: https://storybook.js.org/docs/react/api/argtypes
-  argTypes: {
-    argTypes: {
-      showHeaderActions: {
-        options: [true, false],
-        control: { type: 'radio' },
-      },
-    },
-  },
+  argTypes: {},
 } as ComponentMeta<typeof Main>;
 
 // More on component templates: https://storybook.js.org/docs/react/writing-stories/introduction#using-args
