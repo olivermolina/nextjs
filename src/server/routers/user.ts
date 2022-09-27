@@ -5,9 +5,29 @@ import { prisma } from '~/server/prisma';
 import { supabase } from '~/utils/supabaseClient';
 import { setCookie } from 'cookies-next';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { UrlPaths } from '~/constants/UrlPaths';
 
 export const userRouter = t.router({
+  userDetails: t.procedure.query(async ({ ctx }) => {
+    if (!ctx.session) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+      });
+    }
+
+    const userId = ctx.session.user?.id;
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!user) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'User not found',
+      });
+    }
+    return user;
+  }),
   login: t.procedure
     .input(
       yup.object({

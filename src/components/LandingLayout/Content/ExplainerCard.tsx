@@ -20,7 +20,7 @@ export interface ExplainerCardProps {
 
 const ExplainerCard = (props: ExplainerCardProps) => {
   return (
-    <div className="flex flex-col justify-center items-center gap-2 sm:gap-1 border-white rounded-[27px] border-2 max-w-[400px] p-4 sm:p-1">
+    <div className="flex flex-col justify-start items-center gap-2 border-white rounded-[27px] border-2 sm:min-w-auto md:w-[280px] lg:w-[400px] h-auto p-5 md:p-10">
       {/* Explainer Image */}
       <img
         src={props.image}
@@ -29,12 +29,12 @@ const ExplainerCard = (props: ExplainerCardProps) => {
       />
 
       {/* Explainer Title */}
-      <p className="text-white text-[36px] font-bold text-center tracking-normal">
+      <p className="text-white text-[36px] leading-[46px] font-bold text-center tracking-normal opacity-92 p4">
         {props.title}
       </p>
 
       {/* Explainer Description */}
-      <p className="text-white text-[16px] font-bold text-center tracking-normal">
+      <p className="text-white text-[16px] leading-[19px] font-bold text-center tracking-normal p4">
         {props.description}
       </p>
     </div>

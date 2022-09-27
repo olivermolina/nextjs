@@ -37,7 +37,7 @@ const Content = (props: Props) => {
         </button>
       </div>
 
-      <div className="grid  sm:auto-cols-max sm:grid-flow-col justify-items-center gap-10 place-content-center">
+      <div className="flex flex-col md:flex-row justify-center items-stretch gap-5">
         {props.explainers?.map((explainer) => (
           <ExplainerCard {...explainer} key={explainer.title} />
         ))}

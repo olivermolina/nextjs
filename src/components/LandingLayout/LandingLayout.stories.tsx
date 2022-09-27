@@ -1,5 +1,5 @@
 import React from 'react';
-import {ComponentMeta, ComponentStory} from '@storybook/react';
+import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import LandingLayout from '.';
 import Content from '~/components/LandingLayout/Content';
@@ -14,7 +14,17 @@ import contestTrophy from '~/assets/contest-trophy.svg';
 export default {
   title: 'Lockspread/LandingLayout',
   component: LandingLayout,
+  // More on argTypes: https://storybook.js.org/docs/react/api/argtypes
+  argTypes: {},
 } as ComponentMeta<typeof LandingLayout>;
+
+// More on component templates: https://storybook.js.org/docs/react/writing-stories/introduction#using-args
+const Template: ComponentStory<typeof LandingLayout> = (args) => (
+  <LandingLayout {...args} />
+);
+
+export const Main = Template.bind({});
+// More on args: https://storybook.js.org/docs/react/writing-stories/args
 
 const cards = [
   {
@@ -45,6 +55,7 @@ const cards = [
     image: dallasGoedertImage,
   },
 ];
+
 const explainers = [
   {
     title: 'Win Cash Prizes!',
@@ -65,12 +76,6 @@ const explainers = [
     image: contestTrophy,
   },
 ];
-
-// More on component templates: https://storybook.js.org/docs/react/writing-stories/introduction#using-args
-const Template: ComponentStory<typeof LandingLayout> = () => (
-  <LandingLayout>
-    <Content cards={cards} explainers={explainers}/>
-  </LandingLayout>
-);
-
-export const Landing = Template.bind({});
+Main.args = {
+  children: <Content cards={cards} explainers={explainers} />,
+};

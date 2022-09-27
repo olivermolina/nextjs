@@ -16,6 +16,7 @@ interface Props {
   currentContestTokenCount?: number;
   children: JSX.Element;
   onClickAddUserCash?: React.MouseEventHandler<HTMLButtonElement>;
+  showSubNav?: boolean; // TODO
 }
 
 function NavLink(props: { link: string; icon: any; name: string }) {
@@ -80,35 +81,37 @@ export const Layout: React.FC<Props> = (props) => {
       </div>
 
       {/* SubNav */}
-      <div className="bg-blue-600 flex justify-between border-b border-gray-400">
-        {/* Left Pane */}
-        <div className="grid grid-cols-5 border-gray-200">
-          <div className="col-span-5 lg:col-span-4 py-2.5 flex overflow-x-auto">
-            {Object.entries(leagues).map(([name, { Icon }], i) => (
-              <a
-                key={i}
-                onClick={() => {
-                  router.query.league = name.toLowerCase();
-                  router.push(router);
-                }}
-                className="inline-flex text-white mx-3.5 flex-col justify-center text-center"
-              >
-                <Icon
-                  className={classNames(
-                    `object-contain h-8 max-w-full w-8 m-auto text-gray-200 mb-1.5`,
-                  )}
-                />
-                {name}
-              </a>
-            ))}
+      {props.showSubNav && (
+        <div className="bg-blue-600 flex justify-between border-b border-gray-400">
+          {/* Left Pane */}
+          <div className="grid grid-cols-5 border-gray-200">
+            <div className="col-span-5 lg:col-span-4 py-2.5 flex overflow-x-auto">
+              {Object.entries(leagues).map(([name, { Icon }], i) => (
+                <a
+                  key={i}
+                  onClick={() => {
+                    router.query.league = name.toLowerCase();
+                    router.push(router);
+                  }}
+                  className="inline-flex text-white mx-3.5 flex-col justify-center text-center"
+                >
+                  <Icon
+                    className={classNames(
+                      `object-contain h-8 max-w-full w-8 m-auto text-gray-200 mb-1.5`,
+                    )}
+                  />
+                  {name}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Pane */}
+          <div className="p-4 hidden lg:block">
+            <TokenCount count={props.currentContestTokenCount || 0} />
           </div>
         </div>
-
-        {/* Right Pane */}
-        <div className="p-4 hidden lg:block">
-          <TokenCount count={props.currentContestTokenCount || 0} />
-        </div>
-      </div>
+      )}
 
       <div className="flex flex-grow overflow-y-auto">{props.children}</div>
 

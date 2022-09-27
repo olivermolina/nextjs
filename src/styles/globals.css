@@ -25,3 +25,11 @@ html,
   background-attachment: fixed;
   background-size: cover;
 }
+
+@layer utilities {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}

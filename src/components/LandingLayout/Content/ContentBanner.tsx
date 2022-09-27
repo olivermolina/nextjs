@@ -3,7 +3,7 @@ import banknote from '../../../assets/banknote.svg';
 
 const ContentBanner = () => {
   return (
-    <div className="flex flex-row items-center justify-between rounded-xl p-2 md:p-5 bg-[#FFFFFF]">
+    <div className="flex flex-row items-center justify-between rounded-xl p-1 bg-[#FFFFFF]">
       <div className={'min-w-fit'}>
         <img
           className="object-cover w-14 h-7 md:w-auto md:h-auto"

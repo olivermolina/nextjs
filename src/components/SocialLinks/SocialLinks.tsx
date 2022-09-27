@@ -3,10 +3,14 @@ import React from 'react';
 export function SocialLinks() {
   return (
     <div className="flex gap-4">
-      <a target="_blank" href="https://instagram.com" rel="noreferrer">
+      <a
+        target="_blank"
+        href="https://www.instagram.com/lockspread"
+        rel="noreferrer"
+      >
         <svg
           role="img"
-          className="h-5 w-5 sm:h-10 sm:w-10"
+          className="h-4 w-4 sm:h-8 sm:w-8 md:h-10"
           viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
           fill="white"
@@ -16,22 +20,10 @@ export function SocialLinks() {
         </svg>
       </a>
 
-      <a target="_blank" href="https://www.linkedin.com/" rel="noreferrer">
+      <a target="_blank" href="https://twitter.com/lockspread" rel="noreferrer">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 sm:h-10 sm:w-10"
-          viewBox="0 0 512 512"
-          fill="white"
-        >
-          <title>LinkedIn</title>
-          <path d="M39 1.6c-3 .8-7.9 2.7-11 4.2C20.9 9.3 9.3 20.9 5.8 28-.4 40.6 0 25.3 0 256s-.4 215.4 5.8 228c3.5 7.1 15.1 18.7 22.2 22.2 12.6 6.2-2.7 5.8 228 5.8s215.4.4 228-5.8c7.1-3.5 18.7-15.1 22.2-22.2 6.2-12.6 5.8 2.7 5.8-228s.4-215.4-5.8-228c-3.5-7.1-15.1-18.7-22.2-22.2C471.4-.4 486.8 0 255.5.1 73.1.1 43.8.3 39 1.6zm90.3 70c23.2 7.6 36.4 31.6 30.2 55.4-6.4 24.8-33.1 39.6-57.6 32-27.5-8.4-40.3-38.6-27.5-64.6 6-12.1 19.1-22 32.3-24.4 6.2-1.1 16.5-.4 22.6 1.6zM369 203c24.9 7.2 45.5 24.7 57 48.4 9 18.5 8.4 11.6 8.7 102.8l.4 80.8H358v-70.8c0-63.4-.2-71.4-1.7-75.8-4.7-13.9-16.1-23.8-30.5-26.4-14-2.6-30.1 4.9-38.1 17.7-5.8 9.3-5.7 7.4-5.7 84.5V435h-77V205h77v28.8l9.3-9.2c11.6-11.7 24.6-19.2 40.2-23.2 7.6-2 28.1-1.1 37.5 1.6zM154 320v115H77V205h77v115z" />
-        </svg>
-      </a>
-
-      <a target="_blank" href="https://twitter.com/" rel="noreferrer">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 sm:h-10 sm:w-10"
+          className="h-4 w-4 sm:h-8 sm:w-8 md:h-10"
           viewBox="0 0 512 512"
           fill="white"
         >
@@ -40,10 +32,14 @@ export function SocialLinks() {
         </svg>
       </a>
 
-      <a target="_blank" href="https://tiktok.com" rel="noreferrer">
+      <a
+        target="_blank"
+        href="https://www.tiktok.com/@lockspread?_t=8VpIJgZWZvX&_r=1"
+        rel="noreferrer"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 sm:h-10 sm:w-10"
+          className="h-4 w-4 sm:h-8 sm:w-8 md:h-10"
           viewBox="0 0 512 512"
           fill="white"
         >

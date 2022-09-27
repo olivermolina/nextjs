@@ -4,11 +4,11 @@ import football from '~/assets/football.svg';
 
 const ContentHeader = () => {
   return (
-    <div className="flex flex-col items-center justify-between md:gap-y-5">
+    <div className="flex flex-col items-center justify-between gap-y-2 md:gap-y-5">
       <p className="text-white text-[60px] md:text-[90.44px] font-bold text-center leading-[77px] tracking-normal">
         The Fantasy Sports Hub!
       </p>
-      <div className="flex items-center justify-between gap-x-5">
+      <div className="flex items-center justify-center gap-x-5  w-full md:w-5/6 lg:w-4/5 max:w-2/5">
         <div className={'min-w-fit'}>
           <img
             className="object-cover w-[60px] h-auto md:w-auto"

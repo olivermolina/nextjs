@@ -11,12 +11,14 @@ type Props = {
 
 const LandingLayout = (props: Props) => {
   return (
-    <div className="bg-wave-img text-white flex flex-col h-full">
+    <div className="flex bg-wave-img text-white flex flex-col bg-auto min-h-screen">
       {/* Header */}
       <LandingHeader />
 
       {/* Body */}
-      <div className="flex-grow overflow-y-auto">{props.children}</div>
+      <div className="flex-grow justify-center items-center">
+        {props.children}
+      </div>
 
       {/* Footer */}
       <footer className="flex flex-col md:flex-row px-10 py-4 border-t border-gray-400 items-center gap-1 md:gap-5 place-content-between">
@@ -54,5 +56,4 @@ const LandingLayout = (props: Props) => {
   );
 };
 
-// @ts-ignore
 export default LandingLayout;
