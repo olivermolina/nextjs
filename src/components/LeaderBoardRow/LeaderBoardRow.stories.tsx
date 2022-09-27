@@ -18,39 +18,6 @@ const Template: ComponentStory<typeof LeaderBoardRow> = (args) => (
   <LeaderBoardRow {...args} />
 );
 
-const startDate = 'Mon Sept 06 2022 10:00pm';
-const endDate = 'Fri Sept 09 2022 11:00am';
-const leaders = [
-  {
-    id: '1',
-    name: 'leader 1',
-    rank: '1',
-    isMe: false,
-    onClickYourself: () => alert('click me'),
-  },
-  {
-    id: '2',
-    name: 'leader 2',
-    rank: '2',
-    isMe: false,
-    onClickYourself: () => alert('click me'),
-  },
-  {
-    id: '3',
-    name: 'leader 3',
-    rank: '3',
-    isMe: false,
-    onClickYourself: () => alert('click me'),
-  },
-  {
-    id: '4',
-    name: 'leader 4',
-    rank: '99',
-    isMe: true,
-    onClickYourself: () => alert('click me'),
-  },
-];
-
 export const Default = Template.bind({});
 // More on args: https://storybook.js.org/docs/react/writing-stories/args
 Default.args = {

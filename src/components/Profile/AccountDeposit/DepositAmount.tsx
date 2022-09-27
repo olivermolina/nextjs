@@ -35,7 +35,7 @@ const DepositInputAmount = () => {
           Select your deposit amount from the amounts shown below. or enter your
           own amount and click the &quot;Deposit&quot;.
         </p>
-        <div className="grid grid-cols-2 justify-items-stretch gap-5 lg:gap-10 w-full mt-5">
+        <div className="grid grid-rows-2 md:grid-rows-1 md:grid-cols-2 justify-items-stretch gap-5 lg:gap-10 w-full mt-5">
           <div className="grid grid-cols-4 gap-2 justify-items-stretch">
             {[10, 50, 100, 250].map((amount, index) => (
               <button

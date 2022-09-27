@@ -9,6 +9,7 @@ yup.addMethod(yup.array, 'oneOfSchemas', function (schemas) {
     'one-of-schemas',
     'Not all items in ${path} match one of the allowed schemas',
     (items) =>
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       items!.every((item) => {
         return schemas.some((schema: any) =>
           schema.isValidSync(item, { strict: true }),
@@ -19,6 +20,7 @@ yup.addMethod(yup.array, 'oneOfSchemas', function (schemas) {
 
 declare module 'yup' {
   // tslint:disable-next-line: interface-name
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export interface ArraySchema<T> {
     /**
      * Allows you to define mutliple disparate types which should

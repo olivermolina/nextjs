@@ -1,5 +1,11 @@
 import { t } from '../trpc';
-import { Contest, ContestEntry, League } from '@prisma/client';
+import {
+  Contest,
+  ContestEntry,
+  League,
+  MarketType,
+  Status,
+} from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import * as yup from '~/utils/yup';
 import { prisma } from '~/server/prisma';
@@ -165,43 +171,67 @@ export const contestRouter = t.router({
             await prisma.offer.findMany({
               where: {
                 league: input.league as League,
-                status: 'scheduled',
+                status: Status.Scheduled,
+                markets: {
+                  every: {
+                    type: MarketType.GM,
+                  },
+                },
+              },
+              include: {
+                markets: true,
+                home: true,
+                away: true,
               },
             })
-          ).map((offer) => ({
-            id: offer.id,
-            away: {
-              name: offer.awayTeam,
-              spread: {
-                value: offer.spreadAway,
-                odds: offer.spreadAwayOdds,
+          ).map((offer) => {
+            const away = offer.markets.find(
+              (mkt) => mkt.teamId === offer.away.id,
+            );
+            const home = offer.markets.find(
+              (mkt) => mkt.teamId === offer.home.id,
+            );
+            if (!away || !home) {
+              throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Missing game lines.',
+              });
+            }
+            return {
+              id: offer.gid,
+              away: {
+                name: offer.away.name,
+                spread: {
+                  value: away.spread,
+                  odds: away.spread_odd,
+                },
+                total: {
+                  value: away.total,
+                  odds: 100,
+                },
+                moneyline: {
+                  value: 100,
+                  odds: away.moneyline,
+                },
               },
-              total: {
-                value: offer.total,
-                odds: 100,
+              home: {
+                name: offer.home.name,
+                spread: {
+                  value: home.spread,
+                  odds: home.spread_odd,
+                },
+                total: {
+                  value: home.total,
+                  odds: 100,
+                },
+                moneyline: {
+                  value: 100,
+                  odds: home.moneyline,
+                },
               },
-              moneyline: {
-                value: 100,
-                odds: offer.moneylineAwayOdds,
-              },
-            },
-            home: {
-              name: offer.homeTeam,
-              spread: {
-                value: offer.spreadHome,
-                odds: offer.spreadHomeOdds,
-              },
-              total: {
-                value: offer.total,
-                odds: 100,
-              },
-              moneyline: {
-                value: 100,
-                odds: offer.moneylineHomeOdds,
-              },
-            },
-            matchTime: offer.gameTime,
-          })),
+              matchTime: offer.start_utc,
+            };
+          }),
           type: 'match',
         };
       } else if (contest.type === 'FANTASY') {

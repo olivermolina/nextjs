@@ -13,7 +13,7 @@ export const ContestTable = (props: Props) => {
   return (
     <div>
       <div className="flex flex-col gap-2">
-        {props.contests.map((items, idx, arr) => (
+        {props.contests.map((items, idx) => (
           <>
             <ContestRow key={items.id} {...items} showHeader={idx === 0} />
           </>

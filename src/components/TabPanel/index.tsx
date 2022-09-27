@@ -32,7 +32,7 @@ export function TabPanel(props: Props) {
       {/* Tabs */}
       <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
         <ul className="flex flex-wrap -mb-px">
-          {props?.tabs?.map((tab, i) => {
+          {props?.tabs?.map((tab) => {
             return (
               <li className="mr-2" key={tab?.tabId}>
                 <button

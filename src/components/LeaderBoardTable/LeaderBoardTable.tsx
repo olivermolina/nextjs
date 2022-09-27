@@ -23,7 +23,7 @@ export const LeaderBoardTable = (props: Props) => {
         style={{ height: '80vh', paddingBottom: '3rem' }}
         className="flex flex-col overflow-y-auto"
       >
-        {props?.leaders?.map((items, idx, arr) => (
+        {props?.leaders?.map((items, idx) => (
           <>
             <LeaderBoardRow key={items.id} {...items} showHeader={idx === 0} />
           </>

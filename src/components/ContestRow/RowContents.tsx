@@ -2,7 +2,6 @@ import React from 'react';
 import { Button } from '../Button';
 import { Avatar } from '../Avatar';
 import { TopLeaders } from './TopLeaders';
-import styles from './ContestRow.module.css';
 
 interface IRowContentsProps {
   id: number;

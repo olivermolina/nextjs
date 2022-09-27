@@ -9,7 +9,7 @@ import { IContest } from './IContest';
 import { IOffer } from './IOffer';
 import { IPost } from './IPost';
 import { IUser } from './IUser';
-declare let strapi: any;
+
 type BetTypes = 'Teaser';
 
 export namespace LockSpread {

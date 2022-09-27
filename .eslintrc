@@ -20,23 +20,15 @@
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off",
     "@typescript-eslint/no-explicit-any": "off",
-    "react/no-unknown-property": "off",
-    "import/no-unused-modules": [1, { "unusedExports": true }],
     "prettier/prettier": [
       "error",
       {
         "endOfLine": "auto"
       }
-    ]
+    ],
+    "react/no-unknown-property": "off"
   },
-  "overrides": [
-    {
-      "files": ["*.stories.*", "**/pages/**/*"],
-      "rules": {
-        "import/no-unused-modules": "off"
-      }
-    }
-  ],
+  "overrides": [],
   "settings": {
     "react": {
       "version": "detect"

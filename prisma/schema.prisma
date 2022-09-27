@@ -52,7 +52,7 @@ enum BetLegType {
 
 model BetLeg {
   id             String     @id @default(uuid())
-  offer          Offer      @relation(fields: [offersId], references: [id])
+  offer          Offer      @relation(fields: [offersId], references: [gid])
   type           BetLegType
   odds           Int
   total          Int
@@ -101,49 +101,108 @@ model Contest {
 
 enum League {
   NFL
+  MLB
   NBA
   NCAAB
-  MLB
-  NHL
   NCAAF
-  WNBA
-  TENNIS
-  MMA
-  WBC
+  NHL
+}
+
+enum Status {
+  Scheduled
+  InProgress
+  Final
+  PostponedCanceled
+}
+
+model Team {
+  id       Int      @id
+  name     String
+  code     String
+  homeTeam Offer[]  @relation("homeTeam")
+  awayTeam Offer[]  @relation("awayTeam")
+  Market   Market[]
+}
+
+enum MarketType {
+  GM
+  GP
+  PP
+}
+
+enum MarketResult {
+  One
+  Zero
+  Null
+}
+
+model Player {
+  id       Int      @id
+  name     String
+  position String
+  teamid   Int
+  team     String
+  Market   Market[]
+}
+
+model Market {
+  id               String       @id
+  // team id or player id
+  team             Team?        @relation(fields: [teamId], references: [id])
+  player           Player?      @relation(fields: [playerId], references: [id])
+  type             MarketType
+  category         String
+  name             String
+  teamAbbrev       String
+  offline          Boolean
+  spread           Float?
+  spread_odd       Float?
+  total            Float?
+  over             Float?
+  under            Float?
+  moneyline        Float?
+  spread_bet       Float?
+  spread_cash      Float?
+  over_bet         Float?
+  under_bet        Float?
+  over_cash        Float?
+  under_cash       Float?
+  moneyline_bet    Float?
+  moneyline_cash   Float?
+  spread_result    MarketResult
+  spread_stat      Float?
+  over_result      MarketResult
+  under_result     MarketResult
+  total_stat       Float?
+  moneyline_result MarketResult
+  moneyline_stat   Float?
+  offer            Offer?       @relation(fields: [offerId], references: [gid])
+  offerId          String?
+  teamId           Int?
+  playerId         Int?
 }
 
 model Offer {
-  id                  String   @id @default(uuid())
-  league              League
-  season              Int
-  seasonType          String   @db.VarChar(255)
-  total               Decimal  @db.Decimal(10, 2)
-  overOdds            Decimal  @db.Decimal(10, 2)
-  underOdds           Decimal  @db.Decimal(10, 2)
-  spreadAway          Decimal  @db.Decimal(10, 2)
-  spreadHome          Decimal  @db.Decimal(10, 2)
-  spreadAwayOdds      Decimal  @db.Decimal(10, 2)
-  spreadHomeOdds      Decimal  @db.Decimal(10, 2)
-  moneylineAwayOdds   Decimal  @db.Decimal(10, 2)
-  moneylineHomeOdds   Decimal  @db.Decimal(10, 2)
-  gameId              String   @db.VarChar(255)
-  city                String   @db.VarChar(255)
-  arenaName           String   @db.VarChar(255)
-  state               String   @db.VarChar(255)
-  status              String   @db.VarChar(255)
-  awayTeam            String   @db.VarChar(255)
-  homeTeam            String   @db.VarChar(255)
-  gameTime            DateTime @db.Timestamptz(6)
-  awayScore           Int
-  homeScore           Int
-  currentPeriod       Int
-  periodTimeRemaining String   @db.VarChar(255)
-  awayPeriods         Json
-  homePeriods         Json
-  BetLeg              BetLeg[]
+  gid       String   @id
+  league    League
+  gamedate  String
+  epoch     Int
+  start_utc String?
+  end_utc   String?
+  inplay    Boolean
+  status    Status
+  matchup   String
+  gametime  String
+  home      Team     @relation("homeTeam", fields: [homeTeamId], references: [id])
+  away      Team     @relation("awayTeam", fields: [awayTeamId], references: [id])
+  markets   Market[]
+
+  BetLeg BetLeg[]
 
   created_at DateTime @default(now()) @db.Timestamptz(6)
   updated_at DateTime @default(now()) @db.Timestamptz(6)
+  homeTeamId Int
+  awayTeamId Int
 }
 
 enum ContestType {
