@@ -1,19 +1,29 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-// import { appRouter } from '~/server/routers/_app';
+import { appRouter } from '~/server/routers/_app';
 import logger from '~/utils/logger';
 
-// const caller = appRouter.createCaller({} as any);
+const caller = appRouter.createCaller({} as any);
 
 const handler = (req: NextApiRequest, res: NextApiResponse) => {
-  logger.info(`Received GIDX callback status`, { req });
-
-  // caller.integration.gidxCallback({
-  //   ...req.body,
-  // });
-
-  res.status(200).send({
-    MerchantTransactionID: req.body?.result?.MerchantTransactionID || '',
+  const { method, body } = req;
+  logger.info(`Received GIDX callback status`, {
+    method,
+    body,
   });
+
+  if (method !== 'POST') {
+    res.status(200).send({
+      message: 'success',
+    });
+  } else {
+    const { result } = req?.body?.result;
+    caller.integration.gidxCallback({
+      result,
+    });
+    res.status(200).send({
+      MerchantTransactionID: result?.MerchantTransactionID || '',
+    });
+  }
 };
 
 export default handler;
