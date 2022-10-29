@@ -5,7 +5,7 @@ import logger from '~/utils/logger';
 const caller = appRouter.createCaller({} as any);
 
 const handler = (req: NextApiRequest, res: NextApiResponse) => {
-  logger.info('Received GIDX callback status');
+  logger.info('Received GIDX callback status', { body: req.body });
 
   caller.integration.gidxCallback({
     ...req.body,

@@ -64,7 +64,7 @@ const DepositConfirmation = (props: DepositConfirmationProps) => {
           type="submit"
           onClick={handleNext}
         >
-          OK
+          Confirm
         </button>
         <p className="text-sm">
           Next: It may take to 60 seconds for this deposit amount to show as
