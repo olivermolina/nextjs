@@ -6,6 +6,7 @@ import { PaymentMethodType, Session, Transaction, User } from '@prisma/client';
 import dayjs from 'dayjs';
 import { startCase } from 'lodash';
 import { ActionType } from '~/constants/ActionType';
+import logger from '~/utils/logger';
 
 enum GIDX_ROUTES {
   DIRECT_CASHIER = 'DirectCashier',
@@ -234,6 +235,7 @@ export default class GIDX {
     ipAddress: string,
     deviceGPS: IDeviceGPS,
   ) {
+    logger.info('CreateSession', { transaction, ipAddress, deviceGPS });
     const session = this.session;
     // Create GIDX session for DirectCashier
     const sessionData = {
