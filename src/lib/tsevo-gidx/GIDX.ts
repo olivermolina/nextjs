@@ -187,14 +187,14 @@ interface CompleteSessionResponse extends GIDXDataBaseResponse {
   Action: GIDXAction;
 }
 
-const createSessionResponseLog = async (sessionId: string, data: any) => {
+const createSessionResponseLog = async (sessionId: string, data: GIDXDataBaseResponse) => {
   // Log session response
   await prisma.sessionResponse.create({
     data: {
       sessionId,
       reasonCodes: data?.ReasonCodes ? JSON.stringify(data.ReasonCodes) : '',
       statusMessage: data?.StatusMessage || '',
-      statusCode: data?.StatusCode || '',
+      statusCode: data?.StatusCode || 0,
       sessionResponseRaw: JSON.stringify(data),
     },
   });
