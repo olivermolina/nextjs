@@ -15,6 +15,7 @@ const envSchema = yup.object().shape({
   GIDX_DIRECT_CASHIER_API_URL: yup.string(),
   GIDX_MERCHANT_ID: yup.string(),
   GIDX_PRODUCT_ID: yup.string(),
+  LOGTAIL_SOURCE: yup.string(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: yup.string().required(),
   NEXT_PUBLIC_SUPABASE_URL: yup.string().required(),
   NODE_ENV: yup
