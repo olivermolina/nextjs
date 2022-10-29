@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { Fragment } from 'react';
 import { InferPropTypes, MatchPickRow, PillButtons } from '..';
 import { PillButtonsPropTypes } from '../PillButtons/PillButtons';
 
@@ -17,7 +18,7 @@ const teamPropTypes = {
 };
 
 export const MatchPickRowPropTypes = {
-  id: PropTypes.number.isRequired,
+  id: PropTypes.string.isRequired,
   away: PropTypes.shape(teamPropTypes).isRequired,
   home: PropTypes.shape(teamPropTypes).isRequired,
   matchTime: PropTypes.string,
@@ -38,10 +39,10 @@ export const MatchPickRowTable = (props: Props) => {
       <PillButtons pills={props.filters} />
       <div className="flex flex-col gap-2">
         {props.matches.map((items, idx, arr) => (
-          <>
-            <MatchPickRow key={items.id} {...items} showHeader={idx === 0} />
+          <Fragment key={items.id}>
+            <MatchPickRow {...items} showHeader={idx === 0} />
             {arr.length - 1 !== idx && <hr />}
-          </>
+          </Fragment>
         ))}
       </div>
     </div>

@@ -13,9 +13,23 @@ model User {
   ContestEntries ContestEntry[]
   Bets           Bet[]
   username       String?        @unique
-  state          String?
+  firstname      String?
+  lastname       String?
   phone          Int?
   DOB            DateTime?
+  address1       String?
+  address2       String?
+  city           String?
+  state          String?
+  postalCode     String?
+  // True if verified user
+  identityStatus Boolean @default(true)
+  isFirstDeposit Boolean        @default(true)
+  // Username of the other user
+  referral       String?
+  Wallets        Wallets[]
+  Sessions Session[]
+  Transactions Transaction[]
 }
 
 model ContestEntry {
@@ -51,17 +65,19 @@ enum BetLegType {
 }
 
 model BetLeg {
-  id             String     @id @default(uuid())
-  offer          Offer      @relation(fields: [offersId], references: [gid])
-  type           BetLegType
-  odds           Int
-  total          Int
-  spreadHomeLine Int
-  spreadAwayLine Int
-  offersId       String
+  id     String     @id @default(uuid())
+  market Market     @relation(fields: [marketId, marketSel_id], references: [id, sel_id])
+  type   BetLegType
+  odds   Decimal
+  total  Decimal
+  status BetStatus  @default(PENDING)
 
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  updated_at DateTime @default(now()) @db.Timestamptz(6)
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime @default(now()) @db.Timestamptz(6)
+  marketId     String
+  marketSel_id Int
+  Bet          Bet?     @relation(fields: [betId], references: [id])
+  betId        String?
 }
 
 model Bet {
@@ -71,7 +87,7 @@ model Bet {
   owner            User         @relation(fields: [userId], references: [id])
   payout           Decimal      @db.Decimal(10, 2)
   type             BetType
-  legs             Json         @default("\"[]\"")
+  legs             BetLeg[]
   odds             Int
   ContestEntries   ContestEntry @relation(fields: [contestEntriesId], references: [id])
   contestEntriesId String
@@ -91,12 +107,15 @@ model Contest {
   startDate      DateTime       @db.Timestamptz(6)
   // Date of which no more bets can be placed in this contest
   endDate        DateTime       @db.Timestamptz(6)
-  type           String         @db.VarChar(255)
+  type           ContestType
   bgImageUrl     String         @db.VarChar(255)
   ContestEntries ContestEntry[]
 
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  updated_at DateTime @default(now()) @db.Timestamptz(6)
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at DateTime  @default(now()) @db.Timestamptz(6)
+  Wallets    Wallets[]
+  entryFee   Decimal
+  totalPrize Decimal
 }
 
 enum League {
@@ -146,10 +165,11 @@ model Player {
 }
 
 model Market {
-  id               String       @id
+  id               String
   // team id or player id
   team             Team?        @relation(fields: [teamId], references: [id])
   player           Player?      @relation(fields: [playerId], references: [id])
+  sel_id           Int
   type             MarketType
   category         String
   name             String
@@ -180,6 +200,9 @@ model Market {
   offerId          String?
   teamId           Int?
   playerId         Int?
+  BetLeg           BetLeg[]
+
+  @@id([id, sel_id])
 }
 
 model Offer {
@@ -197,8 +220,6 @@ model Offer {
   away      Team     @relation("awayTeam", fields: [awayTeamId], references: [id])
   markets   Market[]
 
-  BetLeg BetLeg[]
-
   created_at DateTime @default(now()) @db.Timestamptz(6)
   updated_at DateTime @default(now()) @db.Timestamptz(6)
   homeTeamId Int
@@ -208,4 +229,104 @@ model Offer {
 enum ContestType {
   MATCH
   FANTASY
+}
+
+// For in-house purposes
+model AppSettings {
+  id    String         @id @default(uuid())
+  name  AppSettingName
+  value String
+}
+
+enum AppSettingName {
+  // Limit for matching the first deposit
+  MAX_MATCH_DEPOSIT_AMOUNT
+}
+
+// TODO: Wallets should go on contest entries?
+model Wallets {
+  id         String  @id @default(uuid())
+  User       User    @relation(fields: [userId], references: [id])
+  contest    Contest @relation(fields: [contestsId], references: [id])
+  balance    Decimal @db.Decimal(10, 2)
+  userId     String
+  contestsId String
+
+  created_by String
+  updated_by String
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([userId, contestsId])
+}
+
+model Session {
+  id String @id @default(uuid())
+  serviceType String
+  User User @relation(fields: [userId], references: [id])
+  userId String
+  deviceLocation String
+  sessionRequestRaw String?
+  completeSessionRequestRaw String?
+  SessionResponses SessionResponse[]
+  Transactions Transaction[]
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model SessionResponse {
+  id String @id @default(uuid())
+  Session Session @relation(fields: [sessionId], references: [id])
+  sessionId String
+  reasonCodes String
+  sessionResponseRaw String
+  statusCode Int
+  statusMessage String
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum PaymentMethodType {
+  CC
+  ACH
+  Paypal
+  FTX
+  OTHERS
+}
+
+model Transaction {
+  id String @id
+  actionType String
+  Session Session @relation(fields: [sessionId], references: [id])
+  sessionId String
+  User User @relation(fields: [userId], references: [id])
+  userId String
+  amountProcess Decimal
+  amountBonus Decimal
+  transactionCurrency String //USD or other ISO 4217 Currency Code
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  TransactionStatuses TransactionStatus[]
+}
+
+model TransactionStatus {
+  id String @id @default(uuid())
+  Transaction Transaction @relation(fields: [transactionId], references: [id])
+  transactionId String
+  statusCode Int
+  statusMessage String?
+  transactionType TransactionType
+  transactionScore Decimal
+  // Text description of the payment method used by the customer.
+  transactionMethod String
+  transactionMethodType PaymentMethodType
+  //Account of the payment method used: VISA, MC, AMEX, PAYPAL, etc.
+  transactionMethodAccount String
+  approvalDateTime DateTime
+  statusDateTime DateTime
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
 }

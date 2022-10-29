@@ -2,16 +2,20 @@ import { t } from '../trpc';
 import {
   Contest,
   ContestEntry,
+  ContestType,
   League,
+  Market,
   MarketType,
+  Offer,
   Status,
 } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import * as yup from '~/utils/yup';
 import { prisma } from '~/server/prisma';
 import dayjs from 'dayjs';
-import { FantasyOffer, StatNames } from '~/types';
+import { FantasyOffer } from '~/types';
 import { InferType } from '~/utils/yup';
+import * as StatNames from './IStatNames';
 
 /**
  * A user can only join a contest if its not yet been started and they're not yet enrolled.
@@ -34,6 +38,59 @@ const canJoinContest = (
   return true;
 };
 
+const findLeadersByContest = async (contestId: string[], userId: string) => {
+  const topLeaders: any = await prisma.wallets.findMany({
+    where: {
+      contestsId: { in: contestId },
+    },
+    select: {
+      balance: true,
+      User: {
+        select: {
+          id: true,
+          username: true,
+        },
+      },
+      contest: {
+        select: {
+          bgImageUrl: true,
+        },
+      },
+    },
+  });
+  const rank = new Map<number, number>(
+    topLeaders.map((wallet: { balance: number }, index: number) => [
+      wallet.balance,
+      index,
+    ]),
+  );
+  const rankedLeaders = topLeaders.map((currentWallet: { balance: number }) => {
+    const values: number[] = Array.from(rank.values());
+    return {
+      rank: rank.get(currentWallet.balance),
+      isTopRanked: Math.max(...values) == rank.get(currentWallet.balance),
+      ...currentWallet,
+    };
+  });
+  return rankedLeaders.map(
+    (wallet: {
+      User: { id: string; username: string };
+      isTopRanked: boolean;
+      contest: { bgImageUrl: string };
+      balance: string;
+      rank: number;
+    }) => ({
+      id: wallet.User.id,
+      name: wallet.User.username,
+      isTopRanked: wallet.isTopRanked,
+      bgImageUrl: wallet.contest.bgImageUrl,
+      points: parseInt(wallet.balance),
+      rank: wallet.rank,
+      isMe: wallet.User.id == userId,
+    }),
+  );
+};
+
 const baseMatch = {
   id: yup.string().uuid().required(),
   away: yup.object().required(),
@@ -51,6 +108,181 @@ const fantasyMatch = yup.object({
 });
 export type FantasyMatchType = InferType<typeof fantasyMatch>;
 export const contestRouter = t.router({
+  leaders: t.procedure
+    .input(
+      yup.object({
+        contestId: yup.string().required(),
+      }),
+    )
+    .output(
+      yup.array(
+        yup.object({
+          id: yup.string().uuid().required(),
+          name: yup.string().required(),
+          isTopRanked: yup.bool().required(),
+          bgImageUrl: yup.string().url().required(),
+          points: yup.number().required(),
+          rank: yup.number().required(),
+        }),
+      ),
+    )
+    .query(async ({ ctx, input }) => {
+      if (!ctx.session) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+        });
+      }
+      const Wallets: any = await prisma.wallets.findMany({
+        where: {
+          contestsId: input.contestId || undefined,
+        },
+        select: {
+          balance: true,
+          User: {
+            select: {
+              id: true,
+              username: true,
+            },
+          },
+          contest: {
+            select: {
+              bgImageUrl: true,
+            },
+          },
+        },
+      });
+      const userId = ctx.session.user?.id;
+      if (!userId) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'User not found',
+        });
+      }
+
+      const rank = new Map<number, number>(
+        Wallets.map((wallet: { balance: number }, index: number) => [
+          wallet.balance,
+          index,
+        ]),
+      );
+      const rankedLeaders = Wallets.map(
+        (currentWallet: { balance: number }) => {
+          const values: number[] = Array.from(rank.values());
+          return {
+            rank: rank.get(currentWallet.balance),
+            isTopRanked: Math.max(...values) == rank.get(currentWallet.balance),
+            ...currentWallet,
+          };
+        },
+      );
+      return rankedLeaders.map(
+        (wallet: {
+          User: { id: string; username: string };
+          isTopRanked: boolean;
+          contest: { bgImageUrl: string };
+          balance: string;
+          rank: number;
+        }) => ({
+          id: wallet.User.id,
+          name: wallet.User.username,
+          isTopRanked: wallet.isTopRanked,
+          bgImageUrl: wallet.contest.bgImageUrl,
+          points: parseInt(wallet.balance),
+          rank: wallet.rank,
+        }),
+      );
+    }),
+  contests: t.procedure
+    .output(
+      yup.array(
+        yup.object({
+          id: yup.string().uuid().required(),
+          name: yup.string().required(),
+          isActive: yup.bool().required(),
+          bgImageUrl: yup.string().url().required(),
+          startDate: yup.date().required(),
+          endDate: yup.date().required(),
+          isEnrolled: yup.bool().required(),
+          isJoinable: yup.bool().required(),
+          entryFee: yup.number().required(),
+          totalPrize: yup.number().required(),
+          entries: yup.number().required(),
+          leaders: yup
+            .array(
+              yup.object({
+                id: yup.string().uuid().required(),
+                name: yup.string().required(),
+                isTopRanked: yup.bool().required(),
+                bgImageUrl: yup.string().url().required(),
+                points: yup.number().required(),
+                rank: yup.number().required(),
+                isMe: yup.bool().required(),
+              }),
+            )
+            .nullable(),
+        }),
+      ),
+    )
+    .query(async ({ ctx }) => {
+      if (!ctx.session) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+        });
+      }
+      const contests: any = await prisma.contest.findMany({
+        select: {
+          id: true,
+          name: true,
+          isActive: true,
+          bgImageUrl: true,
+          startDate: true,
+          endDate: true,
+          entryFee: true,
+          totalPrize: true,
+          ContestEntries: {
+            select: {
+              id: true,
+              tokens: true,
+              userId: true,
+              contestsId: true,
+            },
+          },
+        },
+      });
+      const userId = ctx.session.user?.id;
+      if (!userId) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'User not found',
+        });
+      }
+      console.log(contests);
+
+      const result = await findLeadersByContest(
+        contests.map(
+          (contest: Contest & { ContestEntries: ContestEntry[] }) => contest.id,
+        ),
+        userId,
+      );
+      return contests.map(
+        (contest: Contest & { ContestEntries: ContestEntry[] }) => ({
+          id: contest.id,
+          name: contest.name,
+          isActive: contest.isActive,
+          bgImageUrl: contest.bgImageUrl,
+          startDate: contest.startDate,
+          endDate: contest.endDate,
+          isEnrolled: contest.ContestEntries.some(
+            (entry) => entry.userId === userId,
+          ),
+          isJoinable: canJoinContest(contest, userId),
+          entryFee: contest.entryFee,
+          totalPrize: contest.totalPrize,
+          entries: contests.length,
+          leaders: [...result],
+        }),
+      );
+    }),
   list: t.procedure
     .output(
       yup.array(
@@ -63,6 +295,7 @@ export const contestRouter = t.router({
           endDate: yup.date().required(),
           isEnrolled: yup.bool().required(),
           isJoinable: yup.bool().required(),
+          type: yup.mixed<Contest['type']>(),
         }),
       ),
     )
@@ -95,32 +328,15 @@ export const contestRouter = t.router({
           (entry) => entry.userId === userId,
         ),
         isJoinable: canJoinContest(contest, userId),
+        type: contest.type,
       }));
     }),
   listOffers: t.procedure
     .input(
       yup.object({
         contestId: yup.string().nullable(),
-        league: yup.string().nullable(),
+        league: yup.mixed<League>().default(League.NFL),
       }),
-    )
-    .output(
-      yup
-        .object({
-          id: yup.string().uuid().required(),
-          name: yup.string().required(),
-          startDate: yup.date().required(),
-          endDate: yup.date().required(),
-          isActive: yup.bool().required(),
-          filters: yup.array(yup.string()).required(),
-          tokenCount: yup.number().required(),
-          offers: yup
-            .array()
-            .oneOfSchemas([yup.object(baseMatch), fantasyMatch])
-            .required(),
-          type: yup.string().oneOf(['match', 'picks']).required(),
-        })
-        .nullable(),
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user?.id;
@@ -129,19 +345,22 @@ export const contestRouter = t.router({
           code: 'UNAUTHORIZED',
         });
       }
+
       const contest = await prisma.contest.findFirst({
         where: {
-          id: input.contestId || undefined,
-          AND: {
-            ContestEntries: {
-              every: {
-                userId,
-              },
+          ...(input.contestId ? { id: input.contestId } : {}),
+          ContestEntries: {
+            some: {
+              userId,
             },
           },
         },
         include: {
-          ContestEntries: true,
+          ContestEntries: {
+            where: {
+              userId,
+            },
+          },
         },
       });
       if (!contest) {
@@ -155,7 +374,10 @@ export const contestRouter = t.router({
           message: 'Missing contest entry for this user.',
         });
       }
-      const contestProps = {
+      const contestProps: Pick<
+        Contest,
+        'id' | 'name' | 'startDate' | 'endDate' | 'isActive'
+      > & { tokenCount: number } = {
         id: contest.id,
         name: contest.name,
         startDate: contest.startDate,
@@ -163,28 +385,40 @@ export const contestRouter = t.router({
         isActive: contest.isActive,
         tokenCount: ContestEntry.tokens.toNumber(),
       };
-      if (contest.type === 'MATCH') {
-        return {
-          ...contestProps,
-          filters: ['straight', 'parlay', 'teaser'],
-          offers: (
-            await prisma.offer.findMany({
-              where: {
-                league: input.league as League,
-                status: Status.Scheduled,
-                markets: {
-                  every: {
-                    type: MarketType.GM,
+      if (contest.type === ContestType.MATCH) {
+        const offers = (
+          await prisma.offer.findMany({
+            where: {
+              league: input.league?.toUpperCase() as League,
+              status: Status.Scheduled,
+              inplay: false,
+              markets: {
+                some: {
+                  type: MarketType.GM,
+                },
+              },
+            },
+            include: {
+              markets: {
+                where: {
+                  type: MarketType.GM,
+                  moneyline: {
+                    not: null,
+                  },
+                  spread: {
+                    not: null,
+                  },
+                  total: {
+                    not: null,
                   },
                 },
               },
-              include: {
-                markets: true,
-                home: true,
-                away: true,
-              },
-            })
-          ).map((offer) => {
+              home: true,
+              away: true,
+            },
+          })
+        )
+          .map((offer) => {
             const away = offer.markets.find(
               (mkt) => mkt.teamId === offer.away.id,
             );
@@ -192,64 +426,129 @@ export const contestRouter = t.router({
               (mkt) => mkt.teamId === offer.home.id,
             );
             if (!away || !home) {
-              throw new TRPCError({
-                code: 'INTERNAL_SERVER_ERROR',
-                message: 'Missing game lines.',
-              });
+              return null;
             }
             return {
               id: offer.gid,
               away: {
                 name: offer.away.name,
+                marketId: away.id,
+                marketSelId: away.sel_id,
                 spread: {
-                  value: away.spread,
-                  odds: away.spread_odd,
+                  value: away.spread || 0,
+                  odds: away.spread_odd || 0,
                 },
                 total: {
-                  value: away.total,
-                  odds: 100,
+                  value: away.total || 0,
+                  odds: away.under || 0,
                 },
                 moneyline: {
                   value: 100,
-                  odds: away.moneyline,
+                  odds: away.moneyline || 0,
                 },
               },
               home: {
                 name: offer.home.name,
+                marketId: home.id,
+                marketSelId: home.sel_id,
                 spread: {
-                  value: home.spread,
-                  odds: home.spread_odd,
+                  value: home.spread || 0,
+                  odds: home.spread_odd || 0,
                 },
                 total: {
-                  value: home.total,
-                  odds: 100,
+                  value: home.total || 0,
+                  odds: home.over || 0,
                 },
                 moneyline: {
                   value: 100,
-                  odds: home.moneyline,
+                  odds: home.moneyline || 0,
                 },
               },
-              matchTime: offer.start_utc,
+              matchTime: offer.start_utc || '',
             };
-          }),
-          type: 'match',
+          })
+          .filter(Boolean);
+        return {
+          ...contestProps,
+          filters: ['straight', 'parlay', 'teaser'],
+          offers: offers,
+          type: ContestType.MATCH,
         };
-      } else if (contest.type === 'FANTASY') {
+      } else if (contest.type === ContestType.FANTASY) {
         // TODO: get all players in league who have stats matching the set of filters for that league
-        const filters: StatNames[] = getFiltersByLeague(input.league);
+        const filters = getFiltersByLeague(input.league);
         const offers: FantasyOffer[] = await getFantasyOffers(input.league);
 
         return {
           ...contestProps,
           filters,
           offers: offers,
-          type: 'picks',
+          type: ContestType.FANTASY,
         };
       } else {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: 'Undefined contest type',
         });
+      }
+    }),
+  joinContest: t.procedure
+    .input(
+      yup.object({
+        contestId: yup.string().required(),
+        tokens: yup.number().required(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        if (!ctx.session.user) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'You must be logged in to view contests.',
+          });
+        }
+        const contest = await prisma.contest.findUnique({
+          where: {
+            id: input.contestId,
+          },
+          select: {
+            startDate: true,
+            ContestEntries: {
+              select: {
+                User: {
+                  select: {
+                    id: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+        if (dayjs().isAfter(dayjs(contest?.startDate))) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `It's too late to join this contest.`,
+          });
+        }
+        if (
+          contest?.ContestEntries.some(
+            (item) => item.User.id == ctx.session.user?.id,
+          )
+        ) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `Already registered for this contest.`,
+          });
+        }
+        await prisma.contestEntry.create({
+          data: {
+            userId: ctx.session.user?.id,
+            contestsId: input.contestId,
+            tokens: input.tokens,
+          },
+        });
+      } catch (error) {
+        throw error;
       }
     }),
 });
@@ -259,14 +558,46 @@ export const contestRouter = t.router({
  * for fantasy picks. The idea is that these directly mimic a property in the database
  * so that this function can generically be expanded to support different stat lines.
  *
- * TODO: Make all league references an enum from a constant file.
- * TODO: Get the available sports mappings from dan
- * TODO: Make all sports mapping references in a constant file to be shared in the frontend
  * @param league one of the supported league enums in the application
  */
-function getFiltersByLeague(league: string | null | undefined): StatNames[] {
-  throw new Error('Function not implemented.');
+function getFiltersByLeague(league: League): string[] {
+  switch (league) {
+    case League.MLB:
+      return Object.values(StatNames.MLB);
+    case League.NBA:
+    case League.NCAAB:
+      return Object.values(StatNames.NBA_AND_NCAAB);
+    case League.NFL:
+    case League.NCAAF:
+      return Object.values(StatNames.NFL_AND_NCAAF);
+    case League.NHL:
+      return Object.values(StatNames.NHL);
+  }
 }
+
+const mapData = (
+  data: Market & {
+    offer: Offer | null;
+  },
+): FantasyOffer => {
+  return {
+    id: data.id,
+    // TODO: need a player photo api
+    playerPhotoURL: `https://evanalytics.com/images/${data.offer?.league.toLowerCase()}/${
+      data.teamAbbrev
+    }.png`,
+    statName: data.category as StatNames.all,
+    total: data.total || 0,
+    matchName: data.offer?.matchup || '',
+    playerName: data.name,
+    tags: [],
+    marketId: data.id,
+    selId: data.sel_id,
+    league: data.offer!.league,
+    matchTime: data.offer!.gamedate || '',
+    odds: 100,
+  };
+};
 
 /**
  * This function gets all the fantasy offers currently available for a given league.
@@ -274,14 +605,19 @@ function getFiltersByLeague(league: string | null | undefined): StatNames[] {
  * It will check for players with upcoming games in the next week (that have not started), and then give an over under based on their estimated
  * statline that will be 50/50 odds either way with a push for the exact value.
  *
- * TODO: Build fantasy sports data ETL
- * TODO: Add fatasy sports data to strapi and prisma
- * TODO: Complete the implementation of this function.
- *
  * @param league one of the supported league enums in the application
  */
-function getFantasyOffers(
-  league: string | null | undefined,
-): FantasyOffer[] | PromiseLike<FantasyOffer[]> {
-  throw new Error('Function not implemented.');
+async function getFantasyOffers(league: League): Promise<FantasyOffer[]> {
+  const markets = await prisma.market.findMany({
+    where: {
+      offer: {
+        league,
+        status: Status.Scheduled,
+      },
+    },
+    include: {
+      offer: true,
+    },
+  });
+  return markets.map(mapData);
 }

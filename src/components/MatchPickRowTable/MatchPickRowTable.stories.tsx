@@ -43,7 +43,7 @@ Default.args = {
   ],
   matches: [
     {
-      id: 100,
+      id: '100',
       onClickOffer: (...params) => alert(params),
       away: {
         name: 'Mount St. Marys',
@@ -84,7 +84,7 @@ Default.args = {
       matchTime: '05 / 06 / 22, 04:00:00',
     },
     {
-      id: 100,
+      id: '100',
       onClickOffer: (...params) => alert(params),
       away: {
         name: 'Mount St. Marys',

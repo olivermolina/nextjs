@@ -4,7 +4,7 @@ import { InferPropTypes, PillButtons, LeaderBoardRow } from '..';
 import { LeaderBoardRowPropTypes } from '../LeaderBoardRow/LeaderBoardRow';
 import { PillButtonsPropTypes } from '../PillButtons/PillButtons';
 
-export const LeaderBoardTablePropTypes = {
+const LeaderBoardTablePropTypes = {
   contests: PillButtonsPropTypes.pills.isRequired,
   leaders: PropTypes.arrayOf(
     PropTypes.shape(LeaderBoardRowPropTypes).isRequired,
@@ -15,14 +15,11 @@ type Props = InferPropTypes<typeof LeaderBoardTablePropTypes>;
 
 export const LeaderBoardTable = (props: Props) => {
   return (
-    <div className="grid grid-cols-[40px_1fr] gap-3">
-      <div style={{ marginLeft: '1rem', marginTop: '.2rem' }}>
+    <div className="grid grid-rows-[60px_1fr] gap-3 h-screen">
+      <div className="my-2 lg:my-4">
         <PillButtons pills={props?.contests} />
       </div>
-      <div
-        style={{ height: '80vh', paddingBottom: '3rem' }}
-        className="flex flex-col overflow-y-auto"
-      >
+      <div className="flex flex-col overflow-y-auto w-full pb-12">
         {props?.leaders?.map((items, idx) => (
           <>
             <LeaderBoardRow key={items.id} {...items} showHeader={idx === 0} />

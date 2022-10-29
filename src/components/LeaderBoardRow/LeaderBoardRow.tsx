@@ -14,7 +14,7 @@ export const LeaderBoardRowPropTypes = {
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   points: PropTypes.number.isRequired,
-  rank: PropTypes.string.isRequired,
+  rank: PropTypes.number.isRequired,
   isTopRanked: PropTypes.bool.isRequired,
   avatar: PropTypes.shape(avatarPropTypes).isRequired,
   showHeader: PropTypes.bool,
@@ -24,10 +24,10 @@ type Props = InferPropTypes<typeof LeaderBoardRowPropTypes>;
 
 export const LeaderBoardRow = (props: Props) => {
   return (
-    <div>
+    <div className={`${props.isTopRanked ? 'px-3' : 'px-0'}`}>
       {props.showHeader && (
         <div
-          className={`grid grid-cols-[200px_200px_1fr] p-1 pl-4 w-full text-gray-500 font-bold  gap-1 bg-gray-200`}
+          className={`grid grid-cols-[60px_60px_1fr] lg:grid-cols-[200px_200px_1fr] p-1 pl-4 w-full text-gray-500 font-bold  gap-1 bg-gray-200`}
         >
           <div className="p-2 text-xs">RANK</div>
           <div className="p-2 text-xs">PTS</div>
@@ -37,7 +37,7 @@ export const LeaderBoardRow = (props: Props) => {
       {!props.isTopRanked && (
         <div
           className={classNames(
-            `grid grid-cols-[200px_200px_1fr] p-1 pl-4 w-full bg-white justify-between border border-b-0  border-gray-200`,
+            `grid grid-cols-[60px_60px_1fr] lg:grid-cols-[200px_200px_1fr] p-1 pl-4 w-full bg-white justify-between border border-b-0  border-gray-200`,
           )}
         >
           <RowContents
@@ -51,11 +51,10 @@ export const LeaderBoardRow = (props: Props) => {
       )}
       {props.isTopRanked && (
         <div
-          style={{ width: '96%' }}
           className={classNames(
-            `grid grid-cols-[200px_200px_1fr] p-1 pl-4 w-full bg-white justify-between border  border-gray-200`,
+            `grid grid-cols-[60px_60px_1fr] py-1  w-full bg-white justify-between border  border-gray-200`,
             {
-              'border-blue-400 border-1 bg-blue-100 fixed rounded bottom-2 m-6':
+              'border-blue-400 border-1 bg-blue-100 rounded bottom-2 mt-2 relative':
                 props.isTopRanked,
             },
           )}

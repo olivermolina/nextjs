@@ -5,19 +5,15 @@ import classNames from 'classnames';
 
 interface AvatarProps {
   imgSrc: string;
-  height: string | number | undefined;
-  width: string | number | undefined;
-  variant: string | undefined;
+  height?: string | number;
+  width?: string | number;
+  variant: string;
 }
 
 export function Avatar(props: AvatarProps) {
   return (
     <>
       <LazyLoadImage
-        style={{
-          height: props.height,
-          width: props.width,
-        }}
         placeholder={
           <ContentLoader
             width={props.width}
@@ -36,8 +32,11 @@ export function Avatar(props: AvatarProps) {
           </ContentLoader>
         }
         className={classNames('object-cover', {
-          [`${props?.variant == 'rectangle' ? 'rounded' : 'rounded-full'}`]:
-            props.variant,
+          [`${
+            props?.variant == 'rectangle'
+              ? 'rounded h-40 lg:w-56 lg:h-32'
+              : 'rounded-full'
+          }`]: props.variant,
         })}
         alt={'Avatar image display'}
         src={props.imgSrc} // use normal <img> attributes as props

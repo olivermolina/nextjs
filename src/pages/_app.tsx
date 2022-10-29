@@ -3,15 +3,20 @@ import { AppProps } from 'next/app';
 import { AppType } from 'next/dist/shared/lib/utils';
 import { ReactElement, ReactNode, useState } from 'react';
 import { Provider } from 'react-redux';
-import { createStore } from '~/state/store';
+import { store } from '~/state/store';
 import { trpc } from '~/utils/trpc';
 import '../styles/globals.css';
 import 'react-toastify/dist/ReactToastify.css';
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
 import {
   Hydrate,
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
+import { ToastContainer } from 'react-toastify';
 
 export type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -22,15 +27,16 @@ type AppPropsWithLayout = AppProps & {
 };
 
 const MyApp = (({ Component, pageProps }: AppPropsWithLayout) => {
+  const { dehydratedState } = pageProps as { dehydratedState: unknown };
   const getLayout = Component.getLayout ?? ((page) => <>{page}</>);
   const [queryClient] = useState(() => new QueryClient());
-  const store = createStore();
   return getLayout(
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <Hydrate state={pageProps.dehydratedState}>
+        <Hydrate state={dehydratedState}>
           <Component {...pageProps} />
         </Hydrate>
+        <ToastContainer />
       </QueryClientProvider>
     </Provider>,
   );

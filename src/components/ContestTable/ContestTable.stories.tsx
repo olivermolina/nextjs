@@ -23,7 +23,7 @@ export const Default = Template.bind({});
 Default.args = {
   contests: [
     {
-      id: 100,
+      id: '100',
       name: 'Contest 1',
       onClickJoinContest: (...params) => alert(params),
       startDate: 'Mon Sept 06 2022 10:00pm',
@@ -42,28 +42,28 @@ Default.args = {
       entries: 20,
       leaders: [
         {
-          id: 1,
+          id: '1',
           name: 'leader 1',
           rank: 1,
           isMe: false,
           onClickYourself: () => alert('click me'),
         },
         {
-          id: 2,
+          id: '2',
           name: 'leader 2',
           rank: 2,
           isMe: false,
           onClickYourself: () => alert('click me'),
         },
         {
-          id: 3,
+          id: '3',
           name: 'leader 3',
           rank: 3,
           isMe: false,
           onClickYourself: () => alert('click me'),
         },
         {
-          id: 4,
+          id: '4',
           name: 'leader 4',
           rank: 99,
           isMe: true,
@@ -72,7 +72,7 @@ Default.args = {
       ],
     },
     {
-      id: 200,
+      id: '200',
       name: 'Contest 2',
       onClickJoinContest: (...params) => alert(params),
       startDate: 'Mon Sept 06 2022 10:00pm',
@@ -91,21 +91,21 @@ Default.args = {
       isJoined: false,
       leaders: [
         {
-          id: 1,
+          id: '1',
           name: 'leader 1',
           rank: 1,
           isMe: false,
           onClickYourself: () => alert('click me'),
         },
         {
-          id: 2,
+          id: '2',
           name: 'leader 2',
           rank: 2,
           isMe: false,
           onClickYourself: () => alert('click me'),
         },
         {
-          id: 3,
+          id: '3',
           name: 'leader 3',
           rank: 3,
           isMe: false,

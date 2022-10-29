@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { InferPropTypes, ContestRow } from '..';
 import { ContestRowPropTypes } from '../ContestRow/ContestRow';
 
-export const ContestTablePropTypes = {
+const ContestTablePropTypes = {
   contests: PropTypes.arrayOf(PropTypes.shape(ContestRowPropTypes).isRequired)
     .isRequired,
 };

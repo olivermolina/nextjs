@@ -6,6 +6,7 @@ import { TokenCount } from './TokenCount';
 import { navItems } from './navItems';
 import { CashAmount } from './CashAmount';
 import { useRouter } from 'next/router';
+import { useQueryParams } from '~/hooks/useQueryParams';
 
 interface Props {
   onClickCartDetails?: React.MouseEventHandler<HTMLButtonElement>;
@@ -16,7 +17,7 @@ interface Props {
   currentContestTokenCount?: number;
   children: JSX.Element;
   onClickAddUserCash?: React.MouseEventHandler<HTMLButtonElement>;
-  showSubNav?: boolean; // TODO
+  showSubNav?: boolean;
 }
 
 function NavLink(props: { link: string; icon: any; name: string }) {
@@ -45,7 +46,7 @@ function NavLink(props: { link: string; icon: any; name: string }) {
 }
 
 export const Layout: React.FC<Props> = (props) => {
-  const router = useRouter();
+  const { setParam, league } = useQueryParams();
   return (
     <div className="flex flex-col h-full">
       {/* Top Nav Desktop */}
@@ -90,10 +91,14 @@ export const Layout: React.FC<Props> = (props) => {
                 <a
                   key={i}
                   onClick={() => {
-                    router.query.league = name.toLowerCase();
-                    router.push(router);
+                    setParam('league', name);
                   }}
-                  className="inline-flex text-white mx-3.5 flex-col justify-center text-center"
+                  className={classNames(
+                    'inline-flex text-white mx-3.5 flex-col justify-center text-center',
+                    {
+                      underline: league?.toUpperCase() === name.toUpperCase(),
+                    },
+                  )}
                 >
                   <Icon
                     className={classNames(
@@ -113,7 +118,9 @@ export const Layout: React.FC<Props> = (props) => {
         </div>
       )}
 
-      <div className="flex flex-grow overflow-y-auto">{props.children}</div>
+      <div className="flex flex-grow overflow-y-auto bg-gray-50">
+        {props.children}
+      </div>
 
       {/* Bottom Bar */}
       <div className="block lg:hidden">

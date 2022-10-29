@@ -1,6 +1,4 @@
 import React from 'react';
-import trophy from '~/assets/trophy.svg';
-import football from '~/assets/football.svg';
 
 const ContentHeader = () => {
   return (
@@ -12,7 +10,7 @@ const ContentHeader = () => {
         <div className={'min-w-fit'}>
           <img
             className="object-cover w-[60px] h-auto md:w-auto"
-            src={trophy.src}
+            src={'/assets/images/trophy.svg'}
             alt="Trophy"
           />
         </div>
@@ -22,7 +20,7 @@ const ContentHeader = () => {
         <div className={'min-w-fit'}>
           <img
             className="object-cover w-[60px] h-auto md:w-auto"
-            src={football.src}
+            src={'/assets/images/football.svg'}
             alt="Football"
           />
         </div>

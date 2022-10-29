@@ -2,7 +2,12 @@ interface Game {
   id: number;
   date: string;
   matchup: string;
-  teams: Team[];
+  teams: {
+    id: number;
+    name: string;
+    abbreviation: string;
+    homeaway: string;
+  }[];
   double_header: boolean;
   gameorder: number;
 }
@@ -11,7 +16,7 @@ interface Team {
   id: number;
   name: string;
   abbreviation: string;
-  homeaway: string;
+  nickname: string;
 }
 
 interface Player {
@@ -23,7 +28,7 @@ interface Player {
 }
 
 export interface ILookupRepsonse {
-  games: Game[];
+  games: Record<Game['id'], Game>;
   teams: Team[];
   players: Player[];
 }

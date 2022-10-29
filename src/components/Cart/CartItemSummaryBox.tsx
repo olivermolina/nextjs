@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { ChangeEventHandler } from 'react';
 import classnames from 'classnames';
 import { SmallText } from './SmallText';
 
 export function CartItemSummaryBox(props: {
+  onChange?: ChangeEventHandler<HTMLInputElement>;
   isAbleToEdit?: boolean;
   isPrimary?: boolean;
   label:
@@ -27,8 +28,9 @@ export function CartItemSummaryBox(props: {
         type="number"
         disabled={!props.isAbleToEdit}
         min={1}
-        defaultValue={props.value}
+        value={props.value}
         className="font-bold w-full"
+        onChange={props.onChange}
       />
     </div>
   );

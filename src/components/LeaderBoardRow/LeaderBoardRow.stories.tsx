@@ -17,7 +17,6 @@ export default {
 const Template: ComponentStory<typeof LeaderBoardRow> = (args) => (
   <LeaderBoardRow {...args} />
 );
-
 export const Default = Template.bind({});
 // More on args: https://storybook.js.org/docs/react/writing-stories/args
 Default.args = {
@@ -30,7 +29,7 @@ Default.args = {
     height: 30,
   },
   points: 500,
-  rank: '1',
+  rank: 1,
   isTopRanked: true,
   showHeader: true,
 };

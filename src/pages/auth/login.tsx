@@ -9,6 +9,7 @@ import { supabase } from '~/utils/supabaseClient';
 import { trpc } from '~/utils/trpc';
 import { FormErrorText } from '~/components/Form/FormErrorText';
 import { useRouter } from 'next/router';
+import { TRPCClientError } from '@trpc/client';
 
 type Inputs = {
   email: string;
@@ -31,7 +32,8 @@ const Create = () => {
       await mutation.mutateAsync(data);
       router.push(UrlPaths.Challenge);
     } catch (error) {
-      toast.error('There was an error logging in.');
+      const e = error as TRPCClientError<any>;
+      toast.error(e.message);
     }
   };
 

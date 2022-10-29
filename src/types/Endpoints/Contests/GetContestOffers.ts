@@ -1,7 +1,6 @@
+import * as StatNames from '~/server/routers/IStatNames';
 import { IContest } from '../../IContest';
 import { IOffer } from '../../IOffer';
-
-export type StatNames = 'rushing-yards' | 'passing-yards' | 'recieving-yards';
 
 export type Match = {
   name: string;
@@ -22,7 +21,12 @@ export type Match = {
 type Filters = 'straight' | 'parlay' | 'teaser';
 
 export type FantasyOffer = {
-  id: number;
+  marketId: string;
+  selId: number;
+  league: string;
+  matchTime: string;
+  odds: number;
+  id: string;
   /**
    * i.e. https://api.lockspread.com/asset/img-200x200.png
    */
@@ -30,7 +34,7 @@ export type FantasyOffer = {
   /**
    * i.e. "Passing Yards"
    */
-  statName: StatNames;
+  statName: StatNames.all;
   /**
    * The total number for O/U of the stat. i.e. 50 passing yards O/U
    */
@@ -68,7 +72,7 @@ export type GetContestOffers = {
               type: 'match';
             }
           | {
-              filters: StatNames[];
+              filters: StatNames.all[];
               offers: FantasyOffer[];
               type: 'picks';
             }

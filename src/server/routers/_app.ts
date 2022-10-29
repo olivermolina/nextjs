@@ -6,12 +6,18 @@ import { healthRouter } from './health';
 import { contestRouter } from './contest';
 import { userRouter } from './user';
 import { etlRouter } from './etl';
+import { appSettingsRouter } from './appSettings';
+import { betsRouter } from './bets/bets';
+import { integrationRouter } from './integration';
 
 export const appRouter = t.router({
   contest: contestRouter,
   user: userRouter,
   health: healthRouter,
   etl: etlRouter,
+  appSettings: appSettingsRouter,
+  bets: betsRouter,
+  integration: integrationRouter,
 });
 
 export type AppRouter = typeof appRouter;

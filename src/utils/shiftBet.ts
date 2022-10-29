@@ -1,9 +1,10 @@
-import { IOffer, IBetLeg } from '~/types';
+import { BetLegType } from '@prisma/client';
+import { IOffer } from '~/types';
 
 export default function shiftLine(
   line: number,
   league: IOffer['league'],
-  type: IBetLeg['type'],
+  type: BetLegType,
 ): number {
   const leagueTeaserShifts: Record<IOffer['league'], number> = {
     NFL: 6,
@@ -13,13 +14,13 @@ export default function shiftLine(
   };
   const shifter = leagueTeaserShifts[league.toUpperCase()] || 0;
   switch (type) {
-    case 'spreadAwayOdds':
+    case BetLegType.SPREAD_AWAY_ODDS:
       return line + shifter;
-    case 'spreadHomeOdds':
+    case BetLegType.SPREAD_HOME_ODDS:
       return line + shifter;
-    case 'overOdds':
+    case BetLegType.OVER_ODDS:
       return line + shifter;
-    case 'underOdds':
+    case BetLegType.UNDER_ODDS:
       return line - shifter;
     default:
       console.error(line, league, type);

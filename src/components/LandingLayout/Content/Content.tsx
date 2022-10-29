@@ -9,7 +9,6 @@ import { useRouter } from 'next/router';
 import ExplainerCard, {
   ExplainerCardProps,
 } from '~/components/LandingLayout/Content/ExplainerCard';
-import stateMapImage from '~/assets/state-map.svg';
 
 interface Props extends React.PropsWithChildren {
   cards: FantasyCardProps[];
@@ -53,7 +52,7 @@ const Content = (props: Props) => {
 
       {/* States map */}
       <img
-        src={stateMapImage.src}
+        src={'/assets/images/USMap.svg'}
         className="object-cover md:w-6/12 mx-auto"
         alt=""
       />

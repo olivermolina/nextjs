@@ -1,9 +1,8 @@
 import React from 'react';
-import ProfileContainer from '~/containers/Profile/ProfileContainer';
+import ProfileContainer from '~/containers/ProfileContainer';
 import LayoutContainer from '~/containers/LayoutContainer/LayoutContainer';
 import { GetServerSideProps } from 'next';
-import { supabase } from '~/utils/supabaseClient';
-import { UrlPaths } from '~/constants/UrlPaths';
+import { withAuth } from '~/hooks/withAuthServerSideProps';
 
 const Profile = () => {
   return (
@@ -17,17 +16,8 @@ const Profile = () => {
 
 export default Profile;
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const user = await supabase.auth.api.getUserByCookie(ctx.req, ctx.res);
-  if (!user.user) {
-    return {
-      redirect: {
-        permanent: false,
-        destination: UrlPaths.Login,
-      },
-    };
-  }
+export const getServerSideProps: GetServerSideProps = withAuth(async () => {
   return {
     props: {},
   };
-};
+});

@@ -1,11 +1,10 @@
 import { NextPageWithLayout } from '../_app';
-import CartContainer from '~/containers/Cart';
+import CartContainer from '~/containers/CartContainer/CartContainer';
 import ContestPickerContainer from '~/containers/ContestContainer/ContestPickerContainer';
 import MatchPickerTableContainer from '~/containers/MatchPickerTableContainer/MatchPickerTableContainer';
-import { supabase } from '~/utils/supabaseClient';
-import { GetServerSideProps } from 'next';
 import LayoutContainer from '~/containers/LayoutContainer/LayoutContainer';
-import { UrlPaths } from '~/constants/UrlPaths';
+import { GetServerSideProps } from 'next';
+import { withAuth } from '~/hooks/withAuthServerSideProps';
 
 const IndexPage: NextPageWithLayout = () => {
   return (
@@ -25,17 +24,8 @@ const IndexPage: NextPageWithLayout = () => {
 
 export default IndexPage;
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const user = await supabase.auth.api.getUserByCookie(ctx.req, ctx.res);
-  if (!user.user) {
-    return {
-      redirect: {
-        permanent: false,
-        destination: UrlPaths.Login,
-      },
-    };
-  }
+export const getServerSideProps: GetServerSideProps = withAuth(async () => {
   return {
     props: {},
   };
-};
+});

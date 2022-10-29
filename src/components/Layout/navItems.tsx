@@ -7,7 +7,12 @@ const iconClasses =
   'object-contain h-auto max-w-full m-auto mb-1.5 stroke-current';
 export const navItems = [
   {
-    link: '/bets/pending',
+    link: '/challenge',
+    name: 'Challenge',
+    icon: <ChallengeIcon className={iconClasses} />,
+  },
+  {
+    link: '/picks',
     anchor: true,
     name: 'Picks',
     icon: (
@@ -26,11 +31,6 @@ export const navItems = [
         />
       </svg>
     ),
-  },
-  {
-    link: '/challenge',
-    name: 'Challenge',
-    icon: <ChallengeIcon className={iconClasses} />,
   },
   {
     link: '/contests',

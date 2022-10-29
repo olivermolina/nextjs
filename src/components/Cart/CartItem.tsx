@@ -1,16 +1,20 @@
-import React from 'react';
+import React, { ChangeEventHandler, useCallback } from 'react';
 import { ICartItemProps } from './ICartItemProps';
 import { SmallText } from './SmallText';
 import { CartItemSummaryBox } from './CartItemSummaryBox';
 import { addPlusToNumber } from '~/utils/addPlusToNumber';
 
 export function CartItem(props: ICartItemProps) {
+  const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
+    const newValue = Number(e.target.value) || 0;
+    props.onUpdateCartItem(props.id, newValue);
+  }, []);
   return (
     <>
-      {props.legs.map((leg, i) => (
-        <div key={i} className="p-4 border-b relative border-gray-300">
+      {props.legs.map((leg) => (
+        <div key={leg.id} className="p-4 border-b relative border-gray-300">
           <SmallText>
-            {leg.league} | {leg.matchTime}
+            <span className="uppercase">{leg.league}</span> | {leg.matchTime}
           </SmallText>
           <button
             onClick={leg.onClickDeleteCartItem}
@@ -44,6 +48,7 @@ export function CartItem(props: ICartItemProps) {
           label="Stake"
           value={props.stake}
           isPrimary
+          onChange={onChange}
         />
         <CartItemSummaryBox label="Potential Payout" value={props.payout} />
       </div>

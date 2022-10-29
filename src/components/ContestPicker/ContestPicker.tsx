@@ -64,7 +64,7 @@ export const ContestPicker: React.FC<Props> = ({ contests }) => {
         style={{
           scrollBehavior: 'smooth',
         }}
-        className="hide-scrollbar grid grid-flow-col-dense p-2 gap-2 overflow-x-scroll"
+        className="hide-scrollbar grid content-start justify-start grid-flow-col-dense p-2 gap-2 overflow-x-scroll"
       >
         {contests.map((contest, i) => (
           <ContestCard key={i} {...contest} />

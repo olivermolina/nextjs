@@ -1,3 +1,4 @@
+import { ContestType } from '@prisma/client';
 import {
   PayloadAction,
   createAsyncThunk,
@@ -10,12 +11,15 @@ import { RootState } from '../store';
 export interface BaseModel {
   betId: string;
   challengerId?: number;
-  contest?: string;
+  contest: string;
+  contestType: ContestType;
   error?: string;
 }
 export interface BetModel extends BaseModel {
-  gameId: number;
-  refId: number;
+  total: any;
+  gameId: string;
+  marketId: string;
+  marketSelId: number;
   league: string;
   matchTime: string;
   entity1: string;
@@ -36,7 +40,7 @@ export interface TeaserModel extends ParlayModel {
   type: 'teaser';
 }
 
-const betsAdapter = createEntityAdapter<BetModel | ParlayModel | TeaserModel>({
+const betsAdapter = createEntityAdapter<ParlayModel | TeaserModel>({
   selectId: (bet) => bet.betId,
   // Keep the "all IDs" array sorted based on book titles
   sortComparer: (a, b) => a.betId.localeCompare(b.betId),
@@ -124,13 +128,21 @@ export const betsSlice = createSlice({
   initialState: betsAdapter.getInitialState(),
   reducers: {
     addBet(state, action: PayloadAction<BetInput>) {
-      return betsAdapter.addOne(state, addIdToBet(action.payload));
+      const bet: ParlayModel = {
+        legs: [addIdToBet(action.payload)],
+        betId: action.payload.gameId.toString(),
+        contest: action.payload.contest,
+        contestType: action.payload.contestType,
+        stake: 0,
+      };
+      return betsAdapter.addOne(state, bet);
     },
     addParlayBet(state, action: PayloadAction<BetInput>) {
       const bet: ParlayModel = {
         legs: [addIdToBet(action.payload)],
         betId: Math.floor(Math.random() * 1000).toString(),
         contest: action.payload.contest,
+        contestType: action.payload.contestType,
         stake: 0,
       };
       return betsAdapter.addOne(state, bet);
@@ -141,6 +153,7 @@ export const betsSlice = createSlice({
         betId: Math.floor(Math.random() * 1000).toString(),
         stake: 0,
         contest: action.payload.contest,
+        contestType: action.payload.contestType,
         type: 'teaser',
       };
       return betsAdapter.addOne(state, bet);

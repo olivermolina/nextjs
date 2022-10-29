@@ -4,7 +4,7 @@ import { Avatar } from '../Avatar';
 import { TopLeaders } from './TopLeaders';
 
 interface IRowContentsProps {
-  id: number;
+  id: string;
   avatar: {
     imgSrc: string;
     height: number;
@@ -25,13 +25,15 @@ export const RowContents: React.FC<IRowContentsProps> = (props) => {
   return (
     <>
       <div
-        className={`grid grid-cols-[1fr_.5fr_.5fr_.5fr_1fr] p-1 pl-4 mr-1 gap-1 items-center justify-center`}
+        className={`grid lg:grid-cols-[1fr_.5fr_.5fr_.5fr_1fr] p-1 lg:pl-4 lg:mr-1 gap-2 border-2 border-t-0 rounded lg:border-0 items-center justify-center`}
       >
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-center gap-4">
           <Avatar {...props.avatar} />
-          <div className="flex-col w-96">
-            <div className="text-black font-bold">{props.name}</div>
-            <div className="flex gap-4 text-sm">
+          <div className="flex-col lg:w-96">
+            <div className="text-black text-2xl lg:text-base font-bold">
+              {props.name}
+            </div>
+            <div className="flex gap-8 lg:gap-6 text-2xl lg:text-base">
               <div>
                 <span>Starts : </span>
                 <p>{props.startDate}</p>
@@ -43,12 +45,27 @@ export const RowContents: React.FC<IRowContentsProps> = (props) => {
             </div>
           </div>
         </div>
-        <div className="font-bold p-2">${props.entryFee}</div>
-        <div className="font-bold p-2">${props.totalPrize}</div>
-        <div className="font-bold p-2">{props.entries}</div>
-        <div className="flex items-center justify-center gap-8 w-96 ">
+        <div className="flex flex-col lg:hidden mt-3">
+          <div className="flex">
+            <div className="w-28 text-lg">ENTRY FEE</div>
+            <div className="w-28 text-lg">TOTAL PRIZES</div>
+            <div className="w-28 text-lg pl-3">ENTRIES</div>
+          </div>
+          <div className="flex">
+            <div className="w-28 font-bold pt-2">${props.entryFee}</div>
+            <div className="w-28 font-bold p-2">${props.totalPrize}</div>
+            <div className="w-28 font-bold p-2 pl-3">{props.entries}</div>
+          </div>
+        </div>
+        <div className="font-bold p-2 hidden lg:block">${props.entryFee}</div>
+        <div className="font-bold p-2 hidden lg:block">${props.totalPrize}</div>
+        <div className="font-bold p-2 hidden lg:block">{props.entries}</div>
+        <div className="flex items-center justify-center lg:gap-8 lg:w-96 border-t-2 lg:border-0 p-4 lg:p-0 ">
           <TopLeaders leaders={props.leaders} />
-          <Button variant={props.isJoined ? 'outline' : 'primary'}>
+          <Button
+            onClick={props.onClickJoinContest}
+            variant={props.isJoined ? 'outline' : 'primary'}
+          >
             <div className="text-sm">
               {props.isJoined ? 'Joined' : 'Join Competition'}
             </div>

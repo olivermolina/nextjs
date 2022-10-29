@@ -11,14 +11,15 @@ const avatarPropTypes = {
 };
 
 export const ContestRowPropTypes = {
-  id: PropTypes.number.isRequired,
+  id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   avatar: PropTypes.shape(avatarPropTypes).isRequired,
   showHeader: PropTypes.bool,
   startDate: PropTypes.string.isRequired,
   endDate: PropTypes.string.isRequired,
-  leaders: PropTypes.arrayOf(PropTypes.shape(LeadersColumnPropTypes).isRequired)
-    .isRequired,
+  leaders: PropTypes.arrayOf(
+    PropTypes.shape(LeadersColumnPropTypes).isRequired,
+  ),
   onClickJoinContest: PropTypes.func.isRequired,
   entryFee: PropTypes.number.isRequired,
   totalPrize: PropTypes.number.isRequired,
@@ -32,7 +33,7 @@ export const ContestRow = (props: Props) => {
   return (
     <div>
       {props.showHeader && (
-        <div className="grid grid-cols-[1fr_.5fr_.5fr_.5fr_1fr] p-1 pl-4">
+        <div className="lg:grid grid-cols-[1fr_.5fr_.5fr_.5fr_1fr] p-1 pl-4 hidden">
           <div className="w-96 text-sm font-bold">CONTESTS</div>
           <div className="w-28 text-sm font-bold pl-8">ENTRY FEE</div>
           <div className="w-28 text-sm font-bold pl-2">TOTAL PRIZES</div>

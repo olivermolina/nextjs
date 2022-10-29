@@ -4,14 +4,14 @@ import { InferPropTypes } from '..';
 import classNames from 'classnames';
 
 export const LeadersColumnPropTypes = {
-  id: PropTypes.number.isRequired,
+  id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   rank: PropTypes.number.isRequired,
   isMe: PropTypes.bool.isRequired,
   onClickYourself: PropTypes.func.isRequired,
 };
 
-export const TopLeadersPropTypes = {
+const TopLeadersPropTypes = {
   leaders: PropTypes.arrayOf(PropTypes.shape(LeadersColumnPropTypes).isRequired)
     .isRequired,
 };
@@ -20,7 +20,7 @@ type Props = InferPropTypes<typeof TopLeadersPropTypes>;
 
 export const TopLeaders = (props: Props) => {
   return (
-    <div>
+    <div className="hidden lg:block">
       <div className="font-bold">Top 3 Players : </div>
       {props.leaders.map((leader) => {
         return (
@@ -31,7 +31,7 @@ export const TopLeaders = (props: Props) => {
               })}
             >
               <button disabled={!leader.isMe} onClick={leader.onClickYourself}>
-                {`${leader.rank} ) `}{' '}
+                {`${leader.rank + 1} ) `}{' '}
                 {`${leader.isMe ? 'You' : '@' + leader.name}`}
               </button>
             </div>

@@ -26,3 +26,4 @@ export * from './ContestTable';
 export * from './LeaderBoardRow';
 export * from './LeaderBoardTable';
 export * from './TabPanel';
+export * from './Modal';

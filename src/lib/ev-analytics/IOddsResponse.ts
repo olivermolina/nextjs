@@ -6,7 +6,7 @@ interface Event {
   /**
    * @example 4410
    */
-  gid: string;
+  gid: number;
   /**
    * @example 2020-09-10
    */
@@ -48,7 +48,7 @@ interface Event {
   markets: Market[];
 }
 
-interface Market {
+export interface Market {
   /**
    * market ID
    * @example 4410-6
@@ -110,42 +110,42 @@ interface Market {
    * percentage of bets associated with this team spread
    * @example 66
    */
-  spread_bet?: number;
+  spread_bet: number | null;
   /**
    * percentage of money wagered associated with this team spread
    * @example 41
    */
-  spread_cash?: number;
+  spread_cash: number | null;
   /**
    * percentage of bets associated with the game total overs
    * @example 21
    */
-  over_bet?: number;
+  over_bet: number | null;
   /**
    * percentage of bets associated with the game total unders
    * @example 79
    */
-  under_bet?: number;
+  under_bet: number | null;
   /**
    * percentage of money wagered associated with the game total overs
    * @example 7
    */
-  over_cash?: number;
+  over_cash: number | null;
   /**
    * percentage of money wagered associated with the game total unders
    * @example 93
    */
-  under_cash?: number;
+  under_cash: number | null;
   /**
    * percentage of bets associated with this team moneyline
    * @example 40
    */
-  moneyline_bet?: number;
+  moneyline_bet: number | null;
   /**
    * percentage of money wagered associated with this team moneyline
    * @example 73
    */
-  moneyline_cash?: number;
+  moneyline_cash: number | null;
   /**
    * 1 - spread has been covered on this selection
    * 0 - spread has not been covered on this selection
@@ -153,9 +153,10 @@ interface Market {
    */
   spread_result: 0 | 1 | null;
   /**
+   * The total spread of the game.
    * @example
    */
-  spread_stat?: number;
+  spread_stat: number | null;
   /**
    * 1 - spread has been covered on this selection
    * 0 - spread has not been covered on this selection
@@ -169,9 +170,10 @@ interface Market {
    */
   under_result: 0 | 1 | null;
   /**
+   * The total points scored in a game
    * @example
    */
-  total_stat?: number;
+  total_stat: number | null;
   /**
    * 1 - spread has been covered on this selection
    * 0 - spread has not been covered on this selection
@@ -179,9 +181,10 @@ interface Market {
    */
   moneyline_result: 0 | 1 | null;
   /**
+   * Who won the game.
    * @example
    */
-  moneyline_stat?: number;
+  moneyline_stat: number | null;
 }
 
 interface Team {

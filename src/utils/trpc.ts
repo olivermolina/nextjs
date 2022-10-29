@@ -1,4 +1,4 @@
-import { setupTRPC } from '@trpc/next';
+import { createTRPCNext } from '@trpc/next';
 import { NextPageContext } from 'next';
 import superjson from 'superjson';
 import type { AppRouter } from '~/server/routers/_app';
@@ -6,10 +6,11 @@ import type { AppRouter } from '~/server/routers/_app';
 import { httpBatchLink, loggerLink } from '@trpc/client';
 import type { inferProcedureInput, inferProcedureOutput } from '@trpc/server';
 
-function getBaseUrl() {
+export function getBaseUrl() {
   if (typeof window !== 'undefined') {
     return '';
   }
+
   // reference for vercel.com
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
@@ -38,7 +39,7 @@ export interface SSRContext extends NextPageContext {
  * A set of strongly-typed React hooks from your `AppRouter` type signature with `createReactQueryHooks`.
  * @link https://trpc.io/docs/react#3-create-trpc-hooks
  */
-export const trpc = setupTRPC<AppRouter, SSRContext>({
+export const trpc = createTRPCNext<AppRouter, SSRContext>({
   config({ ctx }) {
     const commonOpts = {
       /**

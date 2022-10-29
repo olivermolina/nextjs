@@ -5,7 +5,7 @@ import { AvatarCircle } from '../AvatarCircle';
 interface IRowContentsProps {
   name: string;
   points: number;
-  rank: string;
+  rank: number;
   isTopRanked: boolean;
   avatar: {
     imgSrc: string;
@@ -19,7 +19,7 @@ export const RowContents: React.FC<IRowContentsProps> = (props) => {
     <>
       <div
         className={classNames(
-          `grid grid-cols-[200px_200px_1fr] p-1 pl-4 mr-1 gap-1 items-center w-full`,
+          `grid grid-cols-[60px_60px_1fr] lg:grid-cols-[200px_200px_1fr] p-1 pl-4 mr-1 gap-1 items-center w-full`,
         )}
       >
         <div

@@ -30,8 +30,10 @@ Open.args = {
   cartItems: [
     {
       id: '1',
+      onUpdateCartItem: () => console.log('Updating cart item'),
       legs: [
         {
+          id: '3423',
           league: 'NBA',
           matchTime: 'January 3rd, 2020',
           onClickDeleteCartItem: () => alert('clickedCartItem'),
@@ -47,8 +49,10 @@ Open.args = {
     },
     {
       id: '1',
+      onUpdateCartItem: () => console.log('Updating cart item'),
       legs: [
         {
+          id: '3423',
           league: 'NBA',
           matchTime: 'January 3rd, 2020',
           onClickDeleteCartItem: () => alert('clickedCartItem'),
@@ -59,6 +63,7 @@ Open.args = {
           homeTeamName: 'University of Florida',
         },
         {
+          id: '3423',
           league: 'NBA',
           matchTime: 'January 3rd, 2020',
           onClickDeleteCartItem: () => alert('clickedCartItem'),

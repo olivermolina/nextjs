@@ -1,10 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
 import bets from './bets';
 import ui from './ui';
+import profile from './profile';
 
 const allStores = {
   bets,
   ui,
+  profile,
 };
 
 export const createStore = () =>
@@ -20,7 +22,7 @@ export const createStore = () =>
       window.__REDUX_DEVTOOLS_EXTENSION__(),
   );
 
-const store = createStore();
+export const store = createStore();
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;

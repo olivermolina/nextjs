@@ -25,22 +25,31 @@ const LandingLayout = (props: Props) => {
         <div className="flex gap-1 md:gap-6 items-center justify-between">
           <Logo scale={4} />
           <UnderlinedLink>
-            <Link href="/responsible" className="text-xs md:text-base">
+            <Link
+              href="/legal/responsiblegaming.pdf"
+              className="text-xs md:text-base"
+            >
               Responsible Gaming
             </Link>
           </UnderlinedLink>
           <UnderlinedLink>
-            <Link href="/terms" className="text-xs md:text-base">
+            <Link href="/legal/terms.pdf" className="text-xs md:text-base">
               Terms and conditions
             </Link>
           </UnderlinedLink>
           <UnderlinedLink>
-            <Link href="/privacy-policy" className="text-xs md:text-base">
+            <Link
+              href="/legal/privacypolicy.pdf"
+              className="text-xs md:text-base"
+            >
               Privacy policy
             </Link>
           </UnderlinedLink>
           <UnderlinedLink>
-            <Link href="/contest-rules" className="text-xs md:text-base">
+            <Link
+              href="legal/contestrules.pdf"
+              className="text-xs md:text-base"
+            >
               Contest rules
             </Link>
           </UnderlinedLink>

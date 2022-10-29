@@ -1,13 +1,7 @@
 import React from 'react';
-import { ComponentStory, ComponentMeta } from '@storybook/react';
-
+import { ComponentMeta, ComponentStory } from '@storybook/react';
 import ProfileMenu from '.';
-import {
-  AccountDepositIcon,
-  PersonIcon,
-  PersonVerifyIcon,
-  SettingsIcon,
-} from '~/components/Icons';
+import Icons from '~/components/Icons';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {
@@ -31,22 +25,27 @@ Menu.args = {
     {
       key: 'account-deposit',
       label: 'Account Deposit',
-      icon: <AccountDepositIcon />,
+      icon: <Icons.CurrencyDollar className={'h-6 w-6'} />,
     },
     {
       key: 'profile-details',
       label: 'Profile Details',
-      icon: <PersonIcon />,
+      icon: <Icons.User className={'h-6 w-6'} />,
     },
     {
       key: 'settings',
       label: 'Settings',
-      icon: <SettingsIcon />,
+      icon: <Icons.Settings className={'h-6 w-6'} />,
     },
     {
       key: 'verify-your-profile',
       label: 'Verify Your Profile',
-      icon: <PersonVerifyIcon />,
+      icon: <Icons.UserCheck className={'h-6 w-6'} />,
+    },
+    {
+      key: 'referral',
+      label: 'Referral',
+      icon: <Icons.UserAdd className={'h-6 w-6'} />,
     },
     {
       key: 'logout',

@@ -1,5 +1,4 @@
 import React from 'react';
-import banknote from '../../../assets/banknote.svg';
 
 const ContentBanner = () => {
   return (
@@ -7,13 +6,13 @@ const ContentBanner = () => {
       <div className={'min-w-fit'}>
         <img
           className="object-cover w-14 h-7 md:w-auto md:h-auto"
-          src={banknote.src}
+          src={'/assets/images/banknote.svg'}
           alt="BankNote"
         />
       </div>
 
       <p className="text-[#348BFF] text-[22px] font-bold tracking-normal leading-[28px] text-center">
-        LockSpread will match your first deposit up to $50!!!
+        LockSpread will match your first deposit up to $50!
       </p>
       <svg
         xmlns="http://www.w3.org/2000/svg"

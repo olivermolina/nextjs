@@ -1,9 +1,10 @@
 import { t } from '../trpc';
 import * as yup from '~/utils/yup';
 import { LeagueEnum } from '~/lib/ev-analytics/EVAnaltyics';
-import { ingest } from '~/lib/etl/Ingest';
+import { ingest, IngestOptionsType } from '~/lib/etl/Ingest';
 import { TRPCError } from '@trpc/server';
 import { TOKEN } from '~/constants/TOKEN';
+import logger from '~/utils/logger';
 
 export const etlRouter = t.router({
   ingestByLeague: t.procedure
@@ -14,6 +15,7 @@ export const etlRouter = t.router({
             .mixed<LeagueEnum>()
             .oneOf(Object.values(LeagueEnum))
             .required(),
+          options: yup.mixed<IngestOptionsType>(),
           token: yup.string().required(),
         })
         .required(),
@@ -25,6 +27,6 @@ export const etlRouter = t.router({
           message: 'Token incorrect',
         });
       }
-      await void ingest([input.league]);
+      await ingest([input.league], input.options).catch((e) => logger.error(e));
     }),
 });

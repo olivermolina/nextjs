@@ -1,33 +1,27 @@
-import { IBetLeg } from '~/types';
+import { BetLegType } from '@prisma/client';
 import { BetModel } from '../state/bets';
 
 export function formatLegType(
   type: BetModel['type'],
   team: BetModel['team'],
-  gameId: number,
-) {
-  let retType: IBetLeg['type'];
+): BetLegType {
   if (type === 'moneyline') {
     if (team === 'away') {
-      retType = 'moneylineAwayOdds';
+      return BetLegType.MONEYLINE_AWAY_ODDS;
     } else {
-      retType = 'moneylineHomeOdds';
+      return BetLegType.MONEYLINE_HOME_ODDS;
     }
   } else if (type === 'spread') {
     if (team === 'away') {
-      retType = 'spreadAwayOdds';
+      return BetLegType.SPREAD_AWAY_ODDS;
     } else {
-      retType = 'spreadHomeOdds';
+      return BetLegType.SPREAD_HOME_ODDS;
     }
   } else {
     if (team === 'over') {
-      retType = 'overOdds';
+      return BetLegType.OVER_ODDS;
     } else {
-      retType = 'underOdds';
+      return BetLegType.UNDER_ODDS;
     }
   }
-  return {
-    type: retType,
-    offerId: gameId,
-  };
 }

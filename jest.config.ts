@@ -38,6 +38,7 @@ const config: Config.InitialOptions = {
   ],
   testEnvironment: 'jsdom',
   moduleNameMapper: makeModuleNameMapperFromTsConfig('<rootDir>'),
+  globalSetup: './jest-setup.js',
 };
 
 export default config;

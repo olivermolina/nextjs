@@ -8,8 +8,8 @@ export enum LeagueEnum {
   MLB = 'mlb',
   NBA = 'nba',
   NHL = 'nhl',
-  NCAAF = 'aaf',
-  NCAAB = 'aab',
+  NCAAF = 'ncaaf',
+  NCAAB = 'ncaab',
 }
 
 export const formatDate = (date: Date) => dayjs(date).format('YYYY-MM-DD');
@@ -18,7 +18,7 @@ export const getLeague = async (
   league: LeagueEnum,
   date?: Date,
   game?: number,
-): Promise<IOddsResponse> => {
+): Promise<IOddsResponse | null> => {
   const params = new URLSearchParams();
   if (date) {
     const dateString = formatDate(date);
@@ -33,14 +33,16 @@ export const getLeague = async (
     },
   });
 
-  const json = await result.json();
-
-  return json;
+  try {
+    return await result.json();
+  } catch (error) {
+    return null;
+  }
 };
 
 export const getLookups = async (
   league: LeagueEnum,
-): Promise<ILookupRepsonse> => {
+): Promise<ILookupRepsonse | null> => {
   const result = await fetch(
     `https://api.evanalytics.com/v1/lookups/leagues/${league}`,
     {
@@ -50,9 +52,11 @@ export const getLookups = async (
     },
   );
 
-  const json = await result.json();
-
-  return json;
+  try {
+    return await result.json();
+  } catch (error) {
+    return null;
+  }
 };
 
 export function formatGetLeagueURL(

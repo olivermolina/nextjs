@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRightIcon } from '~/components/Icons';
+import Icons from '~/components/Icons/Icons';
 
 export interface SettingsItemMenuProps {
   /**
@@ -17,21 +17,27 @@ export interface SettingsItemMenuProps {
 }
 
 interface SettingsMenuProps {
+  /**
+   * Menu lists
+   */
   menus: SettingsItemMenuProps[];
   /**
-   * Callback
+   * Select Callback
    */
-  onSelectCallback(key: any): void;
-  activeMenu?: SettingsItemMenuProps;
+  onSelectCallback(key: SettingsItemMenuProps): void;
+  /**
+   * Active menu
+   */
+  activeMenu?: SettingsItemMenuProps | null;
 }
 
 const ProfileMenu = (props: SettingsMenuProps) => {
-  const handleSelect = (selectedMenu: any) => {
+  const handleSelect = (selectedMenu: SettingsItemMenuProps) => {
     props.onSelectCallback(selectedMenu);
   };
 
   return (
-    <div className="py-4 overflow-y-auto">
+    <div className="h-fit overflow-y-auto shadow-lg w-full">
       <ul className="space-y divide-y">
         {props.menus.map((menu) => (
           <li key={menu.key}>
@@ -52,7 +58,7 @@ const ProfileMenu = (props: SettingsMenuProps) => {
               <span className="flex-1 ml-5 text-left whitespace-nowrap text-sm w-auto">
                 {menu.label}
               </span>
-              <ChevronRightIcon />
+              <Icons.ChevronRight className={'h-6 w-6'} />
             </button>
           </li>
         ))}

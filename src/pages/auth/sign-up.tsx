@@ -2,29 +2,41 @@ import classNames from 'classnames';
 import { GetServerSideProps } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import LandingLayout from '~/components/LandingLayout';
 import { UrlPaths } from '~/constants/UrlPaths';
 import { supabase } from '~/utils/supabaseClient';
 import { trpc } from '~/utils/trpc';
+import ReferralModal from '~/components/ReferralModal';
 
-type Inputs = {
+export type SignupInputs = {
   email: string;
+  phone: string;
   username: string;
   state: string;
-  phone: string;
   DOB: Date;
   password: string;
   confirmPassword: string;
+  referralCode: string;
 };
 
 const Auth = () => {
   const router = useRouter();
-  const { register, handleSubmit } = useForm<Inputs>();
+  const { referral } = router.query;
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+    clearErrors,
+    setError,
+    watch,
+  } = useForm<SignupInputs>();
   const mutation = trpc.user.signUp.useMutation();
-  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+  const referralMutation = trpc.user.checkReferral.useMutation();
+  const onSubmit: SubmitHandler<SignupInputs> = async (data) => {
     try {
       await mutation.mutateAsync({
         ...data,
@@ -35,8 +47,42 @@ const Auth = () => {
     }
   };
 
+  const setReferralCode = (referralCode: string) => {
+    setValue('referralCode', referralCode);
+  };
+  const checkReferralCode = async (referralCode: string) => {
+    if (!referralCode) {
+      clearErrors('referralCode');
+      return;
+    }
+
+    try {
+      const result = await referralMutation.mutateAsync({
+        referralCode,
+      });
+      if (result) {
+        setReferralCode(referralCode);
+        clearErrors('referralCode');
+      }
+    } catch (error) {
+      setError('referralCode', {
+        type: 'custom',
+        message:
+          "We couldn't find that Referral Code. Are you sure about that?",
+      });
+    }
+  };
+  const watchReferralCode = watch('referralCode', '');
+
   const defaultClasses =
     'rounded-full text-2xl bg-gray-200 font-bold text-gray-500 p-4 w-full';
+
+  useEffect(() => {
+    if (referral) {
+      checkReferralCode(referral?.toString());
+    }
+  }, [referral]);
+
   return (
     <LandingLayout>
       <div className="flex p-4 justify-center items-center">
@@ -91,6 +137,7 @@ const Auth = () => {
             className={classNames(defaultClasses)}
             {...register('phone')}
           />
+
           <span>
             <input
               placeholder="Date of birth"
@@ -116,6 +163,7 @@ const Auth = () => {
             className={classNames(defaultClasses)}
             {...register('password')}
           />
+
           <input
             placeholder="Confirm Password"
             type="password"
@@ -127,6 +175,15 @@ const Auth = () => {
             className={classNames(defaultClasses)}
             {...register('confirmPassword')}
           />
+
+          <ReferralModal
+            watchReferralCode={watchReferralCode}
+            clearErrors={clearErrors}
+            setReferralCode={setReferralCode}
+            checkReferralCode={checkReferralCode}
+            errorMessage={errors?.referralCode?.message}
+          />
+
           <button
             type="submit"
             style={{
@@ -136,14 +193,16 @@ const Auth = () => {
           >
             Sign Up
           </button>
-          <div className="flex gap-4">
-            <input
-              className="rounded-full"
-              id="verify"
-              name="verify"
-              required
-              type="checkbox"
-            />
+          <div className="flex gap-4 items-center">
+            <div>
+              <input
+                className="rounded-full scale-150"
+                id="verify"
+                name="verify"
+                required
+                type="checkbox"
+              />
+            </div>
             <div className="text-sm">
               By registering, I certify that I am over 18 years of age and I
               have read and accepted the{' '}

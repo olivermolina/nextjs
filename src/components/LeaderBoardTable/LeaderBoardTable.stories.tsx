@@ -62,7 +62,7 @@ Default.args = {
       isTopRanked: false,
       name: 'Leader 33',
       points: 25,
-      rank: '2',
+      rank: 2,
       showHeader: true,
     },
     {
@@ -76,7 +76,7 @@ Default.args = {
       isTopRanked: false,
       name: 'Leader 44',
       points: 20,
-      rank: '3',
+      rank: 3,
       showHeader: true,
     },
     {
@@ -90,7 +90,7 @@ Default.args = {
       isTopRanked: true,
       name: 'Leader 1',
       points: 30,
-      rank: '1',
+      rank: 1,
       showHeader: true,
     },
     {
@@ -104,7 +104,7 @@ Default.args = {
       isTopRanked: true,
       name: 'Leader 1',
       points: 30,
-      rank: '1',
+      rank: 1,
       showHeader: true,
     },
   ],

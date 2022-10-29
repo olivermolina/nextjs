@@ -1,4 +1,5 @@
 import React from 'react';
+import { ReactComponent } from '../Icons/Icons';
 import { CardTag } from './CardTag';
 
 export interface FantasyCardProps {
@@ -8,7 +9,7 @@ export interface FantasyCardProps {
    * Image URL
    * @example https://mysite.com/image.png
    */
-  image: string;
+  image: ReactComponent | string;
   /**
    * Stat Value
    * @example 99.5
@@ -32,17 +33,22 @@ export interface FantasyCardProps {
 }
 
 export const FantasyCard = (props: FantasyCardProps) => {
+  const Image = props.image;
   return (
     <>
       {/* Fantasy Card */}
       <div>
         <div className="rounded-lg max-w-full shadow inline-flex flex-col bg-white">
           {/* Fantasy Image */}
-          <img
-            src={props.image}
-            className="rounded-lg max-w-full h-40 w-80"
-            alt=""
-          />
+          {typeof props.image === 'string' ? (
+            <img
+              src={props.image}
+              className="rounded-lg max-w-full h-45 w-80"
+              alt=""
+            />
+          ) : (
+            <Image className="rounded-lg max-w-full h-45 w-80" />
+          )}
           {/* Control Box */}
           <div className="grid gap-3 p-4">
             {/* Button Group */}

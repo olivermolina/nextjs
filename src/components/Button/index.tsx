@@ -22,10 +22,13 @@ export const Button = (props: Props) => {
     <button
       onClick={onClickButton}
       className={classNames(
-        `flex flex-col items-center justify-center font-bold text-center  text-base align-middle  rounded shadow whitespace-nowrap
-        ${props.width ? `w-${props.width}` : 'w-36'}  ${
-          props.height ? `w-${props.height}` : 'h-10'
-        }`,
+        `flex flex-col items-center justify-center font-bold text-center  text-base align-middle  rounded shadow whitespace-nowrap`,
+        {
+          'w-{props.width}': props.width,
+          'w-72 lg:w-36': !props.width,
+          'h-{props.height}': props.height,
+          'h-10': !props.height,
+        },
         {
           'hover:bg-blue-600 hover:text-white': !props.disabled,
           'cursor-not-allowed': props.disabled,
