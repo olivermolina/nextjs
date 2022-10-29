@@ -32,7 +32,7 @@ import { TRPCClientError } from '@trpc/client';
 import { useRouter } from 'next/router';
 import { UrlPaths } from '~/constants/UrlPaths';
 import { useAppSelector } from '~/state/hooks';
-import { AppSettingName, PaymentMethodType } from '@prisma/client';
+import { AppSettingName, PaymentMethodType, Session } from '@prisma/client';
 import SessionExpiredDialog from '~/components/Profile/AccountDeposit/SessionExpiredDialog';
 import BackdropLoading from '~/components/BackdropLoading';
 import DeviceLocationContainer from '~/containers/DeviceLocationContainer';
@@ -187,6 +187,38 @@ const AccountDepositContainer = ({
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
+  const handleCreateMerchantTransactionData = async () => {
+    try {
+      const creditAmount =
+        depositAmount <= maxMatchDeposit ? depositAmount : maxMatchDeposit;
+      const { session } = await mutateCreateMerchantTransactionData({
+        ipAddress: clientIp,
+        amountProcess: depositAmount,
+        amountBonus: creditAmount,
+        deviceGPS,
+        serviceType: ActionType.PAY,
+      });
+      return session as Session;
+    } catch (error) {
+      const e = error as TRPCClientError<any>;
+      toast.error(e?.message);
+    }
+  };
+
+  const handleAccountVerify = async (session?: Session) => {
+    if (!session) toast.error('Invalid session! Please refresh the page.');
+
+    try {
+      return await mutateAccountVerify({
+        session,
+      });
+    } catch (error) {
+      const e = error as TRPCClientError<any>;
+      toast.error(e?.message);
+      setOpenVerifyDialog(true);
+    }
+  };
+
   const onPaymentSelect = (
     newSelectedPaymentMethod: PaymentMethodInterface,
   ) => {
@@ -221,19 +253,9 @@ const AccountDepositContainer = ({
     }
 
     if (!createMerchantTransactionData) {
-      const creditAmount =
-        depositAmount <= maxMatchDeposit ? depositAmount : maxMatchDeposit;
-      const { session } = await mutateCreateMerchantTransactionData({
-        ipAddress: clientIp,
-        amountProcess: depositAmount,
-        amountBonus: creditAmount,
-        deviceGPS,
-        serviceType: ActionType.PAY,
-      });
-      const result = await mutateAccountVerify({
-        session,
-      });
-      if (!result) {
+      const session = await handleCreateMerchantTransactionData();
+      const verifyResult = await handleAccountVerify(session);
+      if (!verifyResult) {
         setOpenVerifyDialog(true);
         setNextLoading(false);
         return;
