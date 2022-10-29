@@ -97,17 +97,22 @@ const ProfileWithdrawFundsContainer = (props: Props) => {
     // Return if session already exists
     if (createMerchantTransactionData) return;
 
-    const { session } = await mutateCreateMerchantTransactionData({
-      ipAddress: clientIp,
-      amountProcess: payoutAmount,
-      amountBonus: 0,
-      deviceGPS,
-      serviceType: ActionType.PAYOUT,
-    });
+    try {
+      const { session } = await mutateCreateMerchantTransactionData({
+        ipAddress: clientIp,
+        amountProcess: payoutAmount,
+        amountBonus: 0,
+        deviceGPS,
+        serviceType: ActionType.PAYOUT,
+      });
 
-    await mutateAccountVerify({
-      session,
-    });
+      await mutateAccountVerify({
+        session,
+      });
+    } catch (error) {
+      const e = error as TRPCClientError<any>;
+      toast.error(e?.message);
+    }
   };
 
   const handleSavePaymentMethod = async (data: AchInputs) => {
