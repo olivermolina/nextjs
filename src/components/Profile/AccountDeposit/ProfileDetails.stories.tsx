@@ -7,7 +7,7 @@ import discover from '~/assets/discover.svg';
 import paypal from '~/assets/paypal.svg';
 import western from '~/assets/western-union.png';
 
-import Deposit from '.';
+import Deposit from './AccountDeposit';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {
