@@ -6,8 +6,10 @@ import { BetLeg, BetLegType, BetStatus } from '@prisma/client';
 import { prisma } from '~/server/prisma';
 import { Market as IMarket } from '~/lib/ev-analytics/IOddsResponse';
 import logger from '~/utils/logger';
+import { listBets } from './listBets';
 
 export const betsRouter = t.router({
+  list: listBets,
   placeBet: t.procedure
     .input(yup.mixed<BetInputType>().required())
     .mutation(async ({ input, ctx }) => {

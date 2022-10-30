@@ -1,7 +1,7 @@
 import React from 'react';
 import { PickStatus } from '~/constants/PickStatus';
 import { CheckCircle, XCircle } from '~/components/Picks/Icons';
-import { Odds } from '~/constants/Odds';
+import { BetLegType } from '@prisma/client';
 
 export interface DefaultPickProps {
   id: any;
@@ -14,7 +14,7 @@ export interface DefaultPickProps {
   risk?: number;
   potentialWin?: number;
   status?: string;
-  odd?: Odds;
+  odd?: BetLegType;
 }
 
 export interface StraightPickProps extends DefaultPickProps {
@@ -38,7 +38,7 @@ const StraightCard: React.FC<StraightPickProps> = (props) => {
         </div>
         <div className={'p-1 md:p-4 items-end'}>
           <p className={'font-bold text-sm'}>
-            {props.odd === Odds.OVER ? '+' : 'Under '} {props.value}
+            {props.odd === BetLegType.OVER_ODDS ? '+' : 'Under '} {props.value}
           </p>
         </div>
       </div>

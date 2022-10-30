@@ -3,10 +3,10 @@ import { PickStatus } from '~/constants/PickStatus';
 import { TabPanel, Tabs } from './PickTabs';
 import PendingSummary from '~/components/Picks/PendingSummary';
 import { PendingSummaryItemProps } from '~/components/Picks/PendingSummary/PendingSummary';
-import { PickTypes } from '~/constants/PickTypes';
 import { ParlayCard, StraightCard } from '~/components/Picks/PickCards';
 import { StraightPickProps } from './PickCards/StraightCard';
 import { ParlayCardProps } from '~/components/Picks/PickCards/ParlayCard';
+import { BetType } from '@prisma/client';
 
 interface PicksProps {
   type: string;
@@ -14,7 +14,7 @@ interface PicksProps {
   status: PickStatus;
 }
 
-interface PickSummaryProps {
+export interface PickSummaryProps {
   /**
    * Selected Tab Pick status
    * @example 'pending' | 'settled'
@@ -50,11 +50,23 @@ const Picks: React.FC<PickSummaryProps> = (props) => {
             )}
             <div className="flex flex-col gap-3 md:gap-4 p-3 md:p-5">
               {props.picks
-                .filter((pick) => pick.status === status)
+                .filter((pick) =>
+                  status === PickStatus.SETTLED
+                    ? [
+                        PickStatus.LOST,
+                        PickStatus.SETTLED,
+                        PickStatus.WON,
+                      ].includes(pick.status)
+                    : pick.status === status,
+                )
                 .map(({ data, type }) => (
                   <>
-                    {type === PickTypes.STRAIGHT && <StraightCard {...data} />}
-                    {type === PickTypes.PARLAY && <ParlayCard {...data} />}
+                    {type === BetType.STRAIGHT && (
+                      <StraightCard key={data.id} {...data} />
+                    )}
+                    {type === BetType.PARLAY && (
+                      <ParlayCard key={data.id} {...data} />
+                    )}
                   </>
                 ))}
             </div>
