@@ -382,12 +382,12 @@ export default class GIDX {
     }
 
     try {
-      const { id, firstname, lastname, DOB, email } = this.user;
+      const { id, DOB, email } = this.user;
       const requestData = {
         MerchantSessionID: this.session.id,
         MerchantCustomerID: id,
-        FirstName: firstname,
-        LastName: lastname,
+        FirstName: userDetails.firstname,
+        LastName: userDetails.lastname,
         DateOfBirth: dayjs(DOB).format('MM/DD/YYYY'),
         EmailAddress: email,
         AddressLine1: userDetails.address1,
