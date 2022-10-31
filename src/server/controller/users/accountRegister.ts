@@ -29,20 +29,8 @@ const accountRegister = t.procedure
 
     try {
       const userDetails = input.userDetails;
-      // update user first and last name
-      const updatedUser = await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          firstname: userDetails.firstname,
-          lastname: userDetails.lastname,
-        },
-      });
       const { session } = input;
-      const gidx = await new GIDX(
-        updatedUser,
-        ActionType.CREATE_CUSTOMER,
-        session,
-      );
+      const gidx = await new GIDX(user, ActionType.CREATE_CUSTOMER, session);
       const userData = await gidx.register(userDetails);
 
       if (!userData.ReasonCodes.includes('ID-VERIFIED')) {
