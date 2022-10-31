@@ -19,7 +19,7 @@ export const integrationRouter = t.router({
     .mutation(async ({ input }) => {
       const { result } = input;
       logger.info('GidxCallback data', result);
-      const { MerchantSessionID } = result;
+      const { MerchantSessionID, MerchantTransactionID } = result;
 
       if (!MerchantSessionID) {
         logger.info('Invalid GIDX merchant session data', {
@@ -34,31 +34,42 @@ export const integrationRouter = t.router({
         where: {
           id: MerchantSessionID,
         },
-        include: {
-          Transactions: {
-            include: { TransactionStatuses: true },
-          },
-          User: true,
-        },
       });
 
-      logger.info(`Session raw data`, { session });
+      if (!session) {
+        logger.error(`Session not found`, { MerchantSessionID });
+        return;
+      }
 
-      if (!session) return;
       logger.info(`Session ID found ${session.id}`);
-      const transaction = session.Transactions[0];
+
+      const transaction = await prisma.transaction.findUnique({
+        where: {
+          id: MerchantTransactionID,
+        },
+      });
       if (transaction) {
         logger.info(
           `TransactionID found ${transaction.id} for SessionId ${session.id}`,
         );
-        const user = session.User;
-        if (!user) return;
+        const user = await prisma.user.findUnique({
+          where: {
+            id: session.userId,
+          },
+        });
+
+        if (!user) {
+          logger.error(`Invalid user.`);
+          return;
+        }
+
         try {
           const gidx = await new GIDX(
             user,
             ActionType.PAYMENT_DETAILS,
             session,
           );
+
           const paymentDetailResponse = await gidx.paymentDetail(
             transaction.id,
           );
@@ -74,7 +85,12 @@ export const integrationRouter = t.router({
             paymentDetailResponse,
           });
 
-          const transactionStatus = transaction.TransactionStatuses[0];
+          const transactionStatus = await prisma.transactionStatus.findFirst({
+            where: {
+              transactionId: transaction.id,
+            },
+          });
+
           if (transactionStatus) {
             const paymentDetail = paymentDetailResponse?.PaymentDetails[0];
             await prisma.transactionStatus.update({
