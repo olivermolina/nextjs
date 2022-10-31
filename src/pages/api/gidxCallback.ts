@@ -2,13 +2,9 @@ import { appRouter } from '~/server/routers/_app';
 import { TRPCError } from '@trpc/server';
 import { getHTTPStatusCodeFromError } from '@trpc/server/http';
 import { NextApiRequest, NextApiResponse } from 'next';
-import logger from '~/utils/logger';
+import defaultLogger from '~/utils/logger';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
-  logger.info(`Received GIDX callback status`, {
-    req,
-  });
-
   if (req?.method !== 'POST') {
     res.status(200).send({
       message: 'success',
@@ -16,6 +12,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return;
   }
 
+  const logger = defaultLogger.child({});
+  logger.info(`Received GIDX callback status`);
   const caller = appRouter.createCaller({} as any);
   try {
     const result = req?.body?.result;

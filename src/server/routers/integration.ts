@@ -1,10 +1,10 @@
 import { t } from '../trpc';
 import * as yup from '~/utils/yup';
 import GIDX, { GIDXDataBaseResponse } from '~/lib/tsevo-gidx/GIDX';
-import logger from '~/utils/logger';
 import { TRPCError } from '@trpc/server';
 import { ActionType } from '~/constants/ActionType';
 import { prisma } from '~/server/prisma';
+import defaultLogger from '~/utils/logger';
 
 export const integrationRouter = t.router({
   gidxCallback: t.procedure
@@ -15,13 +15,11 @@ export const integrationRouter = t.router({
     )
     .mutation(async ({ input }) => {
       const { result } = input;
-      logger.info('GidxCallback data', result);
+      const logger = defaultLogger.child({ gidxResult: result });
       const { MerchantSessionID, MerchantTransactionID } = result;
 
       if (!MerchantSessionID) {
-        logger.info('Invalid GIDX merchant session data', {
-          result,
-        });
+        logger.info(`Invalid GIDX merchant session data ${MerchantSessionID}`);
         return;
       }
 
@@ -34,7 +32,7 @@ export const integrationRouter = t.router({
       });
 
       if (!session) {
-        logger.error(`Session not found`, { MerchantSessionID });
+        logger.error(`Session not found ${MerchantSessionID}`);
         return;
       }
 
@@ -45,6 +43,7 @@ export const integrationRouter = t.router({
           id: MerchantTransactionID,
         },
       });
+
       if (transaction) {
         logger.info(
           `TransactionID found ${transaction.id} for SessionId ${session.id}`,
@@ -77,9 +76,9 @@ export const integrationRouter = t.router({
             return;
           }
 
-          logger.info(`Transaction paymentDetail response`, {
-            paymentDetailResponse,
-          });
+          logger.info(
+            `Transaction paymentDetail response ${paymentDetailResponse}`,
+          );
 
           const transactionStatus = await prisma.transactionStatus.findFirst({
             where: {
