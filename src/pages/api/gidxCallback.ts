@@ -9,8 +9,14 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     req,
   });
 
-  const caller = appRouter.createCaller({} as any);
+  if (req?.method !== 'POST') {
+    res.status(200).send({
+      message: 'success',
+    });
+    return;
+  }
 
+  const caller = appRouter.createCaller({} as any);
   try {
     const result = req?.body?.result;
     if (result) {
@@ -23,6 +29,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       res.status(200).send({
         MerchantTransactionID: result.MerchantTransactionID,
       });
+      return;
     }
 
     res.status(200).end();
