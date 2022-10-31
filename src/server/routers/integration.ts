@@ -18,6 +18,15 @@ export const integrationRouter = t.router({
       logger.info('GidxCallback data', result);
       const { MerchantSessionID, MerchantTransactionID } = result;
 
+      if (!MerchantSessionID) {
+        logger.info('Invalid GIDX merchant session data', {
+          MerchantSessionID,
+        });
+        return;
+      }
+
+      logger.info(`Begin session update ${MerchantSessionID}`);
+
       const session = await prisma.session.findUnique({
         where: {
           id: MerchantSessionID,
