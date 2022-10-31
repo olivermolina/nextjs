@@ -38,13 +38,14 @@ export const integrationRouter = t.router({
           Transactions: {
             include: { TransactionStatuses: true },
           },
-          SessionResponses: true,
           User: true,
         },
       });
 
+      logger.info(`Session raw data`, { session });
+
       if (!session) return;
-      logger.info(`Session ID found ${MerchantSessionID}`);
+      logger.info(`Session ID found ${session.id}`);
       const transaction = session.Transactions[0];
       if (transaction) {
         logger.info(
