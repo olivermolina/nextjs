@@ -23,7 +23,7 @@ export const integrationRouter = t.router({
 
       if (!MerchantSessionID) {
         logger.info('Invalid GIDX merchant session data', {
-          MerchantSessionID,
+          result,
         });
         return;
       }
