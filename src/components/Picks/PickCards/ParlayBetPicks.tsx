@@ -2,7 +2,7 @@ import React from 'react';
 import { DefaultPickProps } from '~/components/Picks/PickCards/StraightCard';
 import { CheckCircle, XCircle } from '~/components/Picks/Icons';
 import { PickStatus } from '~/constants/PickStatus';
-import { Odds } from '~/constants/Odds';
+import { BetLegType } from '@prisma/client';
 
 export interface ParlayBetPickProps extends DefaultPickProps {
   gameInfo?: string;
@@ -55,7 +55,7 @@ const ParlayBetPicks: React.FC<ParlayBetPicksProps> = (props) => {
 
                 <div className={'p-2 md:p-4 text-left'}>
                   <p className={'font-bold text-md'}>
-                    {odd === Odds.OVER ? '+' : 'Under '}
+                    {odd === BetLegType.OVER_ODDS ? '+' : 'Under '}
                     {value}
                   </p>
                 </div>
