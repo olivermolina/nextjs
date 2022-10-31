@@ -4,7 +4,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import Picks from '.';
 import { PickStatus } from '~/constants/PickStatus';
 import { PickTypes } from '~/constants/PickTypes';
-import { Odds } from '~/constants/Odds';
+import { BetLegType } from '@prisma/client';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {
@@ -65,7 +65,7 @@ Main.args = {
         risk: 13,
         status: PickStatus.PENDING,
         value: 212,
-        odd: Odds.OVER,
+        odd: BetLegType.OVER_ODDS,
       },
     },
     {
@@ -87,7 +87,7 @@ Main.args = {
             value: 140,
             matchTime: 'Sept 30, 2021 @ 7:30PM',
             status: PickStatus.PENDING,
-            odd: Odds.OVER,
+            odd: BetLegType.OVER_ODDS,
           },
           {
             id: 2,
@@ -97,7 +97,7 @@ Main.args = {
             value: 140,
             matchTime: 'Sept 30, 2021 @ 7:30PM',
             status: PickStatus.PENDING,
-            odd: Odds.UNDER,
+            odd: BetLegType.UNDER_ODDS,
           },
           {
             id: 3,
@@ -107,7 +107,7 @@ Main.args = {
             value: 1620,
             matchTime: 'Sept 30, 2021 @ 7:30PM',
             status: PickStatus.PENDING,
-            odd: Odds.OVER,
+            odd: BetLegType.OVER_ODDS,
           },
         ],
         potentialWin: 27.56,
@@ -129,7 +129,7 @@ Main.args = {
         risk: 13,
         status: PickStatus.WON,
         value: 212,
-        odd: Odds.OVER,
+        odd: BetLegType.OVER_ODDS,
       },
     },
     {
@@ -151,7 +151,7 @@ Main.args = {
             value: 140,
             matchTime: 'Sept 30, 2021 @ 7:30PM',
             status: PickStatus.WON,
-            odd: Odds.OVER,
+            odd: BetLegType.OVER_ODDS,
           },
           {
             id: 2,
@@ -161,7 +161,7 @@ Main.args = {
             value: 140,
             matchTime: 'Sept 30, 2021 @ 7:30PM',
             status: PickStatus.LOST,
-            odd: Odds.UNDER,
+            odd: BetLegType.UNDER_ODDS,
           },
           {
             id: 3,
@@ -171,7 +171,7 @@ Main.args = {
             value: 1620,
             matchTime: 'Sept 30, 2021 @ 7:30PM',
             status: PickStatus.LOST,
-            odd: Odds.OVER,
+            odd: BetLegType.OVER_ODDS,
           },
         ],
         potentialWin: 27.56,
@@ -193,7 +193,7 @@ Main.args = {
         risk: 13,
         status: PickStatus.WON,
         value: 212,
-        odd: Odds.OVER,
+        odd: BetLegType.OVER_ODDS,
       },
     },
   ],
