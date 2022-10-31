@@ -24,7 +24,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       // the server-side call
       const callbackResult =
         typeof result === 'object' ? result : JSON.parse(result);
-      caller.integration.gidxCallback({ result: callbackResult });
+      await caller.integration.gidxCallback({ result: callbackResult });
       res.status(200).send({
         MerchantTransactionID: result.MerchantTransactionID,
       });
