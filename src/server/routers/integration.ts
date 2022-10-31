@@ -4,10 +4,10 @@ import GIDX, {
   createSessionResponseLog,
   GIDXDataBaseResponse,
 } from '~/lib/tsevo-gidx/GIDX';
-import { prisma } from '~/server/prisma';
 import logger from '~/utils/logger';
 import { TRPCError } from '@trpc/server';
 import { ActionType } from '~/constants/ActionType';
+import { prisma } from '~/server/prisma';
 
 export const integrationRouter = t.router({
   gidxCallback: t.procedure
@@ -98,7 +98,7 @@ export const integrationRouter = t.router({
                 id: transactionStatus.id,
               },
               data: {
-                statusCode: paymentDetail?.PaymentStatusCode,
+                statusCode: Number(paymentDetail?.PaymentStatusCode),
                 statusMessage: paymentDetail?.PaymentStatusMessage,
                 approvalDateTime: paymentDetail?.PaymentApprovalDateTime,
                 statusDateTime: paymentDetail?.PaymentStatusDateTime,
