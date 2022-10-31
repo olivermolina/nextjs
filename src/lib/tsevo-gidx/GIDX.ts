@@ -24,8 +24,8 @@ export interface GIDXDataBaseResponse {
   MerchantTransactionID: string;
   SessionID: string;
   ReasonCodes: [string];
-  ResponseCode: number;
-  ResponseMessage: string;
+  ResponseCode?: number;
+  ResponseMessage?: string;
   PaymentMethods?: GIDXPaymentMethod[];
   PaymentMethod?: GIDXPaymentMethod;
   StatusCode?: number;
@@ -34,6 +34,10 @@ export interface GIDXDataBaseResponse {
   ServiceType?: string;
   TransactionStatusCode?: number;
   TransactionStatusMessage?: string;
+  SessionStatusMessage?: string;
+  SessionStatusCode?: string;
+  PaymentDetails: GIDXPaymentDetail[];
+  Action: GIDXAction;
 }
 
 interface GIDXResponse {
@@ -181,11 +185,7 @@ interface GIDXPaymentDetail {
   PaymentApprovalDateTime: string;
   PaymentStatusDateTime: string;
   PaymentStatusMessage: string;
-}
-
-interface CompleteSessionResponse extends GIDXDataBaseResponse {
-  PaymentDetails: GIDXPaymentDetail[];
-  Action: GIDXAction;
+  PaymentProcessDateTime: string;
 }
 
 const createSessionResponseLog = async (
@@ -370,7 +370,7 @@ export default class GIDX {
       });
     }
 
-    return data as CompleteSessionResponse;
+    return data;
   }
 
   async register(userDetails: UserDetailsInput) {
@@ -540,5 +540,37 @@ export default class GIDX {
       });
     }
     return data.PaymentMethod;
+  }
+
+  async paymentDetail(transactionId: string) {
+    if (!this.session) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Invalid session',
+      });
+    }
+
+    try {
+      const requestData = {
+        MerchantSessionID: this.session.id,
+        MerchantCustomerID: this.user.id,
+        MerchantTransactionID: transactionId,
+      };
+
+      const response = await gidxRequest({
+        url: `${GIDX_ROUTES.DIRECT_CASHIER}/PaymentDetail`,
+        method: 'GET',
+        params: requestData,
+      });
+      const { data } = response;
+      // Log session response
+      await createSessionResponseLog(this.session.id, data);
+      return data;
+    } catch (err: any) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: err.message,
+      });
+    }
   }
 }

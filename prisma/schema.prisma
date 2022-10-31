@@ -13,17 +13,9 @@ model User {
   ContestEntries ContestEntry[]
   Bets           Bet[]
   username       String?        @unique
-  firstname      String?
-  lastname       String?
   phone          Int?
   DOB            DateTime?
-  address1       String?
-  address2       String?
-  city           String?
   state          String?
-  postalCode     String?
-  // True if verified user
-  identityStatus Boolean @default(true)
   isFirstDeposit Boolean        @default(true)
   // Username of the other user
   referral       String?
@@ -241,6 +233,8 @@ model AppSettings {
 enum AppSettingName {
   // Limit for matching the first deposit
   MAX_MATCH_DEPOSIT_AMOUNT
+  // Credit amount for firt successful deposit of referral
+  REFERRAL_CREDIT_AMOUNT
 }
 
 // TODO: Wallets should go on contest entries?
@@ -327,6 +321,7 @@ model TransactionStatus {
   transactionMethodAccount String
   approvalDateTime DateTime
   statusDateTime DateTime
+  processDateTime DateTime?
   created_at DateTime @default(now()) @db.Timestamptz(6)
   updated_at DateTime @default(now()) @db.Timestamptz(6)
 }

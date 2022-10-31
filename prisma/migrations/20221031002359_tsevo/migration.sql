@@ -4,14 +4,8 @@ CREATE TYPE "TransactionType" AS ENUM ('CREDIT', 'DEBIT');
 -- CreateEnum
 CREATE TYPE "PaymentMethodType" AS ENUM ('CC', 'ACH', 'Paypal', 'FTX', 'OTHERS');
 
--- AlterTable
-ALTER TABLE "User" ADD COLUMN     "address1" TEXT,
-ADD COLUMN     "address2" TEXT,
-ADD COLUMN     "city" TEXT,
-ADD COLUMN     "firstname" TEXT,
-ADD COLUMN     "identityStatus" BOOLEAN NOT NULL DEFAULT true,
-ADD COLUMN     "lastname" TEXT,
-ADD COLUMN     "postalCode" TEXT;
+-- AlterEnum
+ALTER TYPE "AppSettingName" ADD VALUE 'REFERRAL_CREDIT_AMOUNT';
 
 -- CreateTable
 CREATE TABLE "Session" (
@@ -67,6 +61,7 @@ CREATE TABLE "TransactionStatus" (
     "transactionMethodAccount" TEXT NOT NULL,
     "approvalDateTime" TIMESTAMP(3) NOT NULL,
     "statusDateTime" TIMESTAMP(3) NOT NULL,
+    "processDateTime" TIMESTAMP(3),
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
