@@ -188,7 +188,7 @@ interface GIDXPaymentDetail {
   PaymentProcessDateTime: string;
 }
 
-export const createSessionResponseLog = async (
+const createSessionResponseLog = async (
   sessionId: string,
   data: GIDXDataBaseResponse,
 ) => {

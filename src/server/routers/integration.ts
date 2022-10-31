@@ -1,9 +1,6 @@
 import { t } from '../trpc';
 import * as yup from '~/utils/yup';
-import GIDX, {
-  createSessionResponseLog,
-  GIDXDataBaseResponse,
-} from '~/lib/tsevo-gidx/GIDX';
+import GIDX, { GIDXDataBaseResponse } from '~/lib/tsevo-gidx/GIDX';
 import logger from '~/utils/logger';
 import { TRPCError } from '@trpc/server';
 import { ActionType } from '~/constants/ActionType';
@@ -52,6 +49,7 @@ export const integrationRouter = t.router({
         logger.info(
           `TransactionID found ${transaction.id} for SessionId ${session.id}`,
         );
+
         const user = await prisma.user.findUnique({
           where: {
             id: session.userId,
@@ -78,8 +76,6 @@ export const integrationRouter = t.router({
             logger.error(`GIDX Payment detail not found`);
             return;
           }
-
-          await createSessionResponseLog(session.id, paymentDetailResponse);
 
           logger.info(`Transaction paymentDetail response`, {
             paymentDetailResponse,
