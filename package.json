@@ -77,7 +77,7 @@
     "react-number-format": "^5.0.1",
     "react-redux": "^8.0.2",
     "react-toastify": "^9.0.8",
-    "react-tooltip": "^4.2.21",
+    "react-tooltip": "^4.4.3",
     "request-ip": "^3.3.0",
     "short-unique-id": "^4.4.4",
     "start-server-and-test": "^1.12.0",
