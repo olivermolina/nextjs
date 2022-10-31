@@ -2,8 +2,8 @@ import React from 'react';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import Card from './ParlayCard';
-import { Odds } from '~/constants/Odds';
 import { PickStatus } from '~/constants/PickStatus';
+import { BetLegType } from '@prisma/client';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {
@@ -34,7 +34,7 @@ ParlayCard.args = {
       gameInfo: 'Golden State Warriors vs Dallas Mavericks',
       value: 140,
       matchTime: 'Sept 30, 2021 @ 7:30PM',
-      odd: Odds.OVER,
+      odd: BetLegType.OVER_ODDS,
       status: PickStatus.PENDING,
     },
     {
@@ -45,7 +45,7 @@ ParlayCard.args = {
       value: 140,
       matchTime: 'Sept 30, 2021 @ 7:30PM',
       status: PickStatus.WON,
-      odd: Odds.UNDER,
+      odd: BetLegType.UNDER_ODDS,
     },
     {
       id: 3,
@@ -55,7 +55,7 @@ ParlayCard.args = {
       value: 1620,
       matchTime: 'Sept 30, 2021 @ 7:30PM',
       status: PickStatus.LOST,
-      odd: Odds.OVER,
+      odd: BetLegType.OVER_ODDS,
     },
   ],
   potentialWin: 27.56,
