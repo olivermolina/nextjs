@@ -19,7 +19,7 @@ export const integrationRouter = t.router({
     .mutation(async ({ input }) => {
       const { result } = input;
       logger.info('GidxCallback data', result);
-      const { MerchantSessionID, MerchantTransactionID } = result;
+      const { MerchantSessionID } = result;
 
       if (!MerchantSessionID) {
         logger.info('Invalid GIDX merchant session data', {
@@ -49,7 +49,7 @@ export const integrationRouter = t.router({
       const transaction = session.Transactions[0];
       if (transaction) {
         logger.info(
-          `TransactionID found ${MerchantTransactionID} for SessionId ${MerchantSessionID}`,
+          `TransactionID found ${transaction.id} for SessionId ${session.id}`,
         );
         const user = session.User;
         if (!user) return;
