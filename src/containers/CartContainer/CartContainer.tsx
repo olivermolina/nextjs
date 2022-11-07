@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { removeBet, selectAllBets, updateBet } from '../../state/bets';
 import { useAppDispatch, useAppSelector } from '../../state/hooks';
@@ -28,13 +28,15 @@ const CartContainer = () => {
       try {
         const isTeaser = 'type' in bet;
         if (isTeaser && bet.legs.length !== 2) {
-          const err = new Error(`Teasers require two bets.`);
-          // @ts-expect-error doesnt exist
-          err.data = {
-            message: `Teasers require two bets.`,
-          };
-          throw err;
+          toast.error(`Teasers require two bets`);
+          return;
         }
+
+        if (bet.legs.length !== bet.contestCategory.numberOfPicks) {
+          toast.error(`Bet require ${bet.contestCategory.numberOfPicks} bets.`);
+          return;
+        }
+
         await mutateAsync({
           stake: bet.stake,
           legs: bet.legs.map((l) => ({
@@ -51,6 +53,7 @@ const CartContainer = () => {
             ? BetType.PARLAY
             : BetType.STRAIGHT,
           contestCategoryId: bet.contestCategory?.id || '',
+          stakeType: bet.stakeType,
         });
         dispatch(removeBet(bet.betId));
         toast.success(`Successfully placed bet with id: ${bet.betId}.`);
@@ -59,7 +62,6 @@ const CartContainer = () => {
           error.shape?.message ||
             `There was an error submitting bet with id: ${bet.betId}.`,
         );
-        console.log(error);
         dispatch(
           updateBet({
             id: bet.betId,

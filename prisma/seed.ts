@@ -15,6 +15,7 @@ import {
   MarketType,
   PrismaClient,
   Status,
+  BetStakeType,
 } from '@prisma/client';
 import { appRouter } from '~/server/routers/_app';
 import dayjs from 'dayjs';
@@ -107,17 +108,23 @@ async function main() {
     {
       id: faker.datatype.uuid(),
       numberOfPicks: 2,
-      payoutMultiplier: 3,
+      allInPayoutMultiplier: 3,
+      primaryInsuredPayoutMultiplier: 2,
+      secondaryInsuredPayoutMultiplier: 0.5,
     },
     {
       id: faker.datatype.uuid(),
       numberOfPicks: 3,
-      payoutMultiplier: 5,
+      allInPayoutMultiplier: 5,
+      primaryInsuredPayoutMultiplier: 2.5,
+      secondaryInsuredPayoutMultiplier: 1.25,
     },
     {
       id: faker.datatype.uuid(),
       numberOfPicks: 4,
-      payoutMultiplier: 10,
+      allInPayoutMultiplier: 10,
+      primaryInsuredPayoutMultiplier: 5,
+      secondaryInsuredPayoutMultiplier: 1.25,
     },
   ];
   await prisma.contestCategory.createMany({
@@ -969,6 +976,7 @@ async function main() {
           id: contestCategories[0]!.id,
         },
       },
+      stakeType: BetStakeType.ALL_IN,
     },
   });
   await prisma.bet.create({
@@ -1011,6 +1019,7 @@ async function main() {
           id: contestCategories[0]!.id,
         },
       },
+      stakeType: BetStakeType.ALL_IN,
     },
   });
   await prisma.bet.create({
@@ -1053,6 +1062,7 @@ async function main() {
           id: contestCategories[0]!.id,
         },
       },
+      stakeType: BetStakeType.INSURED,
     },
   });
 }

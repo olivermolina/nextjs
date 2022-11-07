@@ -6,7 +6,9 @@ export const calculateStraightPayout = (bet: {
   contestCategory?: ContestCategory;
 }) => {
   if (bet?.contestCategory) {
-    return Number(bet.stake * bet?.contestCategory.payoutMultiplier).toFixed(2);
+    return Number(
+      bet.stake * bet?.contestCategory.allInPayoutMultiplier,
+    ).toFixed(2);
   }
 
   return bet.odds > 0

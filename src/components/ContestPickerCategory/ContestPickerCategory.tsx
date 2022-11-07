@@ -30,7 +30,7 @@ const ContestPickerCategoryCard = (props: Props) => {
         <span className="font-bold text-lg">
           {props.category.numberOfPicks} Picks
         </span>
-        <span>{props.category.payoutMultiplier}x Payout</span>
+        <span>{props.category.allInPayoutMultiplier}x Payout</span>
         <span>
           {props.category.numberOfPicks}/{props.category.numberOfPicks} Correct
         </span>

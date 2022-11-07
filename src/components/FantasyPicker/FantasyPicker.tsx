@@ -11,18 +11,11 @@ interface Props extends React.PropsWithChildren {
 }
 
 export function FantasyPicker(props: Props) {
-  const cardLength = props.cards.length;
   return (
     <div className="pb-2">
       <PillButtons pills={props.filters} />
       {/* Fantasy Grid */}
-      <Grid
-        container
-        spacing={2}
-        sx={{ mt: 1 }}
-        justifyContent="space-around"
-        alignItems="center"
-      >
+      <Grid container spacing={2} sx={{ mt: 1 }} alignItems="flex-start">
         {props.cards.map((card) => {
           const betLeg = props.legs?.find(
             (leg) => leg.name === card.playerName,
@@ -31,13 +24,7 @@ export function FantasyPicker(props: Props) {
           const isOver = betLeg?.team === 'over';
 
           return (
-            <Grid
-              item
-              key={card.playerName}
-              xs={12}
-              sm={6}
-              md={cardLength < 3 ? 6 : 4}
-            >
+            <Grid item key={card.playerName} xs={12} sm={6} lg={4} xl={3}>
               <FantasyCard
                 {...card}
                 imageSize={'small'}

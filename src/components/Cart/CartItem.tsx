@@ -5,6 +5,7 @@ import { CartItemSummaryBox } from './CartItemSummaryBox';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { blue } from '@mui/material/colors';
+import CardStakeTypeSummary from '~/components/Cart/CardStakeTypeSummary';
 
 const StyledToggleButton = styled(ToggleButton)({
   '&.Mui-selected, &.Mui-selected:hover': {
@@ -90,6 +91,12 @@ export function CartItem(props: ICartItemProps) {
         />
         <CartItemSummaryBox label="Potential Payout" value={props.payout} />
       </div>
+      <CardStakeTypeSummary
+        stakeType={props.stakeType}
+        onUpdateBetStakeType={props.onUpdateBetStakeType}
+        insuredPayout={props.insuredPayout}
+        contestCategory={props.contestCategory}
+      />
     </>
   );
 }

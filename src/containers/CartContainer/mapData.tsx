@@ -1,10 +1,11 @@
 import {
   BetModel,
   ParlayModel,
-  TeaserModel,
   removeBet,
-  updateBet,
   removeLegFromBetLegs,
+  TeaserModel,
+  updateBet,
+  updateBetStakeType,
 } from '../../state/bets';
 import { formatLegType } from '../../utils/formatLegType';
 import { calculateParlayPayout } from '../../utils/calculateParlayPayout';
@@ -13,6 +14,8 @@ import shiftLine from '../../utils/shiftBet';
 import { calculateStraightPayout } from '../../utils/calculateStraightPayout';
 import { CartProps } from '~/components';
 import { useAppDispatch } from '~/state/hooks';
+import { BetStakeType } from '@prisma/client';
+import { calculateInsuredPayout } from '~/utils/calculateInsuredPayout';
 
 type CartItem = CartProps['cartItems'][0];
 
@@ -57,7 +60,18 @@ export function mapStraightToCartItem(
     onUpdateCartItem: onUpdateCartItem(dispatch),
     stake: bet.stake.toString(),
     payout: calculateStraightPayout(bet),
+    insuredPayout: calculateInsuredPayout(bet.stake, bet.contestCategory),
     wagerType: bet.contestWagerType,
+    contestCategory: bet.contestCategory,
+    stakeType: bet.stakeType,
+    onUpdateBetStakeType: (stakeType: BetStakeType) => {
+      dispatch(
+        updateBetStakeType({
+          betId: bet.betId.toString(),
+          stakeType,
+        }),
+      );
+    },
   };
 }
 
@@ -93,8 +107,19 @@ export function mapParlayToCartItem(
       bet.stake,
       bet.contestCategory,
     ).toString(),
+    insuredPayout: calculateInsuredPayout(bet.stake, bet.contestCategory),
     onUpdateCartItem: onUpdateCartItem(dispatch),
     wagerType: bet.contestWagerType,
+    contestCategory: bet.contestCategory,
+    stakeType: bet.stakeType,
+    onUpdateBetStakeType: (stakeType: BetStakeType) => {
+      dispatch(
+        updateBetStakeType({
+          betId: bet.betId.toString(),
+          stakeType,
+        }),
+      );
+    },
   };
 }
 
@@ -132,7 +157,18 @@ export function mapTeaserToCartItem(
     }),
     stake: bet.stake.toString(),
     payout: calculateTeaserPayout(bet.stake, bet.contestCategory).toString(),
+    insuredPayout: calculateInsuredPayout(bet.stake, bet.contestCategory),
     onUpdateCartItem: onUpdateCartItem(dispatch),
     wagerType: bet.contestWagerType,
+    contestCategory: bet.contestCategory,
+    stakeType: bet.stakeType,
+    onUpdateBetStakeType: (stakeType: BetStakeType) => {
+      dispatch(
+        updateBetStakeType({
+          betId: bet.betId.toString(),
+          stakeType,
+        }),
+      );
+    },
   };
 }

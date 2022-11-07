@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Layout } from '~/components/Layout';
 import { ToastContainer } from 'react-toastify';
 import { useQueryParams } from '~/hooks/useQueryParams';
@@ -31,10 +31,15 @@ const LayoutContainer: React.FC<Props> = (props) => {
     league: params.league as League,
   });
 
-  const { data: userTotalCashAmount } =
+  const { data: userTotalCashAmount, refetch } =
     trpc.user.userTotalCashAmount.useQuery();
 
   const tokenCount = result.data?.tokenCount;
+
+  useEffect(() => {
+    refetch();
+  }, [cartStake]);
+
   return (
     <>
       <Layout
@@ -44,11 +49,10 @@ const LayoutContainer: React.FC<Props> = (props) => {
         cartItemsCount={cartItemsCount}
         cartStake={cartStake}
         cartPotentialPayout={cartPayout}
-        // TODO: [LOC-171] fetch user cash amount
         userCashAmount={userTotalCashAmount || 0}
         currentContestTokenCount={tokenCount}
         onClickAddUserCash={() => {
-          // TODO: [LOC-172] navigate to a page where a user can add cash
+          router.push(UrlPaths.ProfileAccountDeposit);
         }}
         // Exclude showing sub nav in picks and profile page
         showSubNav={

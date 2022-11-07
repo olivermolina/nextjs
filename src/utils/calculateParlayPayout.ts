@@ -8,6 +8,6 @@ export function calculateParlayPayout(
 ): number {
   const decimalFracs = legs.map(convertToDecimalOdds);
   const totalOdds = decimalFracs.reduce((acc, curr) => acc * curr, 0);
-  const payoutMultiplier = contestCategory?.payoutMultiplier || totalOdds;
+  const payoutMultiplier = contestCategory?.allInPayoutMultiplier || totalOdds;
   return Number((stake * payoutMultiplier).toFixed(2));
 }

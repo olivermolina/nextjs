@@ -6,20 +6,52 @@ import LayoutContainer from '~/containers/LayoutContainer/LayoutContainer';
 import { GetServerSideProps } from 'next';
 import { withAuth } from '~/hooks/withAuthServerSideProps';
 import ContestPickerCategoryContainer from '~/containers/ContestPickerCategoryContainer/ContestPickerCategoryContainer';
+import { Grid } from '@mui/material';
 
 const IndexPage: NextPageWithLayout = () => {
   return (
     <LayoutContainer>
-      <div className="grid h-full grid-cols-12">
-        <div className="hidden col-span-3 pr-2 lg:block">
+      <Grid
+        container
+        direction="row"
+        justifyContent="flex-start"
+        alignItems="flex-start"
+        spacing={4}
+        sx={(theme) => ({
+          [theme.breakpoints.down('md')]: {
+            p: 4,
+          },
+        })}
+      >
+        <Grid
+          item
+          sx={{
+            zIndex: 10,
+            minWidth: '305px',
+            display: { md: 'block', xs: 'none' },
+          }}
+          md={4}
+          lg={3}
+        >
           <CartContainer />
-        </div>
-        <div className="p-3 overflow-auto lg:col-span-9 col-span-full">
+        </Grid>
+        <Grid
+          item
+          sx={(theme) => ({
+            [theme.breakpoints.up('md')]: {
+              p: 4,
+              zIndex: 1,
+            },
+          })}
+          xs={12}
+          md={8}
+          lg={9}
+        >
           <ContestPickerContainer />
           <ContestPickerCategoryContainer />
           <MatchPickerTableContainer />
-        </div>
-      </div>
+        </Grid>
+      </Grid>
     </LayoutContainer>
   );
 };

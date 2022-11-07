@@ -1,5 +1,10 @@
 import React from 'react';
-import { ContestWagerType } from '@prisma/client';
+import {
+  BetStakeType,
+  ContestCategory,
+  ContestWagerType,
+} from '@prisma/client';
+import { InsuredPayout } from '~/utils/calculateInsuredPayout';
 
 type LegType = {
   id: string;
@@ -21,5 +26,9 @@ export interface ICartItemProps {
   legs: LegType[];
   stake: string;
   payout: string;
+  insuredPayout: InsuredPayout;
   wagerType?: ContestWagerType;
+  stakeType: BetStakeType;
+  contestCategory: ContestCategory;
+  onUpdateBetStakeType(stakeType: BetStakeType): void;
 }

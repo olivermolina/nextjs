@@ -1,18 +1,23 @@
 import * as yup from '~/utils/yup';
 import {
   BetLegType,
+  BetStakeType,
   BetStatus,
   BetType,
-  ContestEntry,
   ContestCategory,
+  ContestEntry,
+  ContestWagerType,
   Market,
   Prisma,
+  TransactionType,
 } from '@prisma/client';
 import { prisma } from '~/server/prisma';
 import { calculateTeaserPayout } from '~/utils/caculateTeaserPayout';
 import { calculateParlayPayout } from '~/utils/calculateParlayPayout';
 import { calculateTotalOdds } from '~/utils/calculateTotalBets';
 import { User } from '@supabase/supabase-js';
+import { getUserTotalCashAmount } from '~/server/routers/user/userTotalCashAmount';
+import { createBetTransaction } from '~/server/routers/bets/createBetTransaction';
 
 function placeBetSchema(isTeaser: boolean) {
   return yup.object().shape({
@@ -70,6 +75,7 @@ export type BetInputType = {
   type: BetType;
   legs: LegCreateInput[];
   contestCategoryId: ContestCategory['id'];
+  stakeType: BetStakeType;
 };
 
 /**
@@ -84,6 +90,24 @@ export type BetInputType = {
 export async function placeBet(bet: BetInputType, user: User): Promise<void> {
   const isTeaser = bet.type === BetType.TEASER;
   const validPayload = placeBetSchema(isTeaser).validateSync(bet);
+
+  const contest = await prisma.contest.findFirstOrThrow({
+    where: {
+      id: bet.contestId,
+    },
+  });
+
+  if (contest.wagerType === ContestWagerType.CASH) {
+    // Verify user total cash amount
+    const userTotalCashAmount = await getUserTotalCashAmount(user.id);
+    if (bet.stake > userTotalCashAmount) {
+      throw new Error(
+        'Insufficient funds. Please deposit funds in your account and try again.',
+      );
+    }
+  }
+
+  // TODO get contest token balance
 
   const legs: Prisma.BetLegCreateManyBetInput[] = await Promise.all(
     bet.legs.map(async (leg): Promise<Prisma.BetLegCreateManyBetInput> => {
@@ -103,7 +127,7 @@ export async function placeBet(bet: BetInputType, user: User): Promise<void> {
     }),
   );
 
-  const contestCategory = await prisma.contestCategory.findUnique({
+  const contestCategory = await prisma.contestCategory.findFirstOrThrow({
     where: {
       id: bet.contestCategoryId,
     },
@@ -153,8 +177,18 @@ export async function placeBet(bet: BetInputType, user: User): Promise<void> {
           id: bet.contestCategoryId,
         },
       },
+      stakeType: bet.stakeType,
     },
   });
+
+  if (contest.wagerType === ContestWagerType.CASH) {
+    await createBetTransaction(
+      user,
+      bet.stake,
+      contestEntry.id,
+      TransactionType.DEBIT,
+    );
+  }
 }
 
 function getOdds(leg: LegCreateInput, market: Market): number {

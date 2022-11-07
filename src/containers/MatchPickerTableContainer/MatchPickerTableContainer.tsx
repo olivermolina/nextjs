@@ -13,7 +13,7 @@ import { useAppDispatch, useAppSelector } from '~/state/hooks';
 import { WarningAlert } from '~/components/Alert';
 import { MatchPickRowTable } from '~/components/MatchPickRowTable/MatchPickRowTable';
 import { trpc } from '~/utils/trpc';
-import { ContestType, League } from '@prisma/client';
+import { ContestType, League, BetStakeType } from '@prisma/client';
 import { LoadingSpinner } from '~/components/Cart/LoadingSpinner';
 import { addPlusToNumber } from '~/utils/addPlusToNumber';
 import { FantasyPicker } from '~/components/FantasyPicker/FantasyPicker';
@@ -64,7 +64,7 @@ const MatchPickerTableContainer = () => {
       children: <span className="capitalize">{filter}</span>,
     })) || [];
 
-  if (result.data === null) {
+  if (!contestCategory || result.data === null) {
     return (
       <>
         <Header isLoading={result.isLoading} />
@@ -179,6 +179,7 @@ const MatchPickerTableContainer = () => {
                 contestCategory,
                 statName: '',
                 contestWagerType: contest.wagerType,
+                stakeType: BetStakeType.INSURED,
               };
               if (contestFilter === 'parlay') {
                 dispatch(addToParlayBet(bet));
@@ -235,6 +236,7 @@ const MatchPickerTableContainer = () => {
                   contestCategory,
                   statName: offer!.statName,
                   contestWagerType: contest?.wagerType,
+                  stakeType: BetStakeType.INSURED,
                 };
                 dispatch(addToParlayBet(bet));
               },
@@ -263,6 +265,7 @@ const MatchPickerTableContainer = () => {
                   contestCategory,
                   statName: offer!.statName,
                   contestWagerType: contest?.wagerType,
+                  stakeType: BetStakeType.INSURED,
                 };
                 dispatch(addToParlayBet(bet));
               },

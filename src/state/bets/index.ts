@@ -1,4 +1,9 @@
-import { ContestCategory, ContestType, ContestWagerType } from '@prisma/client';
+import {
+  BetStakeType,
+  ContestCategory,
+  ContestType,
+  ContestWagerType,
+} from '@prisma/client';
 import {
   createAsyncThunk,
   createEntityAdapter,
@@ -13,8 +18,9 @@ export interface BaseModel {
   challengerId?: number;
   contest: string;
   contestType: ContestType;
-  contestCategory?: ContestCategory;
+  contestCategory: ContestCategory;
   contestWagerType?: ContestWagerType;
+  stakeType: BetStakeType;
   error?: string;
 }
 
@@ -164,6 +170,32 @@ export const removeLegFromBetLegs = createAsyncThunk(
   },
 );
 
+export interface UpdateBetStakeTypeInput {
+  betId: string;
+  stakeType: BetStakeType;
+}
+
+export const updateBetStakeType = createAsyncThunk(
+  'bets/updateBetStakeType',
+  (input: UpdateBetStakeTypeInput, thunkAPI) => {
+    const state = thunkAPI.getState() as RootState;
+    const bet = selectBetById(state, input.betId);
+    if (!bet) {
+      toast.error(`Unable to update bet sake type`);
+      return;
+    }
+
+    thunkAPI.dispatch(
+      updateBet({
+        id: input.betId,
+        changes: {
+          stakeType: input.stakeType,
+        },
+      }),
+    );
+  },
+);
+
 function addIdToBet(bet: BetInput): BetModel {
   return {
     ...bet,
@@ -206,6 +238,7 @@ export const betsSlice = createSlice({
         contestType: action.payload.contestType,
         contestCategory: action.payload.contestCategory,
         contestWagerType: action.payload.contestWagerType,
+        stakeType: action.payload.stakeType,
         stake: 0,
       };
       return betsAdapter.addOne(state, bet);
@@ -218,6 +251,7 @@ export const betsSlice = createSlice({
         contestType: action.payload.contestType,
         contestWagerType: action.payload.contestWagerType,
         contestCategory: action.payload.contestCategory,
+        stakeType: action.payload.stakeType,
         stake: 0,
       };
       return betsAdapter.addOne(state, bet);
@@ -231,6 +265,7 @@ export const betsSlice = createSlice({
         contestType: action.payload.contestType,
         contestCategory: action.payload.contestCategory,
         contestWagerType: action.payload.contestWagerType,
+        stakeType: action.payload.stakeType,
         type: 'teaser',
       };
       return betsAdapter.addOne(state, bet);
