@@ -12,4 +12,5 @@ export enum UrlPaths {
   ProfileReferral = '/profile/referral',
   Logout = '/logout',
   Contests = '/contests',
+  Cart = '/cart',
 }

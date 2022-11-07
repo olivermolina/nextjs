@@ -1,4 +1,5 @@
 import React from 'react';
+import { ContestWagerType } from '@prisma/client';
 
 type LegType = {
   id: string;
@@ -10,6 +11,8 @@ type LegType = {
   betType: string;
   awayTeamName: string;
   homeTeamName: string;
+  statName: string;
+  betOption: string;
 };
 
 export interface ICartItemProps {
@@ -18,4 +21,5 @@ export interface ICartItemProps {
   legs: LegType[];
   stake: string;
   payout: string;
+  wagerType?: ContestWagerType;
 }

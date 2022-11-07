@@ -5,6 +5,7 @@ import MatchPickerTableContainer from '~/containers/MatchPickerTableContainer/Ma
 import LayoutContainer from '~/containers/LayoutContainer/LayoutContainer';
 import { GetServerSideProps } from 'next';
 import { withAuth } from '~/hooks/withAuthServerSideProps';
+import ContestPickerCategoryContainer from '~/containers/ContestPickerCategoryContainer/ContestPickerCategoryContainer';
 
 const IndexPage: NextPageWithLayout = () => {
   return (
@@ -15,6 +16,7 @@ const IndexPage: NextPageWithLayout = () => {
         </div>
         <div className="p-3 overflow-auto lg:col-span-9 col-span-full">
           <ContestPickerContainer />
+          <ContestPickerCategoryContainer />
           <MatchPickerTableContainer />
         </div>
       </div>

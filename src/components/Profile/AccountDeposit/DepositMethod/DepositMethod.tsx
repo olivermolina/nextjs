@@ -16,8 +16,8 @@ import PaymentMethodRadioButtonsGroup, {
   PaymentMethodRadioOptions,
 } from '~/components/Profile/AccountDeposit/DepositMethod/PaymentMethodRadioButtonsGroup';
 import { Grid } from '@mui/material';
-import { AccountDepositResponseInterface } from '~/server/controller/users/accountDeposit';
 import SavedPaymentMethodCardList from '~/components/Profile/AccountDeposit/SavedPaymentMethodCardList';
+import { AccountDepositResponseInterface } from '~/server/routers/user/accountDeposit';
 
 export interface PaymentMethodInterface {
   key: string;

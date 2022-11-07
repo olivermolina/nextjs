@@ -26,7 +26,6 @@ import {
   getGeolocationPermissionStatus,
 } from '~/utils/getGeolocationPermissionStatus';
 import { toast } from 'react-toastify';
-import { AccountDepositResponseInterface } from '~/server/controller/users/accountDeposit';
 import DepositDeclineDialog from '~/components/Profile/AccountDeposit/DepositDeclineDialog';
 import { TRPCClientError } from '@trpc/client';
 import { useRouter } from 'next/router';
@@ -37,6 +36,7 @@ import SessionExpiredDialog from '~/components/Profile/AccountDeposit/SessionExp
 import BackdropLoading from '~/components/BackdropLoading';
 import DeviceLocationContainer from '~/containers/DeviceLocationContainer';
 import { ActionType } from '~/constants/ActionType';
+import { AccountDepositResponseInterface } from '~/server/routers/user/accountDeposit';
 
 export const PAYMENT_METHODS = [
   {

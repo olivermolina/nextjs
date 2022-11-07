@@ -7,7 +7,7 @@ interface PrizesProp {
   amount: number;
 }
 
-interface PrizesProps {
+export interface PrizesProps {
   prizes: PrizesProp[];
 }
 

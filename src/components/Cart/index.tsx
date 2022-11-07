@@ -7,8 +7,8 @@ import classNames from 'classnames';
 
 export interface CartProps {
   onClickSubmitForm: React.MouseEventHandler<HTMLButtonElement> | undefined;
-  onClickTeamToken: React.MouseEventHandler<HTMLButtonElement> | undefined;
-  onClickPlayerOU: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  onClickTeamToken?: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  onClickPlayerOU?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   activeTab: 'teamToken' | 'playerOU';
   links: any[];
   cartItems: (ICartItemProps & { id: string })[];
@@ -27,16 +27,16 @@ export const Cart: React.FC<CartProps> = (props) => {
       {/* Select Items */}
       <div className="border-t border-b-lg flex border-gray-300">
         <CartTopItemButton
-          onClick={props.onClickTeamToken}
-          isActive={props.activeTab === 'teamToken'}
-        >
-          Team Token Picks
-        </CartTopItemButton>
-        <CartTopItemButton
           onClick={props.onClickPlayerOU}
           isActive={props.activeTab === 'playerOU'}
         >
-          Player Over/Under
+          More or Less
+        </CartTopItemButton>
+        <CartTopItemButton
+          onClick={props.onClickTeamToken}
+          isActive={props.activeTab === 'teamToken'}
+        >
+          Token Contest
         </CartTopItemButton>
       </div>
 
@@ -44,6 +44,13 @@ export const Cart: React.FC<CartProps> = (props) => {
       {props.cartItems.map((item) => (
         <CartItem key={item.id} {...item} />
       ))}
+
+      {/* Show if no items */}
+      {props.cartItems.length === 0 && (
+        <div className="text-center text-sm text-gray-400 m-4 w-full">
+          There are no bets to place of this type.
+        </div>
+      )}
 
       {/* Submit Button */}
       <div className="p-4 flex">

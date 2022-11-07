@@ -1,5 +1,5 @@
 import React from 'react';
-import { AccountDepositResponseInterface } from '~/server/controller/users/accountDeposit';
+import { AccountDepositResponseInterface } from '~/server/routers/user/accountDeposit';
 
 interface DepositConfirmationProps {
   payoutAmount: number;

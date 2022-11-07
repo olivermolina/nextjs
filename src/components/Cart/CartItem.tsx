@@ -2,7 +2,18 @@ import React, { ChangeEventHandler, useCallback } from 'react';
 import { ICartItemProps } from './ICartItemProps';
 import { SmallText } from './SmallText';
 import { CartItemSummaryBox } from './CartItemSummaryBox';
-import { addPlusToNumber } from '~/utils/addPlusToNumber';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { blue } from '@mui/material/colors';
+
+const StyledToggleButton = styled(ToggleButton)({
+  '&.Mui-selected, &.Mui-selected:hover': {
+    backgroundColor: blue[100],
+    color: blue[900],
+  },
+  color: 'black',
+  textTransform: 'none',
+});
 
 export function CartItem(props: ICartItemProps) {
   const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
@@ -12,43 +23,70 @@ export function CartItem(props: ICartItemProps) {
   return (
     <>
       {props.legs.map((leg) => (
-        <div key={leg.id} className="p-4 border-b relative border-gray-300">
-          <SmallText>
-            <span className="uppercase">{leg.league}</span> | {leg.matchTime}
-          </SmallText>
-          <button
-            onClick={leg.onClickDeleteCartItem}
-            className="text-gray-400 absolute top-4 right-4"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-          <div className="flex justify-between font-bold py-2">
-            <div>{leg.betName}</div>
-            <div>{addPlusToNumber(leg.betOdds)}</div>
+        <div
+          key={leg.id}
+          className="p-4 flex flex-row border-b border-gray-300 justify-between"
+        >
+          <div className={'flex flex-col gap-2'}>
+            <span className="font-bold">{leg.betName}</span>
+            <SmallText>
+              <span className="uppercase">{leg.league}</span> | {leg.matchTime}
+            </SmallText>
+            <SmallText>
+              {leg.awayTeamName} vs. {leg.homeTeamName}
+            </SmallText>
+
+            <p>
+              <span className="text-xs text-gray-500">
+                Proj {leg.statName}:{' '}
+              </span>
+              <span className="font-bold">{leg.betType}</span>
+            </p>
           </div>
-          <SmallText>
-            {leg.betType}, {leg.awayTeamName} vs. {leg.homeTeamName}
-          </SmallText>
+          <div className={'flex flex-col justify-between items-end gap-2'}>
+            <button
+              onClick={leg.onClickDeleteCartItem}
+              className="text-gray-400"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+            <div className="right-4">
+              <ToggleButtonGroup
+                orientation="vertical"
+                value={leg.betOption}
+                exclusive
+                sx={{ width: 150 }}
+              >
+                <StyledToggleButton value="over" aria-label="more">
+                  <span className="font-bold  text-sm capitalize">More</span>
+                </StyledToggleButton>
+                <StyledToggleButton value="under" aria-label="less" fullWidth>
+                  <span className="font-bold  text-sm capitalize">Less</span>
+                </StyledToggleButton>
+              </ToggleButtonGroup>
+            </div>
+          </div>
         </div>
       ))}
       <div className="grid grid-cols-2">
         <CartItemSummaryBox
           isAbleToEdit
-          label="Stake"
+          label="Entry"
           value={props.stake}
           isPrimary
           onChange={onChange}
+          wagerType={props.wagerType}
         />
         <CartItemSummaryBox label="Potential Payout" value={props.payout} />
       </div>

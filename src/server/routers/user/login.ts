@@ -3,7 +3,8 @@ import { t } from '~/server/trpc';
 import * as yup from '~/utils/yup';
 import { prisma } from '~/server/prisma';
 import { supabase } from '~/utils/supabaseClient';
-import { setAuthResponse } from '~/server/controller/users/setAuthResponse';
+import { setAuthResponse } from './setAuthResponse';
+import { getMoreLessContest } from '~/server/routers/contest/createMoreLessContest';
 
 const login = t.procedure
   .input(
@@ -16,7 +17,7 @@ const login = t.procedure
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    if (ctx.session.user) {
+    if (ctx.session?.user) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
         message: 'This user is already signed in.',
@@ -34,9 +35,10 @@ const login = t.procedure
     }
 
     //Check user if exists in prisma
+    const userId = result.user.id;
     const prismaUser = await prisma.user.findUnique({
       where: {
-        id: result.user.id,
+        id: userId,
       },
     });
 
@@ -44,16 +46,34 @@ const login = t.procedure
       //Register missing prisma user
       await prisma.user.upsert({
         where: {
-          id: result.user.id,
+          id: userId,
         },
         create: {
-          id: result.user.id,
+          id: userId,
           email: result.user.email!,
           ...result.user.user_metadata,
         },
         update: {
           email: result.user.email!,
           ...result.user.user_metadata,
+        },
+      });
+    }
+
+    // Auto join more or less contest
+    const moreOrLessContest = await getMoreLessContest();
+    const userContestEntry = await prisma.contestEntry.findFirst({
+      where: {
+        id: moreOrLessContest.id,
+        userId,
+      },
+    });
+    if (!userContestEntry) {
+      await prisma.contestEntry.create({
+        data: {
+          userId: userId,
+          contestsId: moreOrLessContest.id,
+          tokens: 1000,
         },
       });
     }

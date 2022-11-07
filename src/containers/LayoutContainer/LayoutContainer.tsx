@@ -7,7 +7,8 @@ import { useRouter } from 'next/router';
 import { UrlPaths } from '~/constants/UrlPaths';
 import { useAppSelector } from '~/state/hooks';
 import { selectAllBets } from '~/state/bets';
-import { League } from '@prisma/client';
+import { ContestWagerType, League } from '@prisma/client';
+import ContestDetailContainer from '../ContestDetailContainer/ContestDetailContainer';
 
 type Props = {
   children: any;
@@ -23,33 +24,46 @@ const LayoutContainer: React.FC<Props> = (props) => {
   const cartPayout = useAppSelector((state) =>
     selectAllBets(state).reduce((acc, curr) => acc + 0, 0),
   );
+  const selectedContest = useAppSelector((state) => state.ui.selectedContest);
+
   const result = trpc.contest.listOffers.useQuery({
     contestId: params.contestId,
     league: params.league as League,
   });
+
+  const { data: userTotalCashAmount } =
+    trpc.user.userTotalCashAmount.useQuery();
+
   const tokenCount = result.data?.tokenCount;
   return (
     <>
       <Layout
         onClickCartDetails={() => {
-          // TODO: make cart page for mobile cart experience
-          router.push('/cart');
+          router.push(UrlPaths.Cart);
         }}
         cartItemsCount={cartItemsCount}
         cartStake={cartStake}
         cartPotentialPayout={cartPayout}
-        // TODO: fetch user cash amount
-        userCashAmount={'0'}
+        // TODO: [LOC-171] fetch user cash amount
+        userCashAmount={userTotalCashAmount || 0}
         currentContestTokenCount={tokenCount}
         onClickAddUserCash={() => {
-          if (router?.pathname !== UrlPaths.ProfileAccountDeposit)
-            router.push(UrlPaths.ProfileAccountDeposit);
+          // TODO: [LOC-172] navigate to a page where a user can add cash
         }}
         // Exclude showing sub nav in picks and profile page
-        showSubNav={[UrlPaths.Challenge.toString()].includes(router?.pathname)}
+        showSubNav={
+          ![
+            UrlPaths.Picks.toString(),
+            UrlPaths.Profile.toString(),
+            UrlPaths.Cart.toString(),
+            UrlPaths.Contests.toString(),
+          ].includes(router?.pathname)
+        }
+        showTokenCount={selectedContest?.wagerType === ContestWagerType.TOKEN}
       >
         {props.children}
       </Layout>
+      <ContestDetailContainer />
       <ToastContainer />
     </>
   );

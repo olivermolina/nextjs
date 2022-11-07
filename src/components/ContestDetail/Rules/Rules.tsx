@@ -1,8 +1,8 @@
 import React, { ReactElement } from 'react';
 import ContestDetailLayout from '~/components/ContestDetail/ContestDetailLayout';
 
-interface RulesProps {
-  content: ReactElement;
+export interface RulesProps {
+  content: ReactElement | string;
 }
 
 const Rules = (props: RulesProps) => {

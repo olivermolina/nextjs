@@ -4,6 +4,7 @@ import {
   BetStatus,
   BetType,
   ContestEntry,
+  ContestCategory,
   Market,
   Prisma,
 } from '@prisma/client';
@@ -56,6 +57,7 @@ function placeBetSchema(isTeaser: boolean) {
     ),
   });
 }
+
 export type LegCreateInput = {
   total: number;
   marketId: Market['id'];
@@ -67,7 +69,9 @@ export type BetInputType = {
   contestId: ContestEntry['id'];
   type: BetType;
   legs: LegCreateInput[];
+  contestCategoryId: ContestCategory['id'];
 };
+
 /**
  * Given a bet, will create the bet, a post for the bet, and update a users balance.
  *
@@ -99,11 +103,25 @@ export async function placeBet(bet: BetInputType, user: User): Promise<void> {
     }),
   );
 
+  const contestCategory = await prisma.contestCategory.findUnique({
+    where: {
+      id: bet.contestCategoryId,
+    },
+  });
+
+  const contestEntry = await prisma.contestEntry.findFirstOrThrow({
+    where: {
+      userId: user.id,
+      contestsId: bet.contestId,
+    },
+  });
+
   const payout = isTeaser
-    ? calculateTeaserPayout(validPayload.stake)
+    ? calculateTeaserPayout(validPayload.stake, contestCategory)
     : calculateParlayPayout(
         legs.map((leg) => leg.odds) as number[],
         validPayload.stake,
+        contestCategory,
       );
   const odds = isTeaser
     ? -110
@@ -127,7 +145,12 @@ export async function placeBet(bet: BetInputType, user: User): Promise<void> {
       odds: odds,
       ContestEntries: {
         connect: {
-          id: bet.contestId,
+          id: contestEntry.id,
+        },
+      },
+      ContestCategory: {
+        connect: {
+          id: bet.contestCategoryId,
         },
       },
     },

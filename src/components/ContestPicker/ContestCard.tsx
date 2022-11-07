@@ -2,6 +2,7 @@ import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { InferPropTypes } from '..';
+import dayjs from 'dayjs';
 
 export const contestCardPropTypes = {
   /**
@@ -28,13 +29,21 @@ export const contestCardPropTypes = {
    * An event handler for when users click on a contest card.
    */
   onClickCard: PropTypes.func.isRequired,
+  /**
+   * Show contest dates
+   */
+  showContestDates: PropTypes.bool,
+  /**
+   * Boolean to show enrolled styles
+   */
+  isEnrolled: PropTypes.bool,
 };
 type Props = InferPropTypes<typeof contestCardPropTypes>;
 
 const CheckIcon = (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className="h-6 w-6 text-blue-500 absolute top-2 right-2"
+    className="h-6 w-6 text-blue-500 stroke-green-600"
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
@@ -49,7 +58,7 @@ const CheckIcon = (
 );
 const LockIcon = (
   <svg
-    className="h-6 w-6 absolute top-2 text-white right-2"
+    className="h-6 w-6 text-white stroke-black"
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"
@@ -74,25 +83,41 @@ export const ContestCard: React.FC<Props> = ({
   endDateString,
   contestName,
   onClickCard,
+  showContestDates,
+  isEnrolled,
 }) => {
   return (
     <button
       onClick={onClickCard}
-      style={{
-        backgroundImage: `url("${bgImageUrl}")`,
-      }}
-      className={classNames('relative w-36 h-36 p-2 rounded-md text-left', {
+      className={classNames('relative w-36 h-24 rounded-md text-left', {
         'border-blue-600 border-2': isActive,
       })}
     >
-      {/* Icon */}
-      {isActive ? CheckIcon : LockIcon}
+      <img
+        className={'left-0 top-0 absolute w-36 h-full opacity-10 object-fill'}
+        src={bgImageUrl}
+        alt={''}
+      />
 
-      <div className="absolute bottom-2">
-        <h4 className="font-bold text-sm uppercase">{contestName}</h4>
-        <h5 className="text-xs text-gray-500">
-          {startDateString} - <br /> {endDateString}
-        </h5>
+      <div className={'flex flex-row px-2 items-start justify-between'}>
+        <div className="flex flex-col items-start">
+          <h4 className="font-extrabold text-sm uppercase">{contestName}</h4>
+          {showContestDates ? (
+            <h5 className="text-xs text-gray-500">
+              {dayjs(startDateString).format('ddd MMM D, YYYY')} - <br />{' '}
+              {dayjs(endDateString).format('ddd MMM D, YYYY')}
+            </h5>
+          ) : (
+            <h5 className="text-xs text-gray-500">
+              <br /> <br />
+            </h5>
+          )}
+        </div>
+        <div>
+          {/* Icon */}
+          {!isEnrolled ? LockIcon : null}
+          {isEnrolled && isActive ? CheckIcon : null}
+        </div>
       </div>
     </button>
   );

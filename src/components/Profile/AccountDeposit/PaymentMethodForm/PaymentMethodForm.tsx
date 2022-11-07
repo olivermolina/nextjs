@@ -7,8 +7,8 @@ import { UserDetailsInput } from '~/lib/tsevo-gidx/GIDX';
 import { PaymentMethodType } from '@prisma/client';
 import PaypalForm from './PaypalForm';
 import { PaymentFormDataInterface } from '~/containers/ProfileAccountDepositContainer';
-import { AccountDepositResponseInterface } from '~/server/controller/users/accountDeposit';
 import FTXForm from '~/components/Profile/AccountDeposit/PaymentMethodForm/FTXForm';
+import { AccountDepositResponseInterface } from '~/server/routers/user/accountDeposit';
 
 interface Props {
   onSubmit: SubmitHandler<CreditCardInputs | AchInputs>;

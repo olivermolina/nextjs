@@ -1,8 +1,8 @@
 import React, { ReactElement } from 'react';
 import ContestDetailLayout from '~/components/ContestDetail/ContestDetailLayout';
 
-interface OverviewProps {
-  content: ReactElement;
+export interface OverviewProps {
+  content: ReactElement | string;
 }
 
 const Overview = (props: OverviewProps) => {

@@ -11,7 +11,7 @@ import { PaymentMethodType } from '@prisma/client';
 import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { PaymentFormDataInterface } from '~/containers/ProfileAccountDepositContainer';
-import { AccountDepositResponseInterface } from '~/server/controller/users/accountDeposit';
+import { AccountDepositResponseInterface } from '~/server/routers/user/accountDeposit';
 
 interface PaypalButtonWrapperProps {
   currency: string;

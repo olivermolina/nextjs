@@ -4,6 +4,7 @@ import {
   TeaserModel,
   removeBet,
   updateBet,
+  removeLegFromBetLegs,
 } from '../../state/bets';
 import { formatLegType } from '../../utils/formatLegType';
 import { calculateParlayPayout } from '../../utils/calculateParlayPayout';
@@ -44,16 +45,19 @@ export function mapStraightToCartItem(
         onClickDeleteCartItem: () => {
           dispatch(removeBet(bet.betId.toString()));
         },
-        betName: bet.type,
+        betName: bet.name,
         betOdds: bet.odds,
         betType: bet.line,
         awayTeamName: bet.entity2,
         homeTeamName: bet.entity1,
+        statName: bet.name,
+        betOption: bet.team,
       },
     ],
     onUpdateCartItem: onUpdateCartItem(dispatch),
     stake: bet.stake.toString(),
     payout: calculateStraightPayout(bet),
+    wagerType: bet.contestWagerType,
   };
 }
 
@@ -68,11 +72,18 @@ export function mapParlayToCartItem(
       league: leg.league,
       matchTime: leg.matchTime,
       onClickDeleteCartItem: () => {
-        dispatch(removeBet(bet.betId.toString()));
+        dispatch(
+          removeLegFromBetLegs({
+            betId: bet.betId.toString(),
+            betLegName: leg.name,
+          }),
+        );
       },
-      betName: leg.type,
+      betName: leg.name,
+      statName: leg.statName,
       betOdds: leg.odds,
       betType: leg.line,
+      betOption: leg.team,
       awayTeamName: leg.entity2,
       homeTeamName: leg.entity1,
     })),
@@ -80,10 +91,13 @@ export function mapParlayToCartItem(
     payout: calculateParlayPayout(
       bet.legs.map((bet) => bet.odds),
       bet.stake,
+      bet.contestCategory,
     ).toString(),
     onUpdateCartItem: onUpdateCartItem(dispatch),
+    wagerType: bet.contestWagerType,
   };
 }
+
 export function mapTeaserToCartItem(
   bet: TeaserModel,
   dispatch: ReturnType<typeof useAppDispatch>,
@@ -112,10 +126,13 @@ export function mapTeaserToCartItem(
           ),
         awayTeamName: leg.entity2,
         homeTeamName: leg.entity1,
+        statName: leg.statName,
+        betOption: leg.team,
       };
     }),
     stake: bet.stake.toString(),
-    payout: calculateTeaserPayout(bet.stake).toString(),
+    payout: calculateTeaserPayout(bet.stake, bet.contestCategory).toString(),
     onUpdateCartItem: onUpdateCartItem(dispatch),
+    wagerType: bet.contestWagerType,
   };
 }

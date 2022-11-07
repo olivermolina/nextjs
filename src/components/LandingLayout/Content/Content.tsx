@@ -9,6 +9,7 @@ import { useRouter } from 'next/router';
 import ExplainerCard, {
   ExplainerCardProps,
 } from '~/components/LandingLayout/Content/ExplainerCard';
+import { Grid } from '@mui/material';
 
 interface Props extends React.PropsWithChildren {
   cards: FantasyCardProps[];
@@ -21,11 +22,13 @@ const Content = (props: Props) => {
     <div className={'flex flex-col gap-y-10 p-5'}>
       <ContentBanner />
       <ContentHeader />
-      <div className="flex flex-col md:flex-row justify-center items-center gap-5">
+      <Grid container spacing={2} justifyContent={'center'}>
         {props.cards?.map((card) => (
-          <FantasyCard {...card} key={card.playerName} />
+          <Grid item key={card.playerName}>
+            <FantasyCard {...card} />
+          </Grid>
         ))}
-      </div>
+      </Grid>
       <div className="flex justify-center">
         <button
           type="submit"

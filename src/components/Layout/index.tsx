@@ -5,8 +5,8 @@ import leagues from '../Nav/leagues';
 import { TokenCount } from './TokenCount';
 import { navItems } from './navItems';
 import { CashAmount } from './CashAmount';
-import { useRouter } from 'next/router';
 import { useQueryParams } from '~/hooks/useQueryParams';
+import Link from 'next/link';
 
 interface Props {
   onClickCartDetails?: React.MouseEventHandler<HTMLButtonElement>;
@@ -18,6 +18,7 @@ interface Props {
   children: JSX.Element;
   onClickAddUserCash?: React.MouseEventHandler<HTMLButtonElement>;
   showSubNav?: boolean;
+  showTokenCount?: boolean;
 }
 
 function NavLink(props: { link: string; icon: any; name: string }) {
@@ -30,18 +31,19 @@ function NavLink(props: { link: string; icon: any; name: string }) {
   }, [props.link]);
 
   return (
-    <a
-      className={classNames(
-        'flex cursor-pointer flex-col justify-center text-gray-300 lg:mx-4',
-        {
-          underline: isActive,
-        },
-      )}
-      href={props.link}
-    >
-      {props.icon}
-      {props.name}
-    </a>
+    <Link href={props.link}>
+      <span
+        className={classNames(
+          'flex cursor-pointer flex-col justify-center text-gray-300 lg:mx-4',
+          {
+            underline: isActive,
+          },
+        )}
+      >
+        {props.icon}
+        {props.name}
+      </span>
+    </Link>
   );
 }
 
@@ -112,9 +114,11 @@ export const Layout: React.FC<Props> = (props) => {
           </div>
 
           {/* Right Pane */}
-          <div className="p-4 hidden lg:block">
-            <TokenCount count={props.currentContestTokenCount || 0} />
-          </div>
+          {props.showTokenCount ? (
+            <div className="p-4 hidden lg:block">
+              <TokenCount count={props.currentContestTokenCount || 0} />
+            </div>
+          ) : null}
         </div>
       )}
 

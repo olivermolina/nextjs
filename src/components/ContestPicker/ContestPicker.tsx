@@ -27,7 +27,7 @@ export const ContestPicker: React.FC<Props> = ({ contests }) => {
       <h3 className="font-bold text-lg">☆ AVAILABLE CONTESTS</h3>
       <button
         onClick={scrollLeft}
-        className="bg-white text-black rounded-full p-4 absolute bottom-14 z-10 -left-8"
+        className="bg-white text-black rounded-full p-4 absolute bottom-8 z-10 -left-8"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -46,7 +46,7 @@ export const ContestPicker: React.FC<Props> = ({ contests }) => {
       </button>
       <button
         onClick={scrollRight}
-        className="bg-white text-black rounded-full p-4 absolute bottom-14 z-10 -right-8"
+        className="bg-white text-black rounded-full p-4 absolute bottom-8 z-10 -right-8"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -64,7 +64,7 @@ export const ContestPicker: React.FC<Props> = ({ contests }) => {
         style={{
           scrollBehavior: 'smooth',
         }}
-        className="hide-scrollbar grid content-start justify-start grid-flow-col-dense p-2 gap-2 overflow-x-scroll"
+        className="hide-scrollbar grid content-start justify-start grid-flow-col-dense p-2 gap-2 overflow-x-scroll ml-4 mr-4"
       >
         {contests.map((contest, i) => (
           <ContestCard key={i} {...contest} />

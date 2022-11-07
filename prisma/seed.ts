@@ -4,27 +4,52 @@
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
 import {
+  AppSettingName,
   BetLegType,
   BetStatus,
   BetType,
   ContestType,
+  ContestWagerType,
   League,
   MarketResult,
   MarketType,
   PrismaClient,
   Status,
 } from '@prisma/client';
+import { appRouter } from '~/server/routers/_app';
 import dayjs from 'dayjs';
+
+import { faker } from '@faker-js/faker';
+import { MORE_OR_LESS_CONTEST_ID } from '~/constants/MoreOrLessContestId';
 
 const prisma = new PrismaClient();
 
-/**
- * 1. Create a joinable matchplay contest
- * 2. Create a joinable fantasy contest
- * 3. A contest already in play.
- */
+const caller = appRouter.createCaller({} as any);
+
 async function main() {
-  const user = await prisma.user.findFirst();
+  let user = await prisma.user.findFirst();
+  if (!user) {
+    try {
+      await caller.user.signUp({
+        email: 'test@gmail.com',
+        password: 'Password1!',
+        confirmPassword: 'Password1!',
+        username: 'testing',
+        DOB: new Date(),
+        phone: '12392342999',
+        state: 'TX',
+      });
+    } catch (e) {
+      // If test user auth already exist, trigger login to populate user's table
+      await caller.user.login({
+        email: 'test@gmail.com',
+        password: 'Password1!',
+      });
+    }
+
+    user = await prisma.user.findFirst();
+  }
+
   await prisma.$queryRaw`truncate "Contest" cascade;`;
   await prisma.$queryRaw`truncate "ContestEntry" cascade;`;
   await prisma.$queryRaw`truncate "Offer" cascade;`;
@@ -43,23 +68,70 @@ async function main() {
   };
   await prisma.contest.create({
     data: {
-      id: '2d500af0-9e18-47d7-80b0-fe51125497ae',
-      name: 'Fantasy Contest',
-      description: 'This is a match play contest',
+      id: MORE_OR_LESS_CONTEST_ID,
+      name: 'MORE OR LESS CONTEST',
+      description: 'This is a more or less contest',
       isActive: true,
       startDate: dayjs().subtract(1, 'h').toDate(),
-      endDate: dayjs().add(1, 'day').toDate(),
+      endDate: dayjs().add(50, 'year').toDate(),
       type: ContestType.FANTASY,
       bgImageUrl: 'https://picsum.photos/200',
       entryFee: 200,
       totalPrize: 1000,
       created_at: new Date(),
       updated_at: new Date(),
+      wagerType: ContestWagerType.CASH,
       ContestEntries: {
         create: contestEntry,
       },
     },
   });
+  await prisma.contest.create({
+    data: {
+      id: faker.datatype.uuid(),
+      name: 'Fantasy Contest',
+      description: 'This is a fantasy contest',
+      isActive: true,
+      startDate: dayjs().add(1, 'd').toDate(),
+      endDate: dayjs().add(10, 'day').toDate(),
+      type: ContestType.FANTASY,
+      bgImageUrl: 'https://picsum.photos/200',
+      entryFee: 200,
+      totalPrize: 1000,
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+  });
+
+  const contestCategories = [
+    {
+      id: faker.datatype.uuid(),
+      numberOfPicks: 2,
+      payoutMultiplier: 3,
+    },
+    {
+      id: faker.datatype.uuid(),
+      numberOfPicks: 3,
+      payoutMultiplier: 5,
+    },
+    {
+      id: faker.datatype.uuid(),
+      numberOfPicks: 4,
+      payoutMultiplier: 10,
+    },
+  ];
+  await prisma.contestCategory.createMany({
+    data: contestCategories,
+  });
+
+  await prisma.appSettings.create({
+    data: {
+      id: faker.datatype.uuid(),
+      name: AppSettingName.MAX_MATCH_DEPOSIT_AMOUNT,
+      value: '50',
+    },
+  });
+
   const gamedate = dayjs().add(1, 'd');
   await prisma.team.createMany({
     data: [
@@ -892,6 +964,11 @@ async function main() {
           id: contestEntry.id,
         },
       },
+      ContestCategory: {
+        connect: {
+          id: contestCategories[0]!.id,
+        },
+      },
     },
   });
   await prisma.bet.create({
@@ -929,6 +1006,11 @@ async function main() {
           id: contestEntry.id,
         },
       },
+      ContestCategory: {
+        connect: {
+          id: contestCategories[0]!.id,
+        },
+      },
     },
   });
   await prisma.bet.create({
@@ -964,6 +1046,11 @@ async function main() {
       ContestEntries: {
         connect: {
           id: contestEntry.id,
+        },
+      },
+      ContestCategory: {
+        connect: {
+          id: contestCategories[0]!.id,
         },
       },
     },

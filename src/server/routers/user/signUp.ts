@@ -4,7 +4,7 @@ import logger from '~/utils/logger';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '~/server/prisma';
 import * as yup from '~/utils/yup';
-import { setAuthResponse } from '~/server/controller/users/setAuthResponse';
+import { setAuthResponse } from './setAuthResponse';
 
 const signUp = t.procedure
   .input(

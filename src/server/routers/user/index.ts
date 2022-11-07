@@ -1,3 +1,4 @@
+import { t } from '~/server/trpc';
 import accountDeposit from './accountDeposit';
 import accountPayout from './accountPayout';
 import accountVerify from './accountVerify';
@@ -8,8 +9,9 @@ import login from './login';
 import signUp from './signUp';
 import createMerchantTransaction from './createMerchantTransaction';
 import accountSavePaymentMethod from './accountSavePaymentMethod';
+import userTotalCashAmount from './userTotalCashAmount';
 
-export {
+export const userRouter = t.router({
   accountDeposit,
   accountPayout,
   accountRegister,
@@ -20,4 +22,7 @@ export {
   signUp,
   createMerchantTransaction,
   accountSavePaymentMethod,
-};
+  userTotalCashAmount,
+});
+
+export default userRouter;

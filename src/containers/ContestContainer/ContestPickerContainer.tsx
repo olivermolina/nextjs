@@ -4,8 +4,9 @@ import dayjs from 'dayjs';
 import { useDispatch } from 'react-redux';
 import { ContestPicker } from '~/components/ContestPicker/ContestPicker';
 import { useQueryParams } from '~/hooks/useQueryParams';
-import { setActiveContestDetailModal } from '~/state/ui';
+import { setActiveContestDetailModal, setSelectedContest } from '~/state/ui';
 import { trpc } from '~/utils/trpc';
+import { MORE_OR_LESS_CONTEST_ID } from '~/constants/MoreOrLessContestId';
 
 /**
  * This component will fetch all of the current users available contests and allow them to either navigate to a new contest
@@ -13,15 +14,31 @@ import { trpc } from '~/utils/trpc';
  */
 const ContestPickerContainer: React.FC = () => {
   const { data, isLoading } = trpc.contest.list.useQuery();
-  const { setParam } = useQueryParams();
+  const { setParam, contestId } = useQueryParams();
   const dispatch = useDispatch();
   /**
    * Map contests to expected props or default to an empty array.
    */
-  const contests = useMemo(
-    () =>
+  const contests = useMemo(() => {
+    if (data && !contestId) {
+      const moreOrLessContest = data.find(
+        (contest) => contest.id === MORE_OR_LESS_CONTEST_ID,
+      );
+      if (moreOrLessContest) {
+        dispatch(
+          setSelectedContest({
+            id: moreOrLessContest.id,
+            wagerType: moreOrLessContest.wagerType,
+          }),
+        );
+        setParam('contestId', moreOrLessContest?.id);
+      }
+    }
+
+    return (
       data?.map((contest) => ({
-        isActive: contest.isEnrolled,
+        isActive: contest.id === contestId,
+        isEnrolled: contest.isEnrolled,
         bgImageUrl: contest.bgImageUrl,
         startDateString: dayjs(contest.startDate).format('MM/DD/YYYY'),
         endDateString: dayjs(contest.endDate).format('MM/DD/YYYY'),
@@ -29,6 +46,12 @@ const ContestPickerContainer: React.FC = () => {
         onClickCard: () => {
           if (contest.isEnrolled) {
             setParam('contestId', contest.id);
+            dispatch(
+              setSelectedContest({
+                id: contest.id,
+                wagerType: contest.wagerType,
+              }),
+            );
           } else {
             // show detail modal
             if (contest.isJoinable) {
@@ -38,10 +61,13 @@ const ContestPickerContainer: React.FC = () => {
             }
           }
         },
-      })) || [],
-    [data, dispatch, setParam],
-  );
+        showContestDates: contest.id !== MORE_OR_LESS_CONTEST_ID,
+      })) || []
+    );
+  }, [data, dispatch, setParam, contestId]);
+
   if (isLoading) return <>Loading...</>;
+
   return <ContestPicker contests={contests} />;
 };
 

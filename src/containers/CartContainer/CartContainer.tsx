@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { removeBet, selectAllBets, updateBet } from '../../state/bets';
 import { useAppDispatch, useAppSelector } from '../../state/hooks';
@@ -10,14 +10,18 @@ import {
 import Link from 'next/link';
 import { Cart, CartProps } from '~/components/Cart';
 import { formatLegType } from '~/utils/formatLegType';
-import { BetType, ContestType } from '@prisma/client';
+import { BetType, ContestWagerType } from '@prisma/client';
 import { trpc } from '~/utils/trpc';
+import { useQueryParams } from '~/hooks/useQueryParams';
 
 const CartContainer = () => {
   const dispatch = useAppDispatch();
+  const { contestCategoryId } = useQueryParams();
   const { isLoading, mutateAsync } = trpc.bets.placeBet.useMutation();
-  const [selectedTab, setTab] = useState<CartProps['activeTab']>('teamToken');
+  const [selectedTab, setTab] = useState<CartProps['activeTab']>('playerOU');
   const bets = useAppSelector((state) => selectAllBets(state));
+  const selectedContest = useAppSelector((state) => state.ui.selectedContest);
+
   const onSubmitBet = async () => {
     const betModels = bets;
     for (const bet of betModels) {
@@ -46,12 +50,13 @@ const CartContainer = () => {
             : bet.legs.length > 1
             ? BetType.PARLAY
             : BetType.STRAIGHT,
+          contestCategoryId: bet.contestCategory?.id || '',
         });
         dispatch(removeBet(bet.betId));
         toast.success(`Successfully placed bet with id: ${bet.betId}.`);
       } catch (error: any) {
         toast.error(
-          error.data?.message ||
+          error.shape?.message ||
             `There was an error submitting bet with id: ${bet.betId}.`,
         );
         console.log(error);
@@ -66,15 +71,13 @@ const CartContainer = () => {
       }
     }
   };
-  const toggleTeamTokenBets = () => setTab('teamToken');
-  const togglePlayerBets = () => setTab('playerOU');
   const cartItems = useMemo(
     () =>
       bets
         .filter((bet) =>
           selectedTab === 'playerOU'
-            ? bet.contestType === ContestType.FANTASY
-            : bet.contestType === ContestType.MATCH,
+            ? bet.contestWagerType === ContestWagerType.CASH
+            : bet.contestWagerType === ContestWagerType.TOKEN,
         )
         .map((bet) => {
           const isStraightBet = !('legs' in bet);
@@ -89,13 +92,22 @@ const CartContainer = () => {
             }
           }
         }),
-    [bets, selectedTab],
+    [bets, selectedTab, selectedContest, contestCategoryId],
   );
+
+  useEffect(() => {
+    if (selectedContest) {
+      setTab(
+        selectedContest.wagerType === ContestWagerType.CASH
+          ? 'playerOU'
+          : 'teamToken',
+      );
+    }
+  }, [selectedContest]);
+
   return (
     <Cart
       onClickSubmitForm={onSubmitBet}
-      onClickTeamToken={toggleTeamTokenBets}
-      onClickPlayerOU={togglePlayerBets}
       activeTab={selectedTab}
       links={[
         <Link key={'/privacy'} href="/privacy">

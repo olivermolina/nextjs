@@ -4,7 +4,7 @@ import { BillingAddressInputs } from '~/components/Profile/AccountDeposit/Paymen
 import { UserDetailsInput } from '~/lib/tsevo-gidx/GIDX';
 import { PaymentMethodType } from '@prisma/client';
 import { PaymentFormDataInterface } from '~/containers/ProfileAccountDepositContainer';
-import { AccountDepositResponseInterface } from '~/server/controller/users/accountDeposit';
+import { AccountDepositResponseInterface } from '~/server/routers/user/accountDeposit';
 
 interface FTXFormProps {
   depositAmount: string;

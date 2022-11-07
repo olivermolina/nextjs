@@ -1,6 +1,8 @@
 import React, { ChangeEventHandler } from 'react';
 import classnames from 'classnames';
 import { SmallText } from './SmallText';
+import { ContestWagerType } from '@prisma/client';
+import { NumericFormat } from 'react-number-format';
 
 export function CartItemSummaryBox(props: {
   onChange?: ChangeEventHandler<HTMLInputElement>;
@@ -16,7 +18,9 @@ export function CartItemSummaryBox(props: {
     | null
     | undefined;
   value: string | number | undefined;
+  wagerType?: ContestWagerType;
 }) {
+  const MAX_LIMIT = props.wagerType === ContestWagerType.CASH ? 50 : 1000;
   return (
     <div
       className={classnames('p-4 flex-grow border border-gray-300', {
@@ -24,14 +28,22 @@ export function CartItemSummaryBox(props: {
       })}
     >
       <SmallText>{props.label}</SmallText>
-      <input
-        type="number"
+      <NumericFormat
         disabled={!props.isAbleToEdit}
         min={1}
+        isAllowed={(values) => {
+          const { value } = values;
+          return Number(value) <= MAX_LIMIT;
+        }}
         value={props.value}
         className="font-bold w-full"
         onChange={props.onChange}
       />
+      {props.wagerType === ContestWagerType.CASH ? (
+        <>
+          <SmallText> (min : $1, max: $50)</SmallText>
+        </>
+      ) : null}
     </div>
   );
 }

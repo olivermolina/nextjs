@@ -84,9 +84,16 @@ model Bet {
   ContestEntries   ContestEntry @relation(fields: [contestEntriesId], references: [id])
   contestEntriesId String
   userId           String
+  ContestCategory  ContestCategory @relation(fields: [contestCategoryId], references: [id])
+  contestCategoryId  String
 
   created_at DateTime @default(now()) @db.Timestamptz(6)
   updated_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+enum ContestWagerType {
+  TOKEN
+  CASH
 }
 
 model Contest {
@@ -108,6 +115,7 @@ model Contest {
   Wallets    Wallets[]
   entryFee   Decimal
   totalPrize Decimal
+  wagerType ContestWagerType @default(TOKEN)
 }
 
 enum League {
@@ -237,7 +245,7 @@ enum AppSettingName {
   REFERRAL_CREDIT_AMOUNT
 }
 
-// TODO: Wallets should go on contest entries?
+// TODO: [LOC-173] Wallets should go on contest entries?
 model Wallets {
   id         String  @id @default(uuid())
   User       User    @relation(fields: [userId], references: [id])
@@ -324,4 +332,11 @@ model TransactionStatus {
   processDateTime DateTime?
   created_at DateTime @default(now()) @db.Timestamptz(6)
   updated_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model ContestCategory {
+  id                String         @id @default(uuid())
+  numberOfPicks     Int
+  payoutMultiplier  Int
+  Bets           Bet[]
 }

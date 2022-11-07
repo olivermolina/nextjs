@@ -1,4 +1,10 @@
-import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { ContestWagerType } from '@prisma/client';
+
+interface ContestUI {
+  id: string;
+  wagerType: ContestWagerType;
+}
 
 interface UIModel {
   loading: boolean;
@@ -6,11 +12,13 @@ interface UIModel {
    * When a number is present will show a modal that will load contest data and allow a user to join.
    */
   activeContestDetailModal?: string;
+  selectedContest?: ContestUI;
 }
 
 const initialUI: UIModel = {
   loading: false,
   activeContestDetailModal: undefined,
+  selectedContest: undefined,
 };
 
 const uiSlice = createSlice({
@@ -25,10 +33,18 @@ const uiSlice = createSlice({
       state.activeContestDetailModal = payload.payload;
       return state;
     },
+    setSelectedContest(state, payload: PayloadAction<ContestUI>) {
+      state.selectedContest = payload.payload;
+      return state;
+    },
   },
 });
 
-export const { setLoading, reset, setActiveContestDetailModal } =
-  uiSlice.actions;
+export const {
+  setLoading,
+  reset,
+  setActiveContestDetailModal,
+  setSelectedContest,
+} = uiSlice.actions;
 
 export default uiSlice.reducer;

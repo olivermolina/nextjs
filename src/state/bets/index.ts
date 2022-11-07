@@ -1,9 +1,9 @@
-import { ContestType } from '@prisma/client';
+import { ContestCategory, ContestType, ContestWagerType } from '@prisma/client';
 import {
-  PayloadAction,
   createAsyncThunk,
   createEntityAdapter,
   createSlice,
+  PayloadAction,
 } from '@reduxjs/toolkit';
 import { toast } from 'react-toastify';
 import { RootState } from '../store';
@@ -13,8 +13,11 @@ export interface BaseModel {
   challengerId?: number;
   contest: string;
   contestType: ContestType;
+  contestCategory?: ContestCategory;
+  contestWagerType?: ContestWagerType;
   error?: string;
 }
+
 export interface BetModel extends BaseModel {
   total: any;
   gameId: string;
@@ -29,6 +32,8 @@ export interface BetModel extends BaseModel {
   odds: number;
   type: 'total' | 'moneyline' | 'spread';
   team: 'away' | 'home' | 'over' | 'under';
+  name: string;
+  statName: string;
 }
 
 export interface ParlayModel extends BaseModel {
@@ -51,11 +56,24 @@ export const addToParlayBet = createAsyncThunk(
   (bet: BetInput, thunkAPI) => {
     const state = thunkAPI.getState() as RootState;
     const allBets = selectAllBets(state);
-    const parlayBet = allBets.find((bet) => 'legs' in bet) as ParlayModel;
+    const parlayBet = allBets.find(
+      (betRow) => 'legs' in betRow && betRow.contest === bet.contest,
+    ) as ParlayModel;
+    if (!bet.contestCategory) {
+      toast.error(`Please select contest category.`);
+      return;
+    }
     if (!parlayBet) {
       thunkAPI.dispatch(addParlayBet(bet));
     } else {
       const legs = [...parlayBet.legs];
+
+      if (legs.length >= bet.contestCategory.numberOfPicks) {
+        toast.error(
+          `Maximum of ${bet.contestCategory.numberOfPicks} picks allowed.`,
+        );
+        return;
+      }
       if (legs.findIndex((leg) => leg.gameId === bet.gameId) !== -1) {
         toast.error(
           `Already included this a bet from this game in the parlay.`,
@@ -68,6 +86,7 @@ export const addToParlayBet = createAsyncThunk(
             changes: {
               contest: bet.contest,
               legs,
+              contestCategory: bet.contestCategory,
             },
           }),
         );
@@ -106,10 +125,41 @@ export const addToTeaserBet = createAsyncThunk(
             changes: {
               contest: bet.contest,
               legs,
+              contestCategory: bet.contestCategory,
             },
           }),
         );
       }
+    }
+  },
+);
+
+export interface RemoveBetLegInput {
+  betId: string;
+  betLegName: string;
+}
+
+export const removeLegFromBetLegs = createAsyncThunk(
+  'bets/removeLegFromBetLegs',
+  (input: RemoveBetLegInput, thunkAPI) => {
+    const state = thunkAPI.getState() as RootState;
+    const bet = selectBetById(state, input.betId);
+    if (!bet) {
+      toast.error(`Unable to remove item from bet ${input.betId}`);
+      return;
+    }
+    const newLegs = bet.legs.filter((leg) => leg.name !== input.betLegName);
+    if (newLegs.length) {
+      thunkAPI.dispatch(
+        updateBet({
+          id: input.betId,
+          changes: {
+            legs: newLegs,
+          },
+        }),
+      );
+    } else {
+      thunkAPI.dispatch(removeBet(input.betId));
     }
   },
 );
@@ -120,6 +170,27 @@ function addIdToBet(bet: BetInput): BetModel {
     betId: bet.gameId.toString(),
   };
 }
+
+export const updateAllBetsContestCategory = createAsyncThunk(
+  'bets/updateAllBetsContestCategory',
+  (contestCategory: ContestCategory, thunkAPI) => {
+    const state = thunkAPI.getState() as RootState;
+    const allBets = selectAllBets(state);
+    for (const bet of allBets) {
+      // Update cart items
+      const newLegs = [...bet.legs].slice(0, contestCategory.numberOfPicks);
+      thunkAPI.dispatch(
+        updateBet({
+          id: bet.betId,
+          changes: {
+            contestCategory,
+            legs: newLegs,
+          },
+        }),
+      );
+    }
+  },
+);
 
 export type BetInput = Omit<BetModel, 'betId'>;
 
@@ -133,6 +204,8 @@ export const betsSlice = createSlice({
         betId: action.payload.gameId.toString(),
         contest: action.payload.contest,
         contestType: action.payload.contestType,
+        contestCategory: action.payload.contestCategory,
+        contestWagerType: action.payload.contestWagerType,
         stake: 0,
       };
       return betsAdapter.addOne(state, bet);
@@ -143,6 +216,8 @@ export const betsSlice = createSlice({
         betId: Math.floor(Math.random() * 1000).toString(),
         contest: action.payload.contest,
         contestType: action.payload.contestType,
+        contestWagerType: action.payload.contestWagerType,
+        contestCategory: action.payload.contestCategory,
         stake: 0,
       };
       return betsAdapter.addOne(state, bet);
@@ -154,6 +229,8 @@ export const betsSlice = createSlice({
         stake: 0,
         contest: action.payload.contest,
         contestType: action.payload.contestType,
+        contestCategory: action.payload.contestCategory,
+        contestWagerType: action.payload.contestWagerType,
         type: 'teaser',
       };
       return betsAdapter.addOne(state, bet);

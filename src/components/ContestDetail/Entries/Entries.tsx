@@ -36,7 +36,7 @@ const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
-interface EntriesProps {
+export interface EntriesProps {
   entries: Entry[];
 }
 

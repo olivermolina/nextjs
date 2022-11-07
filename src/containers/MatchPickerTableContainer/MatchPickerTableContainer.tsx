@@ -1,9 +1,15 @@
 import dayjs from 'dayjs';
-import React from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { useQueryParams } from '~/hooks/useQueryParams';
-import { BetInput, addBet, addToParlayBet, addToTeaserBet } from '~/state/bets';
-import { useAppDispatch } from '~/state/hooks';
+import {
+  addBet,
+  addToParlayBet,
+  addToTeaserBet,
+  BetInput,
+  selectAllBets,
+} from '~/state/bets';
+import { useAppDispatch, useAppSelector } from '~/state/hooks';
 import { WarningAlert } from '~/components/Alert';
 import { MatchPickRowTable } from '~/components/MatchPickRowTable/MatchPickRowTable';
 import { trpc } from '~/utils/trpc';
@@ -21,7 +27,16 @@ const Header = (props: { isLoading: boolean }) => (
 );
 
 const MatchPickerTableContainer = () => {
-  const { contestFilter, setParam, league, contestId } = useQueryParams();
+  const { contestFilter, setParam, league, contestId, contestCategoryId } =
+    useQueryParams();
+  const allBets = useAppSelector((state) => selectAllBets(state));
+  const contestBet = useMemo(
+    () => allBets.find((bet) => bet.contest === contestId),
+    [allBets, contestId],
+  );
+
+  const { data: contestCategories } =
+    trpc.contest.contestCategoryList.useQuery();
   const query = trpc.contest.list.useQuery();
   const result = trpc.contest.listOffers.useQuery(
     {
@@ -32,6 +47,11 @@ const MatchPickerTableContainer = () => {
       retry: false,
     },
   );
+  const contestCategory = contestCategories?.find(
+    (contestCategory) => contestCategory.id === contestCategoryId,
+  );
+  const contest = query.data?.find((c) => c.id === contestId);
+
   const dispatch = useAppDispatch();
   const filters =
     result?.data?.filters.map((filter) => ({
@@ -126,11 +146,9 @@ const MatchPickerTableContainer = () => {
                 );
                 return;
               }
-              const contestType = query.data?.find(
-                (c) => c.id === contestId,
-              )?.type;
+              const contestType = contest?.type;
               if (!contestType) {
-                toast.error('Unknown contest type!');
+                toast.error('Unknown contest type');
                 return;
               }
               if (!offer) {
@@ -138,6 +156,7 @@ const MatchPickerTableContainer = () => {
                 return;
               }
               const bet: BetInput = {
+                name: ContestType.MATCH,
                 gameId: offer!.id,
                 marketId:
                   team === 'away' ? offer!.away.marketId : offer!.home.marketId,
@@ -157,6 +176,9 @@ const MatchPickerTableContainer = () => {
                 contestType: contestType,
                 contest: contestId,
                 total: offer[team][type].value,
+                contestCategory,
+                statName: '',
+                contestWagerType: contest.wagerType,
               };
               if (contestFilter === 'parlay') {
                 dispatch(addToParlayBet(bet));
@@ -194,6 +216,7 @@ const MatchPickerTableContainer = () => {
                   return;
                 }
                 const bet: BetInput = {
+                  name: offer!.playerName,
                   gameId: offer!.id,
                   marketId: offer.marketId,
                   marketSelId: offer.selId,
@@ -209,6 +232,9 @@ const MatchPickerTableContainer = () => {
                   contestType: ContestType.FANTASY,
                   contest: contestId!,
                   total: offer.total,
+                  contestCategory,
+                  statName: offer!.statName,
+                  contestWagerType: contest?.wagerType,
                 };
                 dispatch(addToParlayBet(bet));
               },
@@ -218,6 +244,7 @@ const MatchPickerTableContainer = () => {
                   return;
                 }
                 const bet: BetInput = {
+                  name: offer!.playerName,
                   gameId: offer!.id,
                   marketId: offer.marketId,
                   marketSelId: offer.selId,
@@ -233,6 +260,9 @@ const MatchPickerTableContainer = () => {
                   contestType: ContestType.FANTASY,
                   contest: contestId!,
                   total: offer.total,
+                  contestCategory,
+                  statName: offer!.statName,
+                  contestWagerType: contest?.wagerType,
                 };
                 dispatch(addToParlayBet(bet));
               },
@@ -242,6 +272,7 @@ const MatchPickerTableContainer = () => {
               gameInfo: offer!.matchName,
               playerName: offer!.playerName,
             }))}
+          legs={contestBet?.legs}
         />
       </div>
     );

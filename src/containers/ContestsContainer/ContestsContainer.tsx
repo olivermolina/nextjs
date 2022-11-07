@@ -3,13 +3,15 @@ import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import { trpc } from '~/utils/trpc';
 import { ContestTable } from '~/components';
+import { useAppDispatch } from '~/state/hooks';
+import { setActiveContestDetailModal } from '~/state/ui';
 
 /**
  * This component will fetch all active contests
  */
 const ContestsContainer: React.FC = () => {
   const { data, isLoading } = trpc.contest.contests.useQuery();
-  const mutation = trpc.contest.joinContest.useMutation();
+  const dispatch = useAppDispatch();
   /**
    * Map contests to expected props or default to an empty array.
    */
@@ -44,14 +46,14 @@ const ContestsContainer: React.FC = () => {
         onClickJoinContest: () => {
           if (!contest.isEnrolled) {
             if (contest.isJoinable) {
-              mutation.mutateAsync({ contestId: contest.id, tokens: 1000 });
+              dispatch(setActiveContestDetailModal(contest.id));
             } else {
               toast.warn('Contest start date past.');
             }
           }
         },
       })) || [],
-    [data, mutation],
+    [data, dispatch],
   );
   if (isLoading) return <>Loading...</>;
   return <ContestTable contests={contests} />;
