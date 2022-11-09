@@ -1,6 +1,6 @@
 export enum PickStatus {
-  PENDING = 'pending',
-  SETTLED = 'settled',
-  WON = 'won',
-  LOST = 'lost',
+  PENDING = 'PENDING',
+  SETTLED = 'SETTLED',
+  WON = 'WON',
+  LOST = 'LOST',
 }

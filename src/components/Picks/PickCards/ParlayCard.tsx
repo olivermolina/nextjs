@@ -3,8 +3,7 @@ import ParlayBetPicks, {
   ParlayBetPickProps,
 } from '~/components/Picks/PickCards/ParlayBetPicks';
 import { DefaultPickProps } from '~/components/Picks/PickCards/StraightCard';
-import { PickStatus } from '~/constants/PickStatus';
-import { CheckCircle, XCircle } from '~/components/Picks/Icons';
+import PickCardFooter from '~/components/Picks/PickCards/PickCardFooter';
 
 export interface ParlayCardProps extends DefaultPickProps {
   picks?: ParlayBetPickProps[];
@@ -48,32 +47,10 @@ const ParlayCard: React.FC<ParlayCardProps> = (props) => {
       </div>
 
       {/*Card Footer*/}
-      <div className="p-1 md:p-5 flex flex-row justify-between">
-        <div className={'flex flex-col items-center'}>
-          <p className="text-gray-400 text-sm">Risk</p>
-          <p className="font-bold">13</p>
-        </div>
-        <div className={'flex flex-col items-center'}>
-          <p className="text-gray-400 text-sm">Potential Win</p>
-          <p className="font-bold">27.8888</p>
-        </div>
-        <div className={'flex flex-col items-center'}>
-          <p className="text-gray-400 text-sm">Status</p>
-          <div className={'flex flex-row gap-1 items-center'}>
-            {props.status === PickStatus.PENDING && (
-              <div className="w-4 h-4 border border-gray-300 rounded-full" />
-            )}
-            {props.status === PickStatus.LOST && (
-              <XCircle className="w-6 h-6 fill-red-500" />
-            )}
-
-            {props.status === PickStatus.WON && (
-              <CheckCircle className="w-6 h-6 fill-green-500" />
-            )}
-            <p className="font-bold capitalize text-sm">{props.status}</p>
-          </div>
-        </div>
-      </div>
+      <PickCardFooter
+        {...props}
+        status={(props.picks?.find(Boolean) as DefaultPickProps)?.status}
+      />
     </div>
   );
 };

@@ -2,6 +2,12 @@ import React from 'react';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import { Cart } from '.';
+import {
+  BetStakeType,
+  ContestCategory,
+  ContestWagerType,
+} from '@prisma/client';
+import { faker } from '@faker-js/faker';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {
@@ -18,6 +24,30 @@ const Template: ComponentStory<typeof Cart> = (args) => <Cart {...args} />;
 
 export const Open = Template.bind({});
 // More on args: https://storybook.js.org/docs/react/writing-stories/args
+const contestCategories: ContestCategory[] = [
+  {
+    id: faker.datatype.uuid(),
+    numberOfPicks: 2,
+    allInPayoutMultiplier: 3,
+    primaryInsuredPayoutMultiplier: 2,
+    secondaryInsuredPayoutMultiplier: 0.5,
+  },
+  {
+    id: faker.datatype.uuid(),
+    numberOfPicks: 3,
+    allInPayoutMultiplier: 5,
+    primaryInsuredPayoutMultiplier: 2.5,
+    secondaryInsuredPayoutMultiplier: 1.25,
+  },
+  {
+    id: faker.datatype.uuid(),
+    numberOfPicks: 4,
+    allInPayoutMultiplier: 10,
+    primaryInsuredPayoutMultiplier: 5,
+    secondaryInsuredPayoutMultiplier: 1.25,
+  },
+];
+
 Open.args = {
   activeTab: 'playerOU',
   onClickPlayerOU: () => alert('clicked onClickPlayerOU'),
@@ -48,6 +78,14 @@ Open.args = {
       ],
       stake: '400',
       payout: '800',
+      onUpdateBetStakeType: () => console.log('Updating stake type'),
+      contestCategory: contestCategories[0]!,
+      wagerType: ContestWagerType.TOKEN,
+      stakeType: BetStakeType.ALL_IN,
+      insuredPayout: {
+        primaryInsuredPayout: 0,
+        secondaryInsuredPayout: 0,
+      },
     },
     {
       id: '1',
@@ -82,6 +120,14 @@ Open.args = {
       ],
       stake: '400',
       payout: '800',
+      onUpdateBetStakeType: () => console.log('Updating stake type'),
+      contestCategory: contestCategories[0]!,
+      wagerType: ContestWagerType.TOKEN,
+      stakeType: BetStakeType.ALL_IN,
+      insuredPayout: {
+        primaryInsuredPayout: 5,
+        secondaryInsuredPayout: 2.5,
+      },
     },
   ],
   onClickSubmitForm: () => alert('submitting form'),

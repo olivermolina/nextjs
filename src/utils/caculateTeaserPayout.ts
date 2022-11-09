@@ -1,4 +1,4 @@
-import { ContestCategory } from "@prisma/client";
+import { ContestCategory } from '@prisma/client';
 
 /**
  * This function will calculate teaser odds. All teasers currently pay -110 meaning to make 100

@@ -2,6 +2,7 @@ import React from 'react';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import Card from './StraightCard';
+import { PickStatus } from '~/constants/PickStatus';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {
@@ -26,6 +27,6 @@ StraightCard.args = {
   pickTime: '12/06/2022',
   potentialWin: 27.56,
   risk: 13,
-  status: 'pending',
+  status: PickStatus.PENDING,
   value: 212,
 };

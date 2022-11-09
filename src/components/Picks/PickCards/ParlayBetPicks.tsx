@@ -26,6 +26,7 @@ const ParlayBetPicks: React.FC<ParlayBetPicksProps> = (props) => {
           value,
           status,
           odd,
+          category,
         }) => (
           <div key={id} className="flex">
             <div className="flex flex-col items-center mr-2">
@@ -55,8 +56,8 @@ const ParlayBetPicks: React.FC<ParlayBetPicksProps> = (props) => {
 
                 <div className={'p-2 md:p-4 text-left'}>
                   <p className={'font-bold text-md'}>
-                    {odd === BetLegType.OVER_ODDS ? '+' : 'Under '}
-                    {value}
+                    {odd === BetLegType.OVER_ODDS ? 'More ' : 'Less '}
+                    {value} {category}
                   </p>
                 </div>
               </div>

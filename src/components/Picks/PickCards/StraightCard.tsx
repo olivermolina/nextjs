@@ -1,7 +1,13 @@
 import React from 'react';
+import { BetLegType, BetStakeType } from '@prisma/client';
 import { PickStatus } from '~/constants/PickStatus';
-import { CheckCircle, XCircle } from '~/components/Picks/Icons';
-import { BetLegType } from '@prisma/client';
+import PickCardFooter from '~/components/Picks/PickCards/PickCardFooter';
+
+export interface InsuredPayoutInterface {
+  numberOfPicks: number;
+  primaryInsuredPayout: number;
+  secondaryInsuredPayout: number;
+}
 
 export interface DefaultPickProps {
   id: any;
@@ -12,9 +18,11 @@ export interface DefaultPickProps {
   pickTime?: string;
   value?: number;
   risk?: number;
-  potentialWin?: number;
-  status?: string;
+  potentialWin?: number | InsuredPayoutInterface;
+  status?: PickStatus;
   odd?: BetLegType;
+  category?: string;
+  stakeType?: BetStakeType;
 }
 
 export interface StraightPickProps extends DefaultPickProps {
@@ -38,40 +46,14 @@ const StraightCard: React.FC<StraightPickProps> = (props) => {
         </div>
         <div className={'p-1 md:p-4 items-end'}>
           <p className={'font-bold text-sm'}>
-            {props.odd === BetLegType.OVER_ODDS ? '+' : 'Under '} {props.value}
+            {props.odd === BetLegType.OVER_ODDS ? 'More ' : 'Less '}
+            {props.value} {props.category}
           </p>
         </div>
       </div>
 
       {/*Card Footer*/}
-      <div className="p-1 md:p-5 flex flex-row justify-between">
-        <div className={'flex flex-col items-center'}>
-          <p className="text-gray-400 text-sm">Risk</p>
-          <p className="font-bold">{props.risk}</p>
-        </div>
-        <div className={'flex flex-col items-center'}>
-          <p className="text-gray-400 text-sm">
-            {props.status === PickStatus.WON ? 'Winnings' : 'Potential Win'}
-          </p>
-          <p className="font-bold">{props.potentialWin}</p>
-        </div>
-        <div className={'flex flex-col items-center'}>
-          <p className="text-gray-400 text-sm">Status</p>
-          <div className={'flex flex-row gap-1 items-center'}>
-            {props.status === PickStatus.PENDING && (
-              <div className="w-4 h-4 border border-gray-300 rounded-full" />
-            )}
-            {props.status === PickStatus.LOST && (
-              <XCircle className="w-6 h-6 fill-red-500" />
-            )}
-
-            {props.status === PickStatus.WON && (
-              <CheckCircle className="w-6 h-6 fill-green-500" />
-            )}
-            <p className="font-bold capitalize text-sm">{props.status}</p>
-          </div>
-        </div>
-      </div>
+      <PickCardFooter {...props} />
     </div>
   );
 };

@@ -96,16 +96,15 @@ export const Layout: React.FC<Props> = (props) => {
                     setParam('league', name);
                   }}
                   className={classNames(
-                    'inline-flex text-white mx-3.5 flex-col justify-center text-center',
+                    'inline-flex text-white mx-3.5 flex-col justify-center text-center items-center p-1',
                     {
-                      underline: league?.toUpperCase() === name.toUpperCase(),
+                      'underline bg-blue-800':
+                        league?.toUpperCase() === name.toUpperCase(),
                     },
                   )}
                 >
                   <Icon
-                    className={classNames(
-                      `object-contain h-8 max-w-full w-8 m-auto text-gray-200 mb-1.5`,
-                    )}
+                    isSelected={league?.toUpperCase() === name.toUpperCase()}
                   />
                   {name}
                 </a>

@@ -7,6 +7,10 @@ import { TennisIcon } from './submenu/tennis';
 import { BoxingIcon } from './submenu/boxing';
 import { UrlPaths } from '~/constants/UrlPaths';
 
+export interface SportsIconProps {
+  isSelected?: boolean;
+}
+
 const leagues = {
   NFL: {
     link: UrlPaths.Challenge + '?league=nfl',
