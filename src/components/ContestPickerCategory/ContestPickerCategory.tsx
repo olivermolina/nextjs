@@ -16,8 +16,8 @@ const ContestPickerCategoryCard = (props: Props) => {
       sx={{
         borderRadius: 1,
         backgroundColor: props.isSelected ? '#fff' : grey[200],
-        width: 135,
-        p: 1,
+        width: 100,
+        py: 0.5,
         cursor: 'pointer',
       }}
     >
@@ -26,12 +26,15 @@ const ContestPickerCategoryCard = (props: Props) => {
         justifyContent={'center'}
         alignItems={'center'}
         onClick={() => props.handleClick(props.category)}
+        spacing={0.2}
       >
-        <span className="font-bold text-lg">
+        <span className="font-bold text-md">
           {props.category.numberOfPicks} Picks
         </span>
-        <span>{props.category.allInPayoutMultiplier}x Payout</span>
-        <span>
+        <span className="text-sm">
+          {props.category.allInPayoutMultiplier}x Payout
+        </span>
+        <span className="text-sm">
           {props.category.numberOfPicks}/{props.category.numberOfPicks} Correct
         </span>
       </Stack>

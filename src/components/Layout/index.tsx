@@ -72,7 +72,7 @@ export const Layout: React.FC<Props> = (props) => {
           <Logo key="bottom" scale={3} />
         </div>
         <div className="p-4 flex justify-end">
-          {Boolean(props.currentContestTokenCount) ? (
+          {props.showTokenCount ? (
             <TokenCount count={props.currentContestTokenCount || 0} />
           ) : (
             <CashAmount
