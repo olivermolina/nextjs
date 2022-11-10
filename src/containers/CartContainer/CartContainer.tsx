@@ -53,7 +53,6 @@ const CartContainer = () => {
             : bet.legs.length > 1
             ? BetType.PARLAY
             : BetType.STRAIGHT,
-          contestCategoryId: bet.contestCategory?.id || '',
           stakeType: bet.stakeType,
         });
         dispatch(removeBet(bet.betId));
