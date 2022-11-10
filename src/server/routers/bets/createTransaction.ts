@@ -1,19 +1,19 @@
 import ShortUniqueId from 'short-unique-id';
 import { prisma } from '~/server/prisma';
-import { User } from '@supabase/supabase-js';
 import { ActionType } from '~/constants/ActionType';
 import { PaymentMethodType, TransactionType } from '@prisma/client';
 
-export const createBetTransaction = async (
-  user: User,
+export const createTransaction = async (
+  userId: string,
   amountProcess: number,
   contestEntryId: string,
   transactionType: TransactionType,
+  actionType: ActionType,
 ) => {
   const session = await prisma.session.create({
     data: {
-      userId: user.id,
-      serviceType: ActionType.PLACE_BET,
+      userId: userId,
+      serviceType: actionType,
       deviceLocation: '',
       sessionRequestRaw: '',
     },
@@ -24,8 +24,8 @@ export const createBetTransaction = async (
     data: {
       id: uid(),
       sessionId: session.id,
-      actionType: ActionType.PLACE_BET,
-      userId: user.id,
+      actionType: actionType,
+      userId: userId,
       amountProcess,
       amountBonus: 0,
       transactionCurrency: 'USD',

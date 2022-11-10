@@ -122,6 +122,7 @@ model Contest {
   entryFee   Decimal
   totalPrize Decimal
   wagerType ContestWagerType @default(TOKEN)
+  priority  Int  @default(autoincrement())
 }
 
 enum League {

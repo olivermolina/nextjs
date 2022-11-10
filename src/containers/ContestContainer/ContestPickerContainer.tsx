@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import { useDispatch } from 'react-redux';
@@ -7,13 +7,17 @@ import { useQueryParams } from '~/hooks/useQueryParams';
 import { setActiveContestDetailModal, setSelectedContest } from '~/state/ui';
 import { trpc } from '~/utils/trpc';
 import { MORE_OR_LESS_CONTEST_ID } from '~/constants/MoreOrLessContestId';
+import { useAppSelector } from '~/state/hooks';
 
 /**
  * This component will fetch all of the current users available contests and allow them to either navigate to a new contest
  * that they're already enlisted in, or open the contest detail modal for contests they're not currently involved in.
  */
 const ContestPickerContainer: React.FC = () => {
-  const { data, isLoading } = trpc.contest.list.useQuery();
+  const contestModal = useAppSelector(
+    (state) => state.ui.activeContestDetailModal,
+  );
+  const { data, isLoading, refetch } = trpc.contest.list.useQuery();
   const { setParam, contestId } = useQueryParams();
   const dispatch = useDispatch();
   /**
@@ -65,6 +69,10 @@ const ContestPickerContainer: React.FC = () => {
       })) || []
     );
   }, [data, dispatch, setParam, contestId]);
+
+  useEffect(() => {
+    refetch();
+  }, [contestModal]);
 
   if (isLoading) return <>Loading...</>;
 

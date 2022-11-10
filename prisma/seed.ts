@@ -85,6 +85,7 @@ async function main() {
       ContestEntries: {
         create: contestEntry,
       },
+      priority: 1,
     },
   });
   await prisma.contest.create({

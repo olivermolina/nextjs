@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react';
 import { AvatarCircle } from '../AvatarCircle';
-import { Modal } from '../Modal';
 import { TabPanel } from '../TabPanel';
 import Entries from './Entries';
 import { EntriesProps } from './Entries/Entries';
@@ -10,6 +9,17 @@ import Prizes from './Prizes';
 import { PrizesProps } from './Prizes/Prizes';
 import Rules from './Rules';
 import { RulesProps } from './Rules/Rules';
+import {
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  Divider,
+  IconButton,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import classNames from 'classnames';
+import BackdropLoading from '~/components/BackdropLoading';
 
 export type ContestDetailModalProps = {
   imgUrl: string;
@@ -20,76 +30,96 @@ export type ContestDetailModalProps = {
   entries: EntriesProps['entries'];
   prizes: PrizesProps['prizes'];
   rules: RulesProps;
+  handleClose: () => void;
+  isLoading: boolean;
 };
 
 const ContestDetailModal = (props: ContestDetailModalProps) => {
   return (
-    <Modal
-      header={
-        <div className="flex gap-1">
-          <div>
-            <AvatarCircle imgSrc={props.imgUrl} height={50} width={50} />
-          </div>
-          <div className="text-white">
-            <h2>{props.name}</h2>
-            <span>Official Tournaments</span>
-          </div>
+    <Dialog open={props.isModalOpen} fullWidth maxWidth={'md'}>
+      <BackdropLoading open={props.isLoading} />
+      <div className="flex items-start gap-2 p-5 border-b border-solid border-gray-300 rounded-t bg-blue-800 ">
+        <div>
+          <AvatarCircle imgSrc={props.imgUrl} height={50} width={50} />
         </div>
-      }
-      footer={
-        <div className={'p-5 bg-white'}>
-          <button
-            className="p-4 capitalize text-white rounded-lg font-bold text-2xl bg-blue-600 w-full"
-            type="submit"
-            onClick={props.onClickJoinCompetition}
-          >
-            Join Competition
-          </button>
+        <div className="text-white">
+          <h2>{props.name}</h2>
+          <span>Official Tournaments</span>
         </div>
-      }
-      showModal={props.isModalOpen}
-    >
-      <div>
-        <TabPanel
-          tabs={[
-            {
-              tabId: 1,
-              title: 'Overview',
-            },
-            {
-              tabId: 2,
-              title: 'Entries',
-            },
-            {
-              tabId: 3,
-              title: 'Prizes',
-            },
-            {
-              tabId: 4,
-              title: 'Rules',
-            },
-          ]}
-          tabsContent={[
-            {
-              tabId: 1,
-              content: <Overview {...props.overview} />,
-            },
-            {
-              tabId: 2,
-              content: <Entries entries={props.entries} />,
-            },
-            {
-              tabId: 3,
-              content: <Prizes prizes={props.prizes} />,
-            },
-            {
-              tabId: 4,
-              content: <Rules {...props.rules} />,
-            },
-          ]}
-        />
+
+        <IconButton
+          aria-label="close"
+          onClick={props.handleClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: 'white',
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
       </div>
-    </Modal>
+      <DialogContent>
+        <div>
+          <TabPanel
+            tabs={[
+              {
+                tabId: 1,
+                title: 'Overview',
+              },
+              {
+                tabId: 2,
+                title: 'Entries',
+              },
+              {
+                tabId: 3,
+                title: 'Prizes',
+              },
+              {
+                tabId: 4,
+                title: 'Rules',
+              },
+            ]}
+            tabsContent={[
+              {
+                tabId: 1,
+                content: <Overview {...props.overview} />,
+              },
+              {
+                tabId: 2,
+                content: <Entries entries={props.entries} />,
+              },
+              {
+                tabId: 3,
+                content: <Prizes prizes={props.prizes} />,
+              },
+              {
+                tabId: 4,
+                content: <Rules {...props.rules} />,
+              },
+            ]}
+          />
+        </div>
+      </DialogContent>
+      <Divider />
+      <DialogActions sx={{ justifyContent: 'center', p: 4 }}>
+        <button
+          className={classNames(
+            'p-4 capitalize text-white rounded-lg font-bold text-2xl bg-blue-600 w-fit',
+            {
+              'opacity-10': props.isLoading,
+            },
+          )}
+          type="submit"
+          onClick={props.onClickJoinCompetition}
+          disabled={props.isLoading}
+        >
+          Join Competition
+          {props.isLoading && <CircularProgress sx={{ ml: 1 }} size={20} />}
+        </button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

@@ -64,7 +64,7 @@ const login = t.procedure
     const moreOrLessContest = await getMoreLessContest();
     const userContestEntry = await prisma.contestEntry.findFirst({
       where: {
-        id: moreOrLessContest.id,
+        contestsId: moreOrLessContest.id,
         userId,
       },
     });
@@ -73,7 +73,7 @@ const login = t.procedure
         data: {
           userId: userId,
           contestsId: moreOrLessContest.id,
-          tokens: 1000,
+          tokens: 0,
         },
       });
     }

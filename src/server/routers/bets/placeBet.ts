@@ -17,7 +17,8 @@ import { calculateParlayPayout } from '~/utils/calculateParlayPayout';
 import { calculateTotalOdds } from '~/utils/calculateTotalBets';
 import { User } from '@supabase/supabase-js';
 import { getUserTotalCashAmount } from '~/server/routers/user/userTotalCashAmount';
-import { createBetTransaction } from '~/server/routers/bets/createBetTransaction';
+import { createTransaction } from '~/server/routers/bets/createTransaction';
+import { ActionType } from '~/constants/ActionType';
 
 function placeBetSchema(isTeaser: boolean) {
   return yup.object().shape({
@@ -182,11 +183,12 @@ export async function placeBet(bet: BetInputType, user: User): Promise<void> {
   });
 
   if (contest.wagerType === ContestWagerType.CASH) {
-    await createBetTransaction(
-      user,
+    await createTransaction(
+      user.id,
       bet.stake,
       contestEntry.id,
       TransactionType.DEBIT,
+      ActionType.PLACE_BET,
     );
   }
 }

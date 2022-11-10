@@ -1,7 +1,7 @@
 import { t } from '~/server/trpc';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '~/server/prisma';
-import { Contest, ContestEntry } from '@prisma/client';
+import { Contest, ContestEntry, ContestWagerType } from '@prisma/client';
 import { canJoinContest } from '~/server/routers/contest/canJoinContest';
 import * as yup from '~/utils/yup';
 import { InferType } from '~/utils/yup';
@@ -80,6 +80,9 @@ const contests = t.procedure
           },
         },
       },
+      where: {
+        wagerType: ContestWagerType.TOKEN,
+      },
     });
     const userId = ctx.session.user?.id;
     if (!userId) {
@@ -88,7 +91,6 @@ const contests = t.procedure
         message: 'User not found',
       });
     }
-    console.log(contests);
 
     const result = await findLeadersByContest(
       contests.map(

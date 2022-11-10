@@ -25,6 +25,9 @@ const LayoutContainer: React.FC<Props> = (props) => {
     selectAllBets(state).reduce((acc, curr) => acc + 0, 0),
   );
   const selectedContest = useAppSelector((state) => state.ui.selectedContest);
+  const contestModal = useAppSelector(
+    (state) => state.ui.activeContestDetailModal,
+  );
 
   const result = trpc.contest.listOffers.useQuery({
     contestId: params.contestId,
@@ -38,7 +41,7 @@ const LayoutContainer: React.FC<Props> = (props) => {
 
   useEffect(() => {
     refetch();
-  }, [cartStake]);
+  }, [cartStake, contestModal]);
 
   return (
     <>

@@ -1,16 +1,19 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import { trpc } from '~/utils/trpc';
 import { ContestTable } from '~/components';
-import { useAppDispatch } from '~/state/hooks';
+import { useAppDispatch, useAppSelector } from '~/state/hooks';
 import { setActiveContestDetailModal } from '~/state/ui';
 
 /**
  * This component will fetch all active contests
  */
 const ContestsContainer: React.FC = () => {
-  const { data, isLoading } = trpc.contest.contests.useQuery();
+  const contestModal = useAppSelector(
+    (state) => state.ui.activeContestDetailModal,
+  );
+  const { data, isLoading, refetch } = trpc.contest.contests.useQuery();
   const dispatch = useAppDispatch();
   /**
    * Map contests to expected props or default to an empty array.
@@ -55,6 +58,10 @@ const ContestsContainer: React.FC = () => {
       })) || [],
     [data, dispatch],
   );
+  useEffect(() => {
+    refetch();
+  }, [contestModal]);
+
   if (isLoading) return <>Loading...</>;
   return <ContestTable contests={contests} />;
 };

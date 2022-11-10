@@ -5,8 +5,11 @@ import ContestDetailModal from '~/components/ContestDetail/ContestDetailModal';
 import { useAppDispatch, useAppSelector } from '~/state/hooks';
 import { setActiveContestDetailModal } from '~/state/ui';
 import { trpc } from '~/utils/trpc';
+import { UrlPaths } from '~/constants/UrlPaths';
+import { useRouter } from 'next/router';
 
 const ContestDetailContainer = () => {
+  const router = useRouter();
   const contestId = useAppSelector(
     (state) => state.ui.activeContestDetailModal,
   );
@@ -30,12 +33,21 @@ const ContestDetailContainer = () => {
         // TODO: Put the rules here
         rules={{ content: faker.lorem.paragraphs() }}
         onClickJoinCompetition={async () => {
-          await joinContest.mutateAsync({
-            contestId: contestId,
-          });
-          dispatch(setActiveContestDetailModal(''));
+          try {
+            await joinContest.mutateAsync({
+              contestId: contestId,
+            });
+            await router.push(UrlPaths.Challenge);
+            dispatch(setActiveContestDetailModal(''));
+          } catch (error: any) {
+            toast.error(error.shape?.message);
+          }
         }}
         isModalOpen={!!contestId}
+        handleClose={() => {
+          dispatch(setActiveContestDetailModal(''));
+        }}
+        isLoading={joinContest.isLoading}
       />
     );
   } else {

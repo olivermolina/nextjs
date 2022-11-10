@@ -32,6 +32,9 @@ const contestList = t.procedure
       include: {
         ContestEntries: true,
       },
+      orderBy: {
+        priority: 'asc',
+      },
     });
     const userId = ctx.session.user?.id;
     if (!userId) {
