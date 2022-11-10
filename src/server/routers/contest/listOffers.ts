@@ -12,6 +12,7 @@ import { getFiltersByLeague } from '~/server/routers/contest/getFiltersByLeague'
 import { FantasyOffer } from '~/types';
 import { getFantasyOffers } from '~/server/routers/contest/getFantasyOffers';
 import * as yup from '~/utils/yup';
+import { uniq } from 'lodash';
 
 const listOffers = t.procedure
   .input(
@@ -157,12 +158,13 @@ const listOffers = t.procedure
         type: ContestType.MATCH,
       };
     } else if (contest.type === ContestType.FANTASY) {
-      const filters = getFiltersByLeague(input.league);
+      const defaultFilters = getFiltersByLeague(input.league);
       const offers: FantasyOffer[] = await getFantasyOffers(input.league);
+      const availableFilters = offers?.map((offer) => offer.statName);
 
       return {
         ...contestProps,
-        filters,
+        filters: uniq([...defaultFilters, ...availableFilters]),
         offers: offers,
         type: ContestType.FANTASY,
       };
