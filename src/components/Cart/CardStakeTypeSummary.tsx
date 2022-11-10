@@ -1,105 +1,125 @@
 import React from 'react';
+import { Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import {
-  Divider,
-  FormControl,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  Stack,
-} from '@mui/material';
-import { grey } from '@mui/material/colors';
-import { BetStakeType, ContestCategory } from '@prisma/client';
+  BetStakeType,
+  ContestCategory,
+  ContestWagerType,
+} from '@prisma/client';
 import { InsuredPayout } from '~/utils/calculateInsuredPayout';
+import { styled } from '@mui/material/styles';
+import { showDollarPrefix } from '~/utils/showDollarPrefix';
 
 interface Props {
   stakeType: BetStakeType;
   insuredPayout: InsuredPayout;
+  payout: string;
   contestCategory: ContestCategory;
+  wagerType: ContestWagerType;
+
   onUpdateBetStakeType(stakeType: BetStakeType): void;
 }
 
+const StyledToggleButtonGroup = styled(ToggleButtonGroup)(() => ({
+  '& .MuiToggleButtonGroup-grouped': {
+    color: 'black',
+    '&.Mui-disabled': {
+      border: 0,
+    },
+    '&.Mui-selected': {
+      backgroundColor: '#bbdefb',
+      color: '#0d47a1',
+    },
+    fontWeight: 'bold',
+    borderRadius: 28,
+  },
+}));
+
+interface PayoutItemProps {
+  correct: number;
+  numberOfPicks: number;
+  multiplier: number;
+  payout: string | number;
+  isShowDollarPrefix: boolean;
+}
+
+const PayoutItem = (props: PayoutItemProps) => (
+  <Stack
+    direction="row"
+    justifyContent="space-between"
+    alignItems="center"
+    spacing={1}
+  >
+    <span className={'font-bold w-5'}>
+      {props.correct}/{props.numberOfPicks}
+    </span>
+    <span>Correct</span>
+    <div
+      className={
+        'flex bg-blue-200 font-bold p-4 h-16 w-16 rounded-full items-center justify-center'
+      }
+    >
+      {props.multiplier}x
+    </div>
+    <span>Payout</span>
+    <span className={'font-bold  w-10'}>
+      {showDollarPrefix(Number(props.payout), props.isShowDollarPrefix)}
+    </span>
+  </Stack>
+);
+
 const CardStakeTypeSummary = (props: Props) => {
-  const onChangeBetStakeType = (event: React.ChangeEvent<HTMLInputElement>) => {
-    props.onUpdateBetStakeType(
-      (event.target as HTMLInputElement).value as BetStakeType,
-    );
+  const onChangeBetStakeType = (
+    event: React.MouseEvent<HTMLElement>,
+    nextStakeType: BetStakeType,
+  ) => {
+    props.onUpdateBetStakeType(nextStakeType);
   };
+
   return (
-    <Stack className={'p-4'}>
+    <Stack
+      sx={{ p: 2, backgroundColor: 'white', borderRadius: 10 }}
+      spacing={2}
+    >
+      <StyledToggleButtonGroup
+        value={props.stakeType}
+        onChange={onChangeBetStakeType}
+        exclusive={true}
+        fullWidth
+      >
+        <ToggleButton value={BetStakeType.INSURED}>Insured</ToggleButton>
+        <ToggleButton value={BetStakeType.ALL_IN}>All In</ToggleButton>
+      </StyledToggleButtonGroup>
+
       {props.stakeType === BetStakeType.INSURED ? (
-        <Stack
-          sx={{
-            border: 1,
-            borderRadius: 1,
-            borderColor: grey[200],
-            flexGrow: 1,
-          }}
-          direction={'row'}
-          justifyContent={'space-evenly'}
-          alignItems="center"
-          spacing={1}
-          className={'text-sm'}
-        >
-          <div
-            className={
-              'flex flex-col justify-center items-center py-1 text-gray-500'
-            }
-          >
-            <span>Correct</span>
-            <span className={'text-bold font-bold text-black'}>
-              {props.contestCategory.numberOfPicks - 1}/
-              {props.contestCategory.numberOfPicks}
-            </span>
-          </div>
-          <div
-            className={
-              'flex flex-col justify-center items-center py-1 text-gray-500'
-            }
-          >
-            <span>Payout</span>
-            <span className={'text-bold font-bold text-black'}>
-              ${props.insuredPayout.secondaryInsuredPayout}
-            </span>
-          </div>
-          <Divider orientation="vertical" flexItem />
-          <div
-            className={
-              'flex flex-col justify-center items-center py-1 text-gray-500'
-            }
-          >
-            <span>Correct</span>
-            <span className={'text-bold font-bold text-black'}>
-              {props.contestCategory.numberOfPicks}/
-              {props.contestCategory.numberOfPicks}
-            </span>
-          </div>
-          <div
-            className={
-              'flex flex-col justify-center items-center py-1 text-gray-500'
-            }
-          >
-            <span>Payout</span>
-            <span className={'text-bold font-bold text-black'}>
-              ${props.insuredPayout.primaryInsuredPayout}
-            </span>
-          </div>
-        </Stack>
+        <>
+          <PayoutItem
+            correct={props.contestCategory.numberOfPicks}
+            numberOfPicks={props.contestCategory.numberOfPicks}
+            multiplier={props.contestCategory.primaryInsuredPayoutMultiplier}
+            payout={props.insuredPayout.primaryInsuredPayout}
+            isShowDollarPrefix={props.wagerType === ContestWagerType.CASH}
+          />
+          <PayoutItem
+            correct={props.contestCategory.numberOfPicks - 1}
+            numberOfPicks={props.contestCategory.numberOfPicks}
+            multiplier={props.contestCategory.secondaryInsuredPayoutMultiplier}
+            payout={props.insuredPayout.secondaryInsuredPayout}
+            isShowDollarPrefix={props.wagerType === ContestWagerType.CASH}
+          />
+        </>
       ) : null}
 
-      <FormControl>
-        <RadioGroup value={props.stakeType} onChange={onChangeBetStakeType}>
-          <FormControlLabel
-            value={BetStakeType.INSURED}
-            control={<Radio />}
-            label={<span className={'text-sm'}>Insured</span>}
+      {props.stakeType === BetStakeType.ALL_IN ? (
+        <>
+          <PayoutItem
+            correct={props.contestCategory.numberOfPicks}
+            numberOfPicks={props.contestCategory.numberOfPicks}
+            multiplier={props.contestCategory.allInPayoutMultiplier}
+            payout={props.payout}
+            isShowDollarPrefix={props.wagerType === ContestWagerType.CASH}
           />
-          <FormControlLabel
-            value={BetStakeType.ALL_IN}
-            control={<Radio />}
-            label={<span className={'text-sm'}>All In</span>}
-          />
-        </RadioGroup>
-      </FormControl>
+        </>
+      ) : null}
     </Stack>
   );
 };

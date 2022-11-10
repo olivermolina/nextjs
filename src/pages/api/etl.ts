@@ -9,7 +9,7 @@ import defaultLogger from '~/utils/logger';
 
 const caller = appRouter.createCaller({} as any);
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(_req: NextApiRequest, res: NextApiResponse) {
   for (const league of Object.values(LeagueEnum)) {
     const logger = defaultLogger.child({ leagues: league });
     logger.info('Ingesting data for league');
@@ -39,6 +39,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     });
 
     const events = data?.events || [];
+    for (const offer of events) {
+      if (offer.status === 'Final') {
+        void caller.bets.grade({ markets: offer.markets, token: TOKEN });
+      }
+    }
+
     for (const offerChunk of chunk(events, 3)) {
       // Get offers
       caller.etl.ingestByLeague({

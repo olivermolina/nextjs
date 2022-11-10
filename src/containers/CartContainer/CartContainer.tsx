@@ -47,6 +47,7 @@ const CartContainer = () => {
             total: l.total,
           })),
           contestId: bet.contest,
+          contestCategoryId: bet.contestCategory.id,
           type: isTeaser
             ? BetType.TEASER
             : bet.legs.length > 1

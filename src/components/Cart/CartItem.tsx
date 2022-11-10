@@ -1,4 +1,4 @@
-import React, { ChangeEventHandler, useCallback } from 'react';
+import React from 'react';
 import { ICartItemProps } from './ICartItemProps';
 import { SmallText } from './SmallText';
 import { CartItemSummaryBox } from './CartItemSummaryBox';
@@ -17,10 +17,9 @@ const StyledToggleButton = styled(ToggleButton)({
 });
 
 export function CartItem(props: ICartItemProps) {
-  const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
-    const newValue = Number(e.target.value) || 0;
-    props.onUpdateCartItem(props.id, newValue);
-  }, []);
+  const onChange = (newValue: number) => {
+    props.onUpdateCartItem(props.id, newValue || 0);
+  };
   return (
     <>
       {props.legs.map((leg) => (
@@ -80,7 +79,7 @@ export function CartItem(props: ICartItemProps) {
           </div>
         </div>
       ))}
-      <div className="grid grid-cols-2">
+      <div className="flex flex-grow flex-col bg-blue-200 justify-center items-center p-4 gap-5">
         <CartItemSummaryBox
           isAbleToEdit
           label="Entry"
@@ -89,14 +88,15 @@ export function CartItem(props: ICartItemProps) {
           onChange={onChange}
           wagerType={props.wagerType}
         />
-        <CartItemSummaryBox label="Potential Payout" value={props.payout} />
+        <CardStakeTypeSummary
+          stakeType={props.stakeType}
+          onUpdateBetStakeType={props.onUpdateBetStakeType}
+          insuredPayout={props.insuredPayout}
+          contestCategory={props.contestCategory}
+          payout={props.payout}
+          wagerType={props.wagerType!}
+        />
       </div>
-      <CardStakeTypeSummary
-        stakeType={props.stakeType}
-        onUpdateBetStakeType={props.onUpdateBetStakeType}
-        insuredPayout={props.insuredPayout}
-        contestCategory={props.contestCategory}
-      />
     </>
   );
 }

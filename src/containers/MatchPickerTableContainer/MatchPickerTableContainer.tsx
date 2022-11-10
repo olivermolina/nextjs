@@ -151,6 +151,10 @@ const MatchPickerTableContainer = () => {
                 toast.error('Unknown contest type');
                 return;
               }
+              if (!contestCategory) {
+                toast.error('Missing contest category!');
+                return;
+              }
               if (!offer) {
                 toast.error('Unknown offer!');
                 return;
@@ -216,6 +220,10 @@ const MatchPickerTableContainer = () => {
                   toast.error('Unknown offer!');
                   return;
                 }
+                if (!contestCategory) {
+                  toast.error('Missing contest category!');
+                  return;
+                }
                 const bet: BetInput = {
                   name: offer!.playerName,
                   gameId: offer!.id,
@@ -243,6 +251,10 @@ const MatchPickerTableContainer = () => {
               onClickLess: () => {
                 if (!offer) {
                   toast.error('Unknown offer!');
+                  return;
+                }
+                if (!contestCategory) {
+                  toast.error('Missing contest category!');
                   return;
                 }
                 const bet: BetInput = {

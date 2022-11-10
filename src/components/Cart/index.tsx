@@ -18,7 +18,7 @@ export interface CartProps {
 
 export const Cart: React.FC<CartProps> = (props) => {
   return (
-    <div className="bg-white rounded-br shadow">
+    <div className="bg-white rounded-br shadow min-w-[300px]">
       {/* Header */}
       <div className="text-xl font-bold text-blue-600 text-center p-4">
         Your picks
