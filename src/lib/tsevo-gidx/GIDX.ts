@@ -15,10 +15,10 @@ enum GIDX_ROUTES {
 
 const gidxClient = axios.create({
   baseURL: `${process.env.GIDX_DIRECT_CASHIER_API_URL}`,
-  proxy: false,
   httpsAgent: new (HttpsProxyAgent as any)(
     process.env.STATIC_IP_OUTBOUND_PROXY,
   ),
+  proxy: false,
 });
 
 const GIDX_CALLBACK_STATUS_URL = `${process.env.STATIC_IP_INBOUND_PROXY}/api/gidxCallback`;
