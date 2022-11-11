@@ -23,6 +23,7 @@ export async function getFantasyOffers(
     },
     include: {
       offer: true,
+      player: true,
     },
   });
   return markets.map(mapData);

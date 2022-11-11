@@ -45,6 +45,16 @@ export interface FantasyCardProps {
    * Boolean to show selected More/Less button.
    */
   isOver?: boolean;
+  /**
+   * Player Position
+   * @example QB
+   */
+  playerPosition: string;
+  /**
+   * Player Team
+   * @example KC
+   */
+  playerTeam: string;
 }
 
 export const FantasyCard = (props: FantasyCardProps) => {
@@ -122,8 +132,8 @@ export const FantasyCard = (props: FantasyCardProps) => {
         <div className="font-bold text-lg text-black">{props.playerName}</div>
         {/* Card Tags */}
         <div className="flex gap-2">
-          <CardTag>QB</CardTag>
-          <CardTag>KC</CardTag>
+          <CardTag>{props.playerPosition}</CardTag>
+          <CardTag>{props.playerTeam}</CardTag>
         </div>
       </div>
     </div>

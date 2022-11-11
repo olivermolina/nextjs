@@ -286,6 +286,8 @@ const MatchPickerTableContainer = () => {
               stat: offer!.statName,
               gameInfo: offer!.matchName,
               playerName: offer!.playerName,
+              playerPosition: offer!.playerPosition,
+              playerTeam: offer!.playerTeam,
             }))}
           legs={contestBet?.legs}
         />

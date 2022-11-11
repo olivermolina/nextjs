@@ -29,6 +29,8 @@ const cards = [
     gameInfo: 'DAL @ DEN',
     playerName: 'Patrick Mahomes',
     image: '/assets/images/patrick-mahomes.png',
+    playerPosition: 'QB',
+    playerTeam: 'KC',
   },
   {
     onClickLess: () => console.log('clicked'),
@@ -38,6 +40,8 @@ const cards = [
     gameInfo: 'NYG @ DEN',
     playerName: 'Tyrod Taylor',
     image: '/assets/images/tyrod-taylor.png',
+    playerPosition: 'QB',
+    playerTeam: 'KC',
   },
   {
     onClickLess: () => console.log('clicked'),
@@ -47,6 +51,8 @@ const cards = [
     gameInfo: 'PE @ DEN',
     playerName: 'Dallas Goedert',
     image: '/assets/images/dallas-goedert.png',
+    playerPosition: 'QB',
+    playerTeam: 'KC',
   },
 ];
 

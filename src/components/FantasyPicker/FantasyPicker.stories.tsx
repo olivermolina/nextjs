@@ -46,6 +46,8 @@ Default.args = {
       gameInfo: 'LA@DEN',
       playerName: 'Patrick Mahomes',
       image: '/assets/images/dallas-goedert.png',
+      playerPosition: 'QB',
+      playerTeam: 'KC',
     },
     {
       onClickLess: () => alert('clicked'),
@@ -55,6 +57,8 @@ Default.args = {
       gameInfo: 'LA@DEN',
       playerName: 'Patrick Mahomes',
       image: '/assets/images/patrick-mahomes.png',
+      playerPosition: 'QB',
+      playerTeam: 'KC',
     },
     {
       onClickLess: () => alert('clicked'),
@@ -64,6 +68,8 @@ Default.args = {
       gameInfo: 'LA@DEN',
       playerName: 'Patrick Mahomes',
       image: '/assets/images/tyrod-taylor.png',
+      playerPosition: 'QB',
+      playerTeam: 'KC',
     },
     {
       onClickLess: () => alert('clicked'),
@@ -73,6 +79,8 @@ Default.args = {
       gameInfo: 'LA@DEN',
       playerName: 'Patrick Mahomes',
       image: '/assets/images/tyrod-taylor.png',
+      playerPosition: 'QB',
+      playerTeam: 'KC',
     },
   ],
 };

@@ -51,6 +51,14 @@ export type FantasyOffer = {
    * i.e. ['QB','KC']
    */
   tags: string[];
+  /**
+   * i.e. QB
+   */
+  playerPosition: string;
+  /**
+   * i.e. KC
+   */
+  playerTeam: string;
 };
 
 export type GetContestOffers = {

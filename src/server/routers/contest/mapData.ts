@@ -1,10 +1,11 @@
-import { Market, Offer } from '@prisma/client';
+import { Market, Offer, Player } from '@prisma/client';
 import { FantasyOffer } from '~/types';
 import * as StatNames from '~/server/routers/IStatNames';
 
 export const mapData = (
   data: Market & {
     offer: Offer | null;
+    player: Player | null;
   },
 ): FantasyOffer => {
   return {
@@ -22,5 +23,7 @@ export const mapData = (
     league: data.offer!.league,
     matchTime: data.offer!.gamedate || '',
     odds: 100,
+    playerPosition: data.player?.position || '',
+    playerTeam: data.player?.team || '',
   };
 };
