@@ -23,6 +23,8 @@ const envSchema = yup.object().shape({
     .oneOf(['development', 'preview', 'production'])
     .required(),
   PORT: yup.number().default(3000),
+  STATIC_IP_INBOUND_PROXY: yup.string(),
+  STATIC_IP_OUTBOUND_PROXY: yup.string(),
   VERCEL_URL: yup.string(),
 });
 

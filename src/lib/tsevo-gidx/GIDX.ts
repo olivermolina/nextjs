@@ -1,12 +1,12 @@
 import axios, { AxiosError } from 'axios';
 import { TRPCError } from '@trpc/server';
-import { getBaseUrl } from '~/utils/trpc';
 import { prisma } from '~/server/prisma';
 import { PaymentMethodType, Session, Transaction, User } from '@prisma/client';
 import dayjs from 'dayjs';
 import { startCase } from 'lodash';
 import { ActionType } from '~/constants/ActionType';
 import logger from '~/utils/logger';
+import HttpsProxyAgent from 'https-proxy-agent';
 
 enum GIDX_ROUTES {
   DIRECT_CASHIER = 'DirectCashier',
@@ -15,9 +15,13 @@ enum GIDX_ROUTES {
 
 const gidxClient = axios.create({
   baseURL: `${process.env.GIDX_DIRECT_CASHIER_API_URL}`,
+  proxy: false,
+  httpsAgent: new (HttpsProxyAgent as any)(
+    process.env.STATIC_IP_OUTBOUND_PROXY,
+  ),
 });
 
-const GIDX_CALLBACK_STATUS_URL = `${getBaseUrl()}/api/gidxCallback`;
+const GIDX_CALLBACK_STATUS_URL = `${process.env.STATIC_IP_INBOUND_PROXY}/api/gidxCallback`;
 
 export interface GIDXDataBaseResponse {
   MerchantSessionID: string;
