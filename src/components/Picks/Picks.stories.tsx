@@ -56,7 +56,7 @@ Main.args = {
       status: PickStatus.PENDING,
       data: {
         id: 232,
-        name: 'Straight Bet',
+        name: 'Straight Entry',
         description: 'New Your Rangers, Moneyline Away',
         gameInfo: 'New Yourk Rangers vs Tampa Bay Lightning ',
         contestType: 'Team Token Picks',
@@ -73,7 +73,7 @@ Main.args = {
       status: PickStatus.PENDING,
       data: {
         id: 232,
-        name: 'Parlay Bet',
+        name: 'Parlay Entry',
         gameInfo:
           'Golden State Warriors, Tampa Bay Lightning, Woverhampton Wanderers',
         contestType: 'Team Token Picks',
@@ -120,14 +120,14 @@ Main.args = {
       status: PickStatus.SETTLED,
       data: {
         id: 232,
-        name: 'Straight Bet',
+        name: 'Straight Entry',
         description: 'New Your Rangers, Moneyline Away',
         gameInfo: 'New Yourk Rangers vs Tampa Bay Lightning ',
         contestType: 'Team Token Picks',
         pickTime: '12/06/2022',
         potentialWin: 27.56,
         risk: 13,
-        status: PickStatus.WON,
+        status: PickStatus.WIN,
         value: 212,
         odd: BetLegType.OVER_ODDS,
       },
@@ -137,7 +137,7 @@ Main.args = {
       status: PickStatus.SETTLED,
       data: {
         id: 232,
-        name: 'Parlay Bet',
+        name: 'Parlay Entry',
         gameInfo:
           'Golden State Warriors, Tampa Bay Lightning, Woverhampton Wanderers',
         contestType: 'Team Token Picks',
@@ -150,7 +150,7 @@ Main.args = {
             gameInfo: 'Golden State Warriors vs Dallas Mavericks',
             value: 140,
             matchTime: 'Sept 30, 2021 @ 7:30PM',
-            status: PickStatus.WON,
+            status: PickStatus.WIN,
             odd: BetLegType.OVER_ODDS,
           },
           {
@@ -160,7 +160,7 @@ Main.args = {
             gameInfo: 'Florida Panthers vs TampaBay Lightning',
             value: 140,
             matchTime: 'Sept 30, 2021 @ 7:30PM',
-            status: PickStatus.LOST,
+            status: PickStatus.LOSS,
             odd: BetLegType.UNDER_ODDS,
           },
           {
@@ -170,13 +170,13 @@ Main.args = {
             gameInfo: 'Liverpool vs Woverhampton Wanderers',
             value: 1620,
             matchTime: 'Sept 30, 2021 @ 7:30PM',
-            status: PickStatus.LOST,
+            status: PickStatus.LOSS,
             odd: BetLegType.OVER_ODDS,
           },
         ],
         potentialWin: 27.56,
         risk: 13,
-        status: PickStatus.LOST,
+        status: PickStatus.LOSS,
       },
     },
     {
@@ -191,7 +191,7 @@ Main.args = {
         pickTime: '12/06/2022',
         potentialWin: 27.56,
         risk: 13,
-        status: PickStatus.WON,
+        status: PickStatus.WIN,
         value: 212,
         odd: BetLegType.OVER_ODDS,
       },

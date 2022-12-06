@@ -63,6 +63,13 @@ const ContestsContainer: React.FC = () => {
   }, [contestModal]);
 
   if (isLoading) return <>Loading...</>;
+  if (!isLoading && contests.length == 0) {
+    return (
+      <div className={'flex p-5 h-screen'}>
+        <p>More contests coming soon!</p>
+      </div>
+    );
+  }
   return <ContestTable contests={contests} />;
 };
 

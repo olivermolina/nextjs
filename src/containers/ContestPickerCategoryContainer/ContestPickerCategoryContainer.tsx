@@ -1,23 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { trpc } from '~/utils/trpc';
 import { Skeleton, Stack } from '@mui/material';
 import { ContestCategory } from '@prisma/client';
 import ContestPickerCategoryCard from '~/components/ContestPickerCategory';
-import { useQueryParams } from '~/hooks/useQueryParams';
 import { updateAllBetsContestCategory } from '~/state/bets';
-import { useAppDispatch } from '~/state/hooks';
+import { useAppDispatch, useAppSelector } from '~/state/hooks';
+import { setSelectedContestCategory, setContestCategories } from '~/state/ui';
 
 const ContestPickerCategoryContainer: React.FC = () => {
-  const { setParam, contestCategoryId } = useQueryParams();
-  const [selectedCategory, setSelectedCategory] = useState<
-    ContestCategory | undefined
-  >();
   const dispatch = useAppDispatch();
+  const contestCategory = useAppSelector(
+    (state) => state.ui.selectedContestCategory,
+  );
   const { isLoading, data } = trpc.contest.contestCategoryList.useQuery();
-
   const handleChangeCategory = (category: ContestCategory) => {
-    setParam('contestCategoryId', category.id);
-    setSelectedCategory(category);
+    dispatch(setSelectedContestCategory(category));
     dispatch(updateAllBetsContestCategory(category));
   };
 
@@ -26,13 +23,11 @@ const ContestPickerCategoryContainer: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!data) return;
-    const category =
-      data.find((category) => category.id === contestCategoryId) || data[0];
-    if (category) {
-      handleChangeCategory(category);
+    if (data) dispatch(setContestCategories(data));
+    if (!contestCategory && data) {
+      handleChangeCategory(data[0] as ContestCategory);
     }
-  }, [contestCategoryId, data]);
+  }, [contestCategory, data]);
 
   if (isLoading) return <Skeleton />;
 
@@ -45,7 +40,7 @@ const ContestPickerCategoryContainer: React.FC = () => {
         <ContestPickerCategoryCard
           key={category.id}
           category={category}
-          isSelected={category.id === selectedCategory?.id}
+          isSelected={category.id === contestCategory?.id}
           handleClick={handleClick}
         />
       ))}

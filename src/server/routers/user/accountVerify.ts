@@ -1,15 +1,25 @@
 import { t } from '~/server/trpc';
 import { TRPCError } from '@trpc/server';
 import * as yup from '~/utils/yup';
-import GIDX, { CustomerProfileResponse } from '~/lib/tsevo-gidx/GIDX';
 import { prisma } from '~/server/prisma';
 import { Session } from '@prisma/client';
+import { mapValues } from 'lodash';
+import dayjs from 'dayjs';
+import { CustomErrorMessages } from '~/constants/CustomErrorMessages';
+import GIDX, {
+  getErrorMessage,
+  IDeviceGPS,
+  isBlocked,
+  isVerified,
+} from '~/lib/tsevo-gidx/GIDX';
 import { ActionType } from '~/constants/ActionType';
 
 const accountVerify = t.procedure
   .input(
     yup.object({
       session: yup.mixed<Session>(),
+      deviceGPS: yup.mixed<IDeviceGPS>().required(),
+      ipAddress: yup.string().required(),
     }),
   )
   .mutation(async ({ input, ctx }) => {
@@ -27,7 +37,7 @@ const accountVerify = t.procedure
       });
     }
 
-    const { session } = input;
+    const { session, deviceGPS, ipAddress } = input;
 
     if (!session) {
       throw new TRPCError({
@@ -36,40 +46,56 @@ const accountVerify = t.procedure
       });
     }
 
-    try {
-      const gidx = await new GIDX(user, ActionType.GET_CUSTOMER, session);
-      const customerProfile: CustomerProfileResponse =
-        await gidx.getCustomerProfile();
-      if (
-        !customerProfile ||
-        !customerProfile.ReasonCodes.includes('ID-VERIFIED')
-      ) {
-        return Promise.reject(Error('Could not identify the customer!'));
-      }
-
-      const primaryName = customerProfile.Name.find((name) => name.Primary);
-      const primaryAddress = customerProfile.Address.find(
-        (address) => address.Primary,
-      );
-
-      if (!primaryName || !primaryAddress)
-        return Promise.reject(Error('Could not verify the customer details!'));
-
-      return {
-        firstname: primaryName.FirstName,
-        lastname: primaryName.LastName,
-        address1: primaryAddress.AddressLine1,
-        address2: primaryAddress.AddressLine2,
-        city: primaryAddress.City,
-        state: primaryAddress.StateCode,
-        postalCode: primaryAddress.PostalCode,
-      };
-    } catch (e: any) {
+    if (!user.identityStatus) {
       throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: e.message,
+        code: 'BAD_REQUEST',
+        message: CustomErrorMessages.NOT_VERIFIED,
       });
     }
+
+    const gidx = await new GIDX(user, ActionType.CUSTOMER_MONITOR, session);
+    const customerMonitorResponse = await gidx.customerMonitor({
+      deviceGPS,
+      ipAddress,
+    });
+
+    if (!isVerified(customerMonitorResponse.ReasonCodes)) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: CustomErrorMessages.NOT_VERIFIED,
+      });
+    }
+
+    if (isBlocked(customerMonitorResponse.ReasonCodes)) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: getErrorMessage(customerMonitorResponse.ReasonCodes),
+      });
+    }
+
+    const {
+      firstname,
+      lastname,
+      address1,
+      address2,
+      city,
+      state,
+      postalCode,
+      DOB,
+    } = user;
+    return mapValues(
+      {
+        firstname,
+        lastname,
+        address1,
+        address2,
+        city,
+        state,
+        postalCode,
+        dob: dayjs(DOB).format('YYYY-MM-DD'),
+      },
+      (v) => (v === null ? '' : v),
+    );
   });
 
 export default accountVerify;

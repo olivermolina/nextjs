@@ -41,6 +41,15 @@ const MENUS = [
   {
     key: 'logout',
     label: 'Log Out',
+    icon: <Icons.Logout className={'h-8'} />,
+  },
+];
+
+const ADMIN_MENUS = [
+  {
+    key: UrlPaths.ProfileManagement,
+    label: 'Management',
+    icon: <Icons.WrenchScrewdriver className={'h-8'} />,
   },
 ];
 
@@ -59,6 +68,8 @@ const ProfileContainer = (props: Props) => {
     retry: false,
   });
 
+  const logoutMutation = trpc.user.logout.useMutation();
+
   const user = useMemo(
     () => ({
       username: data?.username || '',
@@ -68,16 +79,32 @@ const ProfileContainer = (props: Props) => {
       following: 300,
       showFollowers: false,
       isFirstDeposit: data?.isFirstDeposit,
+      isAdmin: data?.isAdmin,
+      firstname: data?.firstname || '',
+      lastname: data?.lastname || '',
+      address1: data?.address1 || '',
+      address2: data?.address2 || '',
+      city: data?.city || '',
+      state: data?.state || '',
+      postalCode: data?.postalCode || '',
+      dob: data?.DOB?.toString() || '',
     }),
     [data],
   );
   const { pathname } = router;
 
-  const onSelectCallback = (newActiveMenu: SettingsItemMenuProps | null) => {
-    if (newActiveMenu?.key === 'logout') return router.push('/'); // Todo clear user session
+  const onSelectCallback = async (
+    newActiveMenu: SettingsItemMenuProps | null,
+  ) => {
+    if (newActiveMenu?.key === 'logout') {
+      await logoutMutation.mutateAsync();
+      await router.push('/');
+      return;
+    }
     setActiveMenu(newActiveMenu);
-    if (newActiveMenu && pathname !== newActiveMenu.key)
-      router.push(newActiveMenu.key);
+    if (newActiveMenu && pathname !== newActiveMenu.key) {
+      await router.push(newActiveMenu.key);
+    }
   };
 
   useEffect(() => {
@@ -94,7 +121,7 @@ const ProfileContainer = (props: Props) => {
     <ProfileLayout
       {...props}
       activeMenu={activeMenu}
-      menus={MENUS}
+      menus={data?.isAdmin ? [...ADMIN_MENUS, ...MENUS] : MENUS}
       user={user}
       onSelectCallback={onSelectCallback}
       isLoading={isLoading || appSettingsIsLoading}

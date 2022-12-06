@@ -6,7 +6,8 @@ import dayjs from 'dayjs';
 import { TransactionType } from '@prisma/client';
 import { createTransaction } from '~/server/routers/bets/createTransaction';
 import { ActionType } from '~/constants/ActionType';
-import { getUserTotalCashAmount } from '~/server/routers/user/userTotalCashAmount';
+import { getUserTotalBalance } from '~/server/routers/user/userTotalBalance';
+import applyDepositDistribution from '~/server/routers/user/applyDepositDistribution';
 
 const joinContest = t.procedure
   .input(
@@ -75,8 +76,9 @@ const joinContest = t.procedure
       // Verify user total cash amount
       const entryFee = Number(contest.entryFee);
 
-      const userTotalCashAmount = await getUserTotalCashAmount(user.id);
-      if (entryFee > userTotalCashAmount) {
+      // Get user total available balance
+      const { totalAmount } = await getUserTotalBalance(user.id);
+      if (entryFee > totalAmount) {
         throw new Error(
           'Insufficient funds. Please deposit funds in your account and try again.',
         );
@@ -91,12 +93,30 @@ const joinContest = t.procedure
         },
       });
 
-      await createTransaction(
+      await prisma.wallets.create({
+        data: {
+          balance: 1000,
+          userId: user.id,
+          contestsId: input.contestId,
+          created_by: '',
+          updated_by: '',
+        },
+      });
+
+      await createTransaction({
+        userId: user.id,
+        amountProcess: entryFee,
+        amountBonus: 0,
+        contestEntryId: contestEntry.id,
+        transactionType: TransactionType.DEBIT,
+        actionType: ActionType.JOIN_CONTEST,
+      });
+
+      await applyDepositDistribution(
         user.id,
         entryFee,
+        undefined,
         contestEntry.id,
-        TransactionType.DEBIT,
-        ActionType.JOIN_CONTEST,
       );
     } catch (error) {
       throw error;

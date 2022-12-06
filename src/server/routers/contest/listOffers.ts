@@ -147,7 +147,7 @@ const listOffers = t.procedure
                 odds: home.moneyline || 0,
               },
             },
-            matchTime: offer.start_utc || '',
+            matchTime: offer.start_utc || `${offer.gamedate} ${offer.gametime}`,
           };
         })
         .filter(Boolean);
@@ -160,7 +160,9 @@ const listOffers = t.procedure
     } else if (contest.type === ContestType.FANTASY) {
       const defaultFilters = getFiltersByLeague(input.league);
       const offers: FantasyOffer[] = await getFantasyOffers(input.league);
-      const availableFilters = offers?.map((offer) => offer.statName);
+      const availableFilters = offers
+        ?.filter((offer) => offer.type === MarketType.PP)
+        .map((offer) => offer.statName);
 
       return {
         ...contestProps,

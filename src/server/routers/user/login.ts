@@ -4,7 +4,7 @@ import * as yup from '~/utils/yup';
 import { prisma } from '~/server/prisma';
 import { supabase } from '~/utils/supabaseClient';
 import { setAuthResponse } from './setAuthResponse';
-import { getMoreLessContest } from '~/server/routers/contest/createMoreLessContest';
+import { autoJoinDefaultContest } from '~/server/routers/user/autoJoinDefaultContest';
 
 const login = t.procedure
   .input(
@@ -17,12 +17,6 @@ const login = t.procedure
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    if (ctx.session?.user) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'This user is already signed in.',
-      });
-    }
     const result = await supabase.auth.signIn({
       email: input.email,
       password: input.password,
@@ -61,22 +55,7 @@ const login = t.procedure
     }
 
     // Auto join more or less contest
-    const moreOrLessContest = await getMoreLessContest();
-    const userContestEntry = await prisma.contestEntry.findFirst({
-      where: {
-        contestsId: moreOrLessContest.id,
-        userId,
-      },
-    });
-    if (!userContestEntry) {
-      await prisma.contestEntry.create({
-        data: {
-          userId: userId,
-          contestsId: moreOrLessContest.id,
-          tokens: 0,
-        },
-      });
-    }
+    await autoJoinDefaultContest(userId);
 
     setAuthResponse(
       ctx,

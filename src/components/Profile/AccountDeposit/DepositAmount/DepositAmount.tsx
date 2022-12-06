@@ -134,8 +134,9 @@ const DepositInputAmount = (props: DepositInputAmountProps) => {
                 )}
                 defaultValue={''}
                 {...register('depositAmount', {
-                  onChange: () => {
+                  onChange: (e) => {
                     setSelected(null);
+                    setDepositAmount?.(Number(e.target.value));
                   },
                 })}
               />

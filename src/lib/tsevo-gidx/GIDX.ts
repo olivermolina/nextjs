@@ -2,23 +2,34 @@ import axios, { AxiosError } from 'axios';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '~/server/prisma';
 import { PaymentMethodType, Session, Transaction, User } from '@prisma/client';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { startCase } from 'lodash';
 import { ActionType } from '~/constants/ActionType';
 import logger from '~/utils/logger';
 import HttpsProxyAgent from 'https-proxy-agent';
+import { CustomErrorMessages } from '~/constants/CustomErrorMessages';
 
 enum GIDX_ROUTES {
   DIRECT_CASHIER = 'DirectCashier',
   CUSTOMER_IDENTITY = 'CustomerIdentity',
 }
 
+const httpsAgent = new (HttpsProxyAgent as any)(
+  `${process.env.STATIC_IP_OUTBOUND_PROXY}:9293`,
+);
+
+const isClient = typeof window !== 'undefined';
+
 const gidxClient = axios.create({
   baseURL: `${process.env.GIDX_DIRECT_CASHIER_API_URL}`,
-  proxy: false,
-  httpsAgent: new (HttpsProxyAgent as any)(
-    process.env.STATIC_IP_OUTBOUND_PROXY,
-  ),
+  ...(isClient
+    ? {
+        proxy: {
+          host: `${process.env.STATIC_IP_OUTBOUND_PROXY}`,
+          port: 9293,
+        },
+      }
+    : { proxy: false, httpsAgent }),
 });
 
 const GIDX_CALLBACK_STATUS_URL = `${process.env.STATIC_IP_INBOUND_PROXY}/api/gidxCallback`;
@@ -139,6 +150,7 @@ export interface GidxPaymentMethodInterface {
 export interface UserDetailsInput extends BillingAddressInterface {
   firstname: string;
   lastname: string;
+  dob: string | Dayjs;
 }
 
 export interface GIDXAddress {
@@ -156,9 +168,15 @@ export interface GIDXName {
   Primary: boolean;
 }
 
+export interface GIDXDateOfBirth {
+  DateOfBirth: string;
+  Primary: boolean;
+}
+
 export interface CustomerProfileResponse extends GIDXDataBaseResponse {
   Name: GIDXName[];
   Address: GIDXAddress[];
+  DateOfBirth: GIDXDateOfBirth[];
 }
 
 export interface GIDXPaymentMethod {
@@ -200,7 +218,7 @@ const createSessionResponseLog = async (
   await prisma.sessionResponse.create({
     data: {
       sessionId,
-      reasonCodes: data?.ReasonCodes ? JSON.stringify(data.ReasonCodes) : '',
+      reasonCodes: data?.ReasonCodes || [],
       statusMessage: data?.StatusMessage || '',
       statusCode: data?.StatusCode || 0,
       sessionResponseRaw: JSON.stringify(data),
@@ -221,7 +239,55 @@ interface SavePaymentMethodInputInterface {
   fullName: string;
   paymentMethod: GidxPaymentMethodInterface;
   billingAddress: BillingAddressInterface;
+  save: boolean;
 }
+
+export enum ReasonCodes {
+  ID_VERIFIED = 'ID-VERIFIED',
+  ID_UA18 = 'ID-UA18',
+  ID_UA19 = 'ID-UA19',
+  ID_UA21 = 'ID-UA21',
+  ID_EX = 'ID-EX',
+  ID_BLOCK = 'ID-BLOCK',
+  ID_DECEASED = 'ID-DECEASED',
+  ID_HR = 'ID-HR',
+  ID_HVEL_ACTV = 'ID-HVEL-ACTV',
+  ID_AGE_UNKN = 'ID-AGE-UNKN',
+  ID_WL = 'ID-WL',
+  ID_ADDR_UPA = 'ID-ADDR-UPA',
+  DFP_VPRP = 'DFP-VPRP',
+  DFP_HR_CONN = 'DFP-HR-CONN',
+  LL_BLOCK = 'LL-BLOCK',
+}
+
+export const isBlocked = (responseReasonCodes: [string]) => {
+  if (!responseReasonCodes) return true;
+  const blockedReasonCodesResponse = Object.values(ReasonCodes).filter(
+    (reasonCode) =>
+      responseReasonCodes.indexOf(reasonCode) !== -1 &&
+      reasonCode !== ReasonCodes.ID_VERIFIED,
+  );
+
+  return blockedReasonCodesResponse.length > 0;
+};
+
+export const isVerified = (responseReasonCodes: [string]) => {
+  if (!responseReasonCodes) return false;
+  return responseReasonCodes.includes(ReasonCodes.ID_VERIFIED);
+};
+
+export const getErrorMessage = (responseReasonCodes: [string]) => {
+  let errorMessage = '';
+  for (const responseReasonCode of responseReasonCodes) {
+    errorMessage =
+      CustomErrorMessages[
+        responseReasonCode as keyof typeof CustomErrorMessages
+      ];
+
+    if (errorMessage) break;
+  }
+  return errorMessage || CustomErrorMessages.GIDX_DEFAULT;
+};
 
 export default class GIDX {
   user: User;
@@ -377,7 +443,11 @@ export default class GIDX {
     return data;
   }
 
-  async register(userDetails: UserDetailsInput) {
+  async register(
+    userDetails: UserDetailsInput,
+    deviceGPS: IDeviceGPS,
+    ipAddress: string,
+  ) {
     if (!this.session) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
@@ -386,13 +456,15 @@ export default class GIDX {
     }
 
     try {
-      const { id, DOB, email } = this.user;
+      const { id, email } = this.user;
       const requestData = {
         MerchantSessionID: this.session.id,
+        DeviceGPS: deviceGPS,
+        DeviceIpAddress: ipAddress,
         MerchantCustomerID: id,
         FirstName: userDetails.firstname,
         LastName: userDetails.lastname,
-        DateOfBirth: dayjs(DOB).format('MM/DD/YYYY'),
+        DateOfBirth: dayjs(userDetails.dob).format('MM/DD/YYYY'),
         EmailAddress: email,
         AddressLine1: userDetails.address1,
         AddressLine2: userDetails.address2,
@@ -406,6 +478,7 @@ export default class GIDX {
       // Update sessionRequestRaw field
       await prisma.session.update({
         data: {
+          serviceType: ActionType.CUSTOMER_REGISTRATION,
           sessionRequestRaw: JSON.stringify(requestData),
         },
         where: {
@@ -432,7 +505,7 @@ export default class GIDX {
     }
   }
 
-  async getCustomerProfile() {
+  async getCustomerProfile(deviceGPS: IDeviceGPS, ipAddress: string) {
     if (!this.session) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
@@ -444,6 +517,8 @@ export default class GIDX {
       const requestData = {
         MerchantSessionID: this.session.id,
         MerchantCustomerID: this.user.id,
+        CustomerIpAddress: ipAddress,
+        DeviceGPS: deviceGPS,
       };
 
       // Update sessionRequestRaw field
@@ -462,6 +537,14 @@ export default class GIDX {
         params: requestData,
       });
       const { data } = response;
+      await prisma.session.update({
+        data: {
+          serviceType: ActionType.GET_CUSTOMER_PROFILE,
+        },
+        where: {
+          id: this.session.id,
+        },
+      });
       // Log session response
       await createSessionResponseLog(this.session.id, data);
       return data as CustomerProfileResponse;
@@ -481,7 +564,7 @@ export default class GIDX {
       });
     }
     const user = this.user;
-    const { paymentMethod, billingAddress, fullName } = input;
+    const { paymentMethod, billingAddress, fullName, save } = input;
 
     const cardType = startCase(paymentMethod.creditCard?.cardType);
     const cardPaymentDetails = {
@@ -509,21 +592,23 @@ export default class GIDX {
     const requestData = {
       MerchantCustomerID: this.user.id,
       MerchantSessionID: this.session.id,
-      SavePaymentMethod: true,
+      SavePaymentMethod: save,
       PaymentMethod: {
-        NameOnAccount: fullName,
         Type: paymentMethod.type,
         ...(paymentMethod.type === PaymentMethodType.CC && cardPaymentDetails),
         ...(paymentMethod.type === PaymentMethodType.ACH && achPaymentDetails),
-        PhoneNumber: user.phone,
-        BillingAddress: {
-          AddressLine1: billingAddress.address1,
-          AddressLine2: billingAddress.address2,
-          City: billingAddress.city,
-          StateCode: billingAddress.state,
-          PostalCode: billingAddress.postalCode,
-          CountryCode: 'US',
-        },
+        ...(save && {
+          NameOnAccount: fullName,
+          PhoneNumber: user.phone,
+          BillingAddress: {
+            AddressLine1: billingAddress.address1,
+            AddressLine2: billingAddress.address2,
+            City: billingAddress.city,
+            StateCode: billingAddress.state,
+            PostalCode: billingAddress.postalCode,
+            CountryCode: 'US',
+          },
+        }),
       },
     };
 
@@ -532,6 +617,15 @@ export default class GIDX {
       url: `${GIDX_ROUTES.DIRECT_CASHIER}/PaymentMethod`,
       method: 'POST',
       data: requestData,
+    });
+
+    await prisma.session.update({
+      data: {
+        serviceType: ActionType.SAVE_PAYMENT_METHOD,
+      },
+      where: {
+        id: this.session.id,
+      },
     });
 
     // Log session response
@@ -567,9 +661,63 @@ export default class GIDX {
         params: requestData,
       });
       const { data } = response;
+
+      await prisma.session.update({
+        data: {
+          serviceType: ActionType.PAYMENT_DETAILS,
+        },
+        where: {
+          id: this.session.id,
+        },
+      });
+
       // Log session response
       await createSessionResponseLog(this.session.id, data);
       return data;
+    } catch (err: any) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: err.message,
+      });
+    }
+  }
+
+  async customerMonitor(input: { ipAddress: string; deviceGPS: IDeviceGPS }) {
+    if (!this.session) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Invalid session',
+      });
+    }
+
+    try {
+      const requestData = {
+        MerchantSessionID: this.session.id,
+        MerchantCustomerID: this.user.id,
+        CustomerIpAddress: input.ipAddress,
+        DeviceGPS: input.deviceGPS,
+      };
+
+      // Update sessionRequestRaw field
+      await prisma.session.update({
+        data: {
+          serviceType: ActionType.CUSTOMER_MONITOR,
+          sessionRequestRaw: JSON.stringify(requestData),
+        },
+        where: {
+          id: this.session.id,
+        },
+      });
+
+      const response = await gidxRequest({
+        url: `${GIDX_ROUTES.CUSTOMER_IDENTITY}/CustomerMonitor`,
+        method: 'GET',
+        params: requestData,
+      });
+      const { data } = response;
+      // Log session response
+      await createSessionResponseLog(this.session.id, data);
+      return data as CustomerProfileResponse;
     } catch (err: any) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',

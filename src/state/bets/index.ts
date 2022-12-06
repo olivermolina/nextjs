@@ -12,6 +12,7 @@ import {
 } from '@reduxjs/toolkit';
 import { toast } from 'react-toastify';
 import { RootState } from '../store';
+import { setSelectedContestCategory } from '~/state/ui';
 
 export interface BaseModel {
   betId: string;
@@ -65,38 +66,58 @@ export const addToParlayBet = createAsyncThunk(
     const parlayBet = allBets.find(
       (betRow) => 'legs' in betRow && betRow.contest === bet.contest,
     ) as ParlayModel;
-    if (!bet.contestCategory) {
-      toast.error(`Please select contest category.`);
-      return;
-    }
     if (!parlayBet) {
       thunkAPI.dispatch(addParlayBet(bet));
     } else {
       const legs = [...parlayBet.legs];
+      const betLegIndex = legs.findIndex((leg) => leg.gameId === bet.gameId);
+      const prevSelectedContestCategory = state.ui.selectedContestCategory;
 
-      if (legs.length >= bet.contestCategory.numberOfPicks) {
-        toast.error(
-          `Maximum of ${bet.contestCategory.numberOfPicks} picks allowed.`,
-        );
-        return;
-      }
-      if (legs.findIndex((leg) => leg.gameId === bet.gameId) !== -1) {
-        toast.error(
-          `Already included this a bet from this game in the parlay.`,
-        );
+      let selectedContestCategory;
+      if (betLegIndex !== -1) {
+        legs[betLegIndex] = addIdToBet(bet);
       } else {
-        legs.push(addIdToBet(bet));
-        thunkAPI.dispatch(
-          updateBet({
-            id: parlayBet.betId,
-            changes: {
-              contest: bet.contest,
-              legs,
-              contestCategory: bet.contestCategory,
-            },
+        const contestCategories = state.ui.contestCategories;
+        selectedContestCategory = contestCategories?.find(
+          (contestCategory) =>
+            contestCategory.numberOfPicks === legs.length + 1,
+        );
+        if (
+          selectedContestCategory &&
+          Number(selectedContestCategory?.numberOfPicks) >
+            Number(prevSelectedContestCategory?.numberOfPicks)
+        ) {
+          thunkAPI.dispatch(
+            setSelectedContestCategory(selectedContestCategory),
+          );
+        } else if (
+          legs.length >= bet.contestCategory.numberOfPicks &&
+          betLegIndex === -1
+        ) {
+          toast.error(
+            `Maximum of ${bet.contestCategory.numberOfPicks} picks allowed.`,
+          );
+          return;
+        }
+
+        legs.push(
+          addIdToBet({
+            ...bet,
+            contestCategory: selectedContestCategory || bet.contestCategory,
           }),
         );
       }
+
+      thunkAPI.dispatch(
+        updateBet({
+          id: parlayBet.betId,
+          changes: {
+            contest: bet.contest,
+            legs,
+            contestCategory: selectedContestCategory || bet.contestCategory,
+          },
+        }),
+      );
     }
   },
 );
@@ -105,7 +126,7 @@ export const addToTeaserBet = createAsyncThunk(
   'bets/addToTeaserBet',
   (bet: BetInput, thunkAPI) => {
     if (bet.type === 'moneyline') {
-      toast.error(`Unable to bet the moneyline on teaser bets.`);
+      toast.error(`Unable to entry the moneyline on teaser bets.`);
       return;
     }
     const state = thunkAPI.getState() as RootState;
@@ -119,7 +140,7 @@ export const addToTeaserBet = createAsyncThunk(
       const legs = [...teaser.legs];
       if (legs.findIndex((leg) => leg.gameId === bet.gameId) !== -1) {
         toast.error(
-          `Already included this a bet from this game in the parlay.`,
+          `Already included this a entry from this game in the parlay.`,
         );
       } else if (legs.length > 1) {
         toast.error(`Teasers only support two different game picks.`);
@@ -151,16 +172,25 @@ export const removeLegFromBetLegs = createAsyncThunk(
     const state = thunkAPI.getState() as RootState;
     const bet = selectBetById(state, input.betId);
     if (!bet) {
-      toast.error(`Unable to remove item from bet ${input.betId}`);
+      toast.error(`Unable to remove item from entry ${input.betId}`);
       return;
     }
     const newLegs = bet.legs.filter((leg) => leg.name !== input.betLegName);
     if (newLegs.length) {
+      const contestCategories = state.ui.contestCategories;
+      const selectedContestCategory = contestCategories?.find(
+        (contestCategory) => contestCategory.numberOfPicks === newLegs.length,
+      );
+      if (selectedContestCategory) {
+        thunkAPI.dispatch(setSelectedContestCategory(selectedContestCategory));
+      }
+
       thunkAPI.dispatch(
         updateBet({
           id: input.betId,
           changes: {
             legs: newLegs,
+            contestCategory: selectedContestCategory || bet.contestCategory,
           },
         }),
       );
@@ -181,7 +211,7 @@ export const updateBetStakeType = createAsyncThunk(
     const state = thunkAPI.getState() as RootState;
     const bet = selectBetById(state, input.betId);
     if (!bet) {
-      toast.error(`Unable to update bet sake type`);
+      toast.error(`Unable to update entry stake type`);
       return;
     }
 

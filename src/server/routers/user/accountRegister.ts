@@ -1,16 +1,19 @@
 import { t } from '~/server/trpc';
 import { TRPCError } from '@trpc/server';
 import * as yup from '~/utils/yup';
-import GIDX, { UserDetailsInput } from '~/lib/tsevo-gidx/GIDX';
+import GIDX, { IDeviceGPS, UserDetailsInput } from '~/lib/tsevo-gidx/GIDX';
 import { prisma } from '~/server/prisma';
 import { Session } from '@prisma/client';
 import { ActionType } from '~/constants/ActionType';
+import { customerProfile } from '~/server/routers/user/customerProfile';
 
 const accountRegister = t.procedure
   .input(
     yup.object({
       userDetails: yup.mixed<UserDetailsInput>().required(),
       session: yup.mixed<Session>().required(),
+      deviceGPS: yup.mixed<IDeviceGPS>().required(),
+      ipAddress: yup.string().required(),
     }),
   )
   .mutation(async ({ input, ctx }) => {
@@ -27,23 +30,19 @@ const accountRegister = t.procedure
       });
     }
 
-    try {
-      const userDetails = input.userDetails;
-      const { session } = input;
-      const gidx = await new GIDX(user, ActionType.CREATE_CUSTOMER, session);
-      const userData = await gidx.register(userDetails);
+    const { session, userDetails, deviceGPS, ipAddress } = input;
+    const gidx = await new GIDX(user, ActionType.CREATE_CUSTOMER, session);
+    const userData = await gidx.register(userDetails, deviceGPS, ipAddress);
 
-      if (!userData.ReasonCodes.includes('ID-VERIFIED')) {
-        return Promise.reject(Error('Could not verify the user!'));
-      }
+    // Get customer profile
+    await customerProfile({
+      user,
+      session,
+      deviceGPS,
+      ipAddress,
+    });
 
-      return userData;
-    } catch (e: any) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: e.message,
-      });
-    }
+    return userData;
   });
 
 export default accountRegister;

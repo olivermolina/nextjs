@@ -24,6 +24,6 @@ export default function shiftLine(
       return line - shifter;
     default:
       console.error(line, league, type);
-      throw new Error('Unknown bet type.');
+      throw new Error('Unknown entry type.');
   }
 }

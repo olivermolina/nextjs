@@ -9,6 +9,9 @@ import { useAppSelector } from '~/state/hooks';
 import { selectAllBets } from '~/state/bets';
 import { ContestWagerType, League } from '@prisma/client';
 import ContestDetailContainer from '../ContestDetailContainer/ContestDetailContainer';
+import ChangeRouteLoadingContainer from '~/containers/ChangeRouteLoadingContainer/ChangeRouteLoadingContainer';
+import { Header } from '~/components';
+import DeviceLocationContainer from '~/containers/DeviceLocationContainer';
 
 type Props = {
   children: any;
@@ -24,9 +27,14 @@ const LayoutContainer: React.FC<Props> = (props) => {
   const cartPayout = useAppSelector((state) =>
     selectAllBets(state).reduce((acc, curr) => acc + 0, 0),
   );
+  const entry = useAppSelector((state) => selectAllBets(state)[0]);
+
   const selectedContest = useAppSelector((state) => state.ui.selectedContest);
   const contestModal = useAppSelector(
     (state) => state.ui.activeContestDetailModal,
+  );
+  const contestCategory = useAppSelector(
+    (state) => state.ui.selectedContestCategory,
   );
 
   const result = trpc.contest.listOffers.useQuery({
@@ -34,8 +42,8 @@ const LayoutContainer: React.FC<Props> = (props) => {
     league: params.league as League,
   });
 
-  const { data: userTotalCashAmount, refetch } =
-    trpc.user.userTotalCashAmount.useQuery();
+  const { data: userTotalBalance, refetch } =
+    trpc.user.userTotalBalance.useQuery();
 
   const tokenCount = result.data?.tokenCount;
 
@@ -45,6 +53,9 @@ const LayoutContainer: React.FC<Props> = (props) => {
 
   return (
     <>
+      <Header />
+      <DeviceLocationContainer />
+      <ChangeRouteLoadingContainer />
       <Layout
         onClickCartDetails={() => {
           router.push(UrlPaths.Cart);
@@ -52,21 +63,17 @@ const LayoutContainer: React.FC<Props> = (props) => {
         cartItemsCount={cartItemsCount}
         cartStake={cartStake}
         cartPotentialPayout={cartPayout}
-        userCashAmount={userTotalCashAmount || 0}
+        userCashAmount={Number(userTotalBalance?.totalAmount) || 0}
         currentContestTokenCount={tokenCount}
         onClickAddUserCash={() => {
           router.push(UrlPaths.ProfileAccountDeposit);
         }}
-        // Exclude showing sub nav in picks and profile page
-        showSubNav={
-          ![
-            UrlPaths.Picks.toString(),
-            UrlPaths.Profile.toString(),
-            UrlPaths.Cart.toString(),
-            UrlPaths.Contests.toString(),
-          ].includes(router?.pathname)
-        }
+        // Only show in challenge page
+        showSubNav={UrlPaths.Challenge.toString() === router?.pathname}
         showTokenCount={selectedContest?.wagerType === ContestWagerType.TOKEN}
+        showMobileCart={UrlPaths.Cart.toString() !== router?.pathname}
+        playersSelected={entry?.legs.length || 0}
+        contestCategory={contestCategory}
       >
         {props.children}
       </Layout>

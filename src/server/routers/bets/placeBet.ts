@@ -16,9 +16,18 @@ import { calculateTeaserPayout } from '~/utils/caculateTeaserPayout';
 import { calculateParlayPayout } from '~/utils/calculateParlayPayout';
 import { calculateTotalOdds } from '~/utils/calculateTotalBets';
 import { User } from '@supabase/supabase-js';
-import { getUserTotalCashAmount } from '~/server/routers/user/userTotalCashAmount';
 import { createTransaction } from '~/server/routers/bets/createTransaction';
 import { ActionType } from '~/constants/ActionType';
+import GIDX, {
+  getErrorMessage,
+  IDeviceGPS,
+  isBlocked,
+  isVerified,
+} from '~/lib/tsevo-gidx/GIDX';
+import { TRPCError } from '@trpc/server';
+import { getUserTotalBalance } from '~/server/routers/user/userTotalBalance';
+import applyDepositDistribution from '~/server/routers/user/applyDepositDistribution';
+import { CustomErrorMessages } from '~/constants/CustomErrorMessages';
 
 function placeBetSchema(isTeaser: boolean) {
   return yup.object().shape({
@@ -77,6 +86,8 @@ export type BetInputType = {
   legs: LegCreateInput[];
   contestCategoryId: ContestCategory['id'];
   stakeType: BetStakeType;
+  ipAddress: string;
+  deviceGPS: IDeviceGPS;
 };
 
 /**
@@ -98,10 +109,53 @@ export async function placeBet(bet: BetInputType, user: User): Promise<void> {
     },
   });
 
+  const prismaUser = await prisma.user.findUnique({
+    where: {
+      id: user.id,
+    },
+  });
+
+  if (!prismaUser) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'You must be logged in to place entry.',
+    });
+  }
+
+  const session = await prisma.session.create({
+    data: {
+      userId: prismaUser.id,
+      serviceType: ActionType.CUSTOMER_MONITOR,
+      deviceLocation: '',
+      sessionRequestRaw: '',
+    },
+  });
+
+  const gidx = await new GIDX(prismaUser, ActionType.CUSTOMER_MONITOR, session);
+  const { deviceGPS, ipAddress } = bet;
+  const customerMonitorResponse = await gidx.customerMonitor({
+    deviceGPS,
+    ipAddress,
+  });
+
+  if (!isVerified(customerMonitorResponse.ReasonCodes)) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: CustomErrorMessages.NOT_VERIFIED,
+    });
+  }
+
+  if (isBlocked(customerMonitorResponse.ReasonCodes)) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: getErrorMessage(customerMonitorResponse.ReasonCodes),
+    });
+  }
+
   if (contest.wagerType === ContestWagerType.CASH) {
-    // Verify user total cash amount
-    const userTotalCashAmount = await getUserTotalCashAmount(user.id);
-    if (bet.stake > userTotalCashAmount) {
+    // Get user total available balance
+    const { totalAmount } = await getUserTotalBalance(user.id);
+    if (bet.stake > totalAmount) {
       throw new Error(
         'Insufficient funds. Please deposit funds in your account and try again.',
       );
@@ -151,7 +205,7 @@ export async function placeBet(bet: BetInputType, user: User): Promise<void> {
   const odds = isTeaser
     ? -110
     : calculateTotalOdds(legs.map((l) => l.odds) as number[], 'american');
-  await prisma.bet.create({
+  const newBet = await prisma.bet.create({
     data: {
       stake: bet.stake,
       status: BetStatus.PENDING,
@@ -181,15 +235,17 @@ export async function placeBet(bet: BetInputType, user: User): Promise<void> {
       stakeType: bet.stakeType,
     },
   });
+  await applyDepositDistribution(user.id, bet.stake, newBet.id);
 
   if (contest.wagerType === ContestWagerType.CASH) {
-    await createTransaction(
-      user.id,
-      bet.stake,
-      contestEntry.id,
-      TransactionType.DEBIT,
-      ActionType.PLACE_BET,
-    );
+    await createTransaction({
+      userId: user.id,
+      amountProcess: bet.stake,
+      amountBonus: 0,
+      contestEntryId: contestEntry.id,
+      transactionType: TransactionType.DEBIT,
+      actionType: ActionType.PLACE_BET,
+    });
   }
 }
 

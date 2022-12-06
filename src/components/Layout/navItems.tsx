@@ -9,7 +9,7 @@ export const navItems = [
   {
     link: '/challenge',
     name: 'Challenge',
-    icon: <ChallengeIcon className={iconClasses} />,
+    icon: <ChallengeIcon className={classNames('h-7 m-auto', iconClasses)} />,
   },
   {
     link: '/picks',
@@ -18,9 +18,9 @@ export const navItems = [
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className={classNames('w-6 h-6 m-auto', iconClasses)}
+        className={classNames('h-7 m-auto', iconClasses)}
         fill="none"
-        viewBox="0 0 24 24"
+        viewBox="0 0 22 22"
         stroke="currentColor"
       >
         <path
@@ -38,9 +38,9 @@ export const navItems = [
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className={classNames('w-7 h-7 m-auto', iconClasses)}
+        className={classNames('h-7 m-auto', iconClasses)}
         fill="none"
-        viewBox="0 0 24 24"
+        viewBox="0 0 22 22"
         stroke="currentColor"
       >
         <path
@@ -55,6 +55,6 @@ export const navItems = [
   {
     link: '/profile',
     name: 'Profile',
-    icon: <UserIcon className={iconClasses} />,
+    icon: <UserIcon className={classNames('h-7 m-auto', iconClasses)} />,
   },
 ];

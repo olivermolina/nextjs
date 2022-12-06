@@ -1,6 +1,8 @@
 import { Market, Offer, Player } from '@prisma/client';
 import { FantasyOffer } from '~/types';
 import * as StatNames from '~/server/routers/IStatNames';
+import dayjs from 'dayjs';
+import { EntryDatetimeFormat } from '~/constants/EntryDatetimeFormat';
 
 export const mapData = (
   data: Market & {
@@ -21,9 +23,12 @@ export const mapData = (
     marketId: data.id,
     selId: data.sel_id,
     league: data.offer!.league,
-    matchTime: data.offer!.gamedate || '',
+    matchTime: dayjs(`${data.offer!.gamedate} ${data.offer!.gametime}`).format(
+      EntryDatetimeFormat,
+    ),
     odds: 100,
     playerPosition: data.player?.position || '',
     playerTeam: data.player?.team || '',
+    type: data.type,
   };
 };

@@ -26,10 +26,4 @@ export const DepositConfirmation = Template.bind({});
 // More on args: https://storybook.js.org/docs/react/writing-stories/args
 DepositConfirmation.args = {
   depositAmount: 100,
-  handleNext: () => {
-    alert('handleNext');
-  },
-  handleBack: () => {
-    alert('handleBack');
-  },
 };

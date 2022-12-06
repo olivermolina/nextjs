@@ -1,51 +1,40 @@
-import React, { Dispatch, SetStateAction, useCallback, useEffect } from 'react';
-import { IDeviceGPS } from '~/lib/tsevo-gidx/GIDX';
-import {
-  GeolocationPermissionStatus,
-  getGeolocationPermissionStatus,
-} from '~/utils/getGeolocationPermissionStatus';
+import React from 'react';
 import EnableLocationDialog from '~/components/EnableLocation/EnableLocationDialog';
+import { useAppDispatch, useAppSelector } from '~/state/hooks';
+import { setOpenLocationDialog } from '~/state/profile';
 
-interface Props {
-  deviceGPS: IDeviceGPS;
-  setDeviceGPS: Dispatch<SetStateAction<IDeviceGPS>>;
-  openLocationDialog: boolean;
-  setOpenLocationDialog: Dispatch<SetStateAction<boolean>>;
-}
+const DeviceLocationContainer = () => {
+  const dispatch = useAppDispatch();
+  const { openLocationDialog } = useAppSelector((state) => state.profile);
 
-const DeviceLocationContainer = (props: Props) => {
-  const { deviceGPS, setDeviceGPS, setOpenLocationDialog, openLocationDialog } =
-    props;
+  const handleOpenLocationDialog = (open: boolean) => {
+    dispatch(setOpenLocationDialog(open));
+  };
 
   const onSetDeviceGPS = () => {
-    navigator.geolocation.getCurrentPosition(function (position) {
-      setDeviceGPS({
-        Latitude: position.coords.latitude,
-        Longitude: position.coords.longitude,
-      });
-    });
+    navigator.geolocation.getCurrentPosition(
+      function (position) {
+        console.log('Current location: ' + position);
+      },
+      function (error) {
+        if (error.code == error.PERMISSION_DENIED) {
+          setTimeout(() => {
+            handleOpenLocationDialog(true);
+          }, 1000);
+        }
+      },
+    );
   };
 
   const handleEnableLocation = () => {
+    handleOpenLocationDialog(false);
     onSetDeviceGPS();
-    setOpenLocationDialog(false);
   };
-
-  const locationPermissionCallback = useCallback(async () => {
-    const permissionStatus = await getGeolocationPermissionStatus();
-    const isGranted = permissionStatus === GeolocationPermissionStatus.GRANTED;
-    setOpenLocationDialog(!isGranted);
-    if (isGranted) onSetDeviceGPS();
-  }, [deviceGPS]);
-
-  useEffect(() => {
-    locationPermissionCallback();
-  }, []);
 
   return (
     <EnableLocationDialog
       open={openLocationDialog}
-      setOpen={setOpenLocationDialog}
+      setOpen={handleOpenLocationDialog}
       handleEnableLocation={handleEnableLocation}
     />
   );

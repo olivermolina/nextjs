@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid } from '@mui/material';
+import { Grid, Skeleton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SavePaymentMethodCard from '~/components/Profile/AccountDeposit/DepositMethod/SavePaymentMethodCard';
 import { GIDXPaymentMethod } from '~/lib/tsevo-gidx/GIDX';
@@ -12,6 +12,8 @@ interface Props {
   paymentMethods: PaymentMethodInterface[];
   showAddButton?: boolean;
   handleAdd?: () => void;
+  onDeletePaymentMethod: (paymentMethod: GIDXPaymentMethod) => void;
+  isLoading: boolean;
 }
 
 const SavedPaymentMethodCardList = (props: Props) => {
@@ -22,6 +24,8 @@ const SavedPaymentMethodCardList = (props: Props) => {
     selectedPaymentMethod,
     showAddButton,
     handleAdd,
+    onDeletePaymentMethod,
+    isLoading,
   } = props;
   return (
     <Grid
@@ -32,16 +36,35 @@ const SavedPaymentMethodCardList = (props: Props) => {
       spacing={2}
       columns={{ xs: 4, sm: 8, md: 12 }}
     >
-      {savedPaymentMethods?.map((paymentMethod) => (
-        <Grid item key={paymentMethod.Token}>
-          <SavePaymentMethodCard
-            paymentMethod={paymentMethod}
-            paymentMethods={paymentMethods}
-            onPaymentSelect={onPaymentSelect}
-            selectedPaymentMethod={selectedPaymentMethod}
-          />
-        </Grid>
-      ))}
+      {isLoading && (
+        <>
+          <Grid item>
+            <Skeleton sx={{ height: 150, width: 150 }} />
+          </Grid>
+          <Grid item>
+            <Skeleton sx={{ height: 150, width: 150 }} />
+          </Grid>
+        </>
+      )}
+
+      {!isLoading &&
+        (!savedPaymentMethods || savedPaymentMethods?.length === 0) && (
+          <Grid item className={'p-2 text-md'}>
+            No payment methods available to add deposit.
+          </Grid>
+        )}
+      {!isLoading &&
+        savedPaymentMethods?.map((paymentMethod) => (
+          <Grid item key={paymentMethod.Token}>
+            <SavePaymentMethodCard
+              paymentMethod={paymentMethod}
+              paymentMethods={paymentMethods}
+              onPaymentSelect={onPaymentSelect}
+              selectedPaymentMethod={selectedPaymentMethod}
+              onDeletePaymentMethod={onDeletePaymentMethod}
+            />
+          </Grid>
+        ))}
 
       {showAddButton ? (
         <Grid item>

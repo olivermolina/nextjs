@@ -8,6 +8,7 @@ export const PillButtonPropTypes = {
   onClick: PropTypes.func.isRequired,
   disabled: PropTypes.bool.isRequired,
   children: PropTypes.element.isRequired,
+  name: PropTypes.string.isRequired,
 };
 
 type Props = InferPropTypes<typeof PillButtonPropTypes>;
@@ -17,7 +18,7 @@ export function PillButton(props: Props) {
     <button
       onClick={props.onClick}
       disabled={props.disabled}
-      className={classNames('px-4 py-1 rounded-full', {
+      className={classNames('px-4 py-1 rounded-full flex-none', {
         'bg-white shadow': props.selected,
         'bg-slate-200': !props.selected,
         'cursor-not-allowed': props.disabled,

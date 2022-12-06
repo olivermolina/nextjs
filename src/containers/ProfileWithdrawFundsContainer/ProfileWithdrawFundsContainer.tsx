@@ -10,19 +10,19 @@ import { UrlPaths } from '~/constants/UrlPaths';
 import { useRouter } from 'next/router';
 import BackdropLoading from '~/components/BackdropLoading';
 import { trpc } from '~/utils/trpc';
-import DeviceLocationContainer from '~/containers/DeviceLocationContainer';
 import {
   GeolocationPermissionStatus,
   getGeolocationPermissionStatus,
 } from '~/utils/getGeolocationPermissionStatus';
 import { TRPCClientError } from '@trpc/client';
 import { toast } from 'react-toastify';
-import { GIDXPaymentMethod, IDeviceGPS } from '~/lib/tsevo-gidx/GIDX';
 import { ActionType } from '~/constants/ActionType';
-import { PaymentMethodType } from '@prisma/client';
+import { PaymentMethodType, Session, Transaction } from '@prisma/client';
 
 import PayoutConfirmation from '~/components/Profile/WithdrawFunds/PayoutConfirmation';
-import { useAppSelector } from '~/state/hooks';
+import { useAppDispatch, useAppSelector } from '~/state/hooks';
+import { setOpenLocationDialog } from '~/state/profile';
+import { useDeviceGPS } from '~/hooks/useDeviceGPS';
 
 interface Props {
   clientIp: string;
@@ -31,26 +31,18 @@ interface Props {
 const ProfileWithdrawFundsContainer = (props: Props) => {
   const { clientIp } = props;
   const router = useRouter();
-
+  const dispatch = useAppDispatch();
+  const deviceGPS = useDeviceGPS();
   const userDetails = useAppSelector((state) => state.profile.userDetails);
   const [selectedPayoutMethod, setSelectedPayoutMethod] = useState<
     PaymentMethodInterface | undefined
   >();
-  const [deviceGPS, setDeviceGPS] = useState<IDeviceGPS>({
-    Latitude: 0,
-    Longitude: 0,
-  });
-  const [openLocationDialog, setOpenLocationDialog] =
-    React.useState<boolean>(false);
+
   const [nextLoading, setNextLoading] = React.useState<boolean>(false);
   const [payoutAmount, setPayoutAmount] = useState(0);
   const [activeStep, setActiveStep] = React.useState<number>(0);
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<PaymentMethodInterface>();
-
-  const [newPaymentMethods, setNewPaymentMethods] = useState<
-    GIDXPaymentMethod[]
-  >([]);
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -70,6 +62,7 @@ const ProfileWithdrawFundsContainer = (props: Props) => {
   const {
     mutateAsync: mutateCreateMerchantTransactionData,
     data: createMerchantTransactionData,
+    isLoading: createMerchantTransactionDataLoading,
   } = trpc.user.createMerchantTransaction.useMutation();
 
   const { mutateAsync: mutateAccountVerify, data: verifiedData } =
@@ -86,40 +79,13 @@ const ProfileWithdrawFundsContainer = (props: Props) => {
     isLoading: accountPayoutLoading,
   } = trpc.user.accountPayout.useMutation();
 
-  const handleCreateSession = async (payoutAmount: number) => {
-    const permissionStatus = await getGeolocationPermissionStatus();
-    if (permissionStatus !== GeolocationPermissionStatus.GRANTED) {
-      setOpenLocationDialog(true);
-      setNextLoading(false);
-      return;
-    }
+  const { data: userTotalBalance } = trpc.user.userTotalBalance.useQuery();
 
-    // Return if session already exists
-    if (createMerchantTransactionData) return;
-
-    try {
-      const { session } = await mutateCreateMerchantTransactionData({
-        ipAddress: clientIp,
-        amountProcess: payoutAmount,
-        amountBonus: 0,
-        deviceGPS,
-        serviceType: ActionType.PAYOUT,
-      });
-
-      await mutateAccountVerify({
-        session,
-      });
-    } catch (error) {
-      const e = error as TRPCClientError<any>;
-      toast.error(e?.message);
-    }
-  };
-
-  const handleSavePaymentMethod = async (data: AchInputs) => {
+  const handleSavePaymentMethod = async (data: AchInputs, save: boolean) => {
     if (!createMerchantTransactionData) return;
 
     try {
-      const newPaymentMethod = await mutateAccountSavePaymentMethod({
+      await mutateAccountSavePaymentMethod({
         fullName: data.fullName,
         billingAddress: {
           address1: data?.address1 || verifiedData?.address1,
@@ -137,13 +103,10 @@ const ProfileWithdrawFundsContainer = (props: Props) => {
           },
         },
         session: createMerchantTransactionData.session,
+        save,
       });
-      if (newPaymentMethod) {
-        setNewPaymentMethods((prevPaymentMethods) => [
-          ...prevPaymentMethods,
-          newPaymentMethod,
-        ]);
-      }
+
+      await onMutateCreateMerchantTransactionData();
     } catch (error) {
       const e = error as TRPCClientError<any>;
       toast.error(e?.message);
@@ -151,19 +114,70 @@ const ProfileWithdrawFundsContainer = (props: Props) => {
     }
   };
 
+  const onMutateCreateMerchantTransactionData = async () => {
+    if (!deviceGPS) {
+      toast.error('Invalid location!');
+      return { session: null };
+    }
+
+    const response = await mutateCreateMerchantTransactionData({
+      ipAddress: clientIp,
+      amountProcess: payoutAmount,
+      amountBonus: 0,
+      deviceGPS,
+      serviceType: ActionType.PAYOUT,
+    });
+
+    return response as { session: Session; transaction: Transaction };
+  };
+
   const handleSubmitPayoutAmount = async (data: PayoutAmountInputs) => {
     setNextLoading(true);
     setPayoutAmount(data.payoutAmount);
 
+    const permissionStatus = await getGeolocationPermissionStatus();
+    if (permissionStatus !== GeolocationPermissionStatus.GRANTED) {
+      dispatch(setOpenLocationDialog(true));
+      setNextLoading(false);
+      return;
+    }
+
+    if (data.payoutAmount > Number(userTotalBalance?.totalWithdrawableAmount)) {
+      toast.error(
+        `Whoops.. looks like you haven’t played with "$${data.payoutAmount}" amount yet. 
+        Please place "$${data.payoutAmount}" amount on a contest entry to be able to withdraw. 
+        Otherwise email support@lockspread.com and your refund request will be reviewed`,
+      );
+      setNextLoading(false);
+      return;
+    }
+
+    if (!deviceGPS) {
+      toast.error('Invalid location!');
+      return;
+    }
+
+    const { session } = await onMutateCreateMerchantTransactionData();
+
+    if (!session) {
+      toast.error('Invalid session!');
+      return;
+    }
+
     try {
-      await handleCreateSession(data.payoutAmount);
+      await mutateAccountVerify({
+        session,
+        deviceGPS,
+        ipAddress: clientIp,
+      });
+
+      setSelectedPaymentMethod(undefined);
+      handleNext();
     } catch (error) {
       const e = error as TRPCClientError<any>;
       toast.error(e?.message);
-      return;
     }
-    setSelectedPaymentMethod(undefined);
-    handleNext();
+    setNextLoading(false);
   };
 
   const handleCancel = async () => {
@@ -181,6 +195,7 @@ const ProfileWithdrawFundsContainer = (props: Props) => {
             setSelectedPayoutMethod={setSelectedPayoutMethod}
             onSubmit={handleSubmitPayoutAmount}
             payoutAmount={payoutAmount}
+            userTotalBalance={userTotalBalance}
           />
         ),
       },
@@ -193,16 +208,15 @@ const ProfileWithdrawFundsContainer = (props: Props) => {
             handleBack={handleBack}
             handleCancel={handleCancel}
             verifiedData={verifiedData}
-            savedPaymentMethods={[
-              ...(createMerchantTransactionData?.gidxSession?.PaymentMethods
-                ? createMerchantTransactionData.gidxSession.PaymentMethods
-                : []),
-              ...(newPaymentMethods ? newPaymentMethods : []),
-            ]}
+            savedPaymentMethods={
+              createMerchantTransactionData?.gidxSession.PaymentMethods
+            }
             selectedPaymentMethod={selectedPaymentMethod}
             onPaymentSelect={onPaymentSelect}
             handleSavePaymentMethod={handleSavePaymentMethod}
-            isLoading={savedPaymentMethodLoading}
+            isLoading={
+              savedPaymentMethodLoading || createMerchantTransactionDataLoading
+            }
             user={userDetails}
           />
         ),
@@ -223,8 +237,9 @@ const ProfileWithdrawFundsContainer = (props: Props) => {
       verifiedData,
       createMerchantTransactionData,
       selectedPaymentMethod,
-      newPaymentMethods,
       accountPayoutData,
+      savedPaymentMethodLoading,
+      createMerchantTransactionDataLoading,
     ],
   );
 
@@ -267,8 +282,8 @@ const ProfileWithdrawFundsContainer = (props: Props) => {
           }),
           ...(selectedPayoutMethod?.type === PaymentMethodType.Paypal && {
             paypal: {
-              // email: userDetails?.email,
-              email: 'sb-es1qt22006179@personal.example.com',
+              email: userDetails?.email,
+              // email: 'sb-es1qt22006179@personal.example.com',
             },
           }),
         },
@@ -298,37 +313,37 @@ const ProfileWithdrawFundsContainer = (props: Props) => {
   return (
     <div className="flex flex-col w-full h-full gap-4 lg:p-4">
       <BackdropLoading
-        open={nextLoading || savedPaymentMethodLoading || accountPayoutLoading}
-      />
-      <DeviceLocationContainer
-        deviceGPS={deviceGPS}
-        setDeviceGPS={setDeviceGPS}
-        openLocationDialog={openLocationDialog}
-        setOpenLocationDialog={setOpenLocationDialog}
+        open={
+          nextLoading ||
+          savedPaymentMethodLoading ||
+          accountPayoutLoading ||
+          createMerchantTransactionDataLoading
+        }
       />
       <div className="flex flex-col shadow-md rounded-md divide-y gap-2 bg-white w-full">
         <div className="flex flex-col p-6 gap-4">
           <p className="font-bold text-xl">Withdraw Funds</p>
           {steps[activeStep]?.content}
         </div>
-        <div className="flex flex-col p-6 gap-2">
-          <button
-            className="p-4 capitalize text-white rounded font-bold w-auto h-auto bg-blue-600 disabled:opacity-50"
-            type="submit"
-            form="deposit-method-form"
-            disabled={
-              (activeStep === 0 && !selectedPayoutMethod) ||
-              (activeStep === 1 &&
-                !selectedPaymentMethod &&
-                selectedPayoutMethod?.type === PaymentMethodType.ACH)
-            }
-            onClick={handleSubmitPayoutMethod}
-          >
-            {activeStep === 0 ? 'Next' : null}
-            {activeStep === 1 ? 'Withdraw' : null}
-            {activeStep === 2 ? 'Confirm' : null}
-          </button>
-        </div>
+        {activeStep < 2 && (
+          <div className="flex flex-col p-6 gap-2">
+            <button
+              className="p-4 capitalize text-white rounded font-bold w-auto h-auto bg-blue-600 disabled:opacity-50"
+              type="submit"
+              form="deposit-method-form"
+              disabled={
+                (activeStep === 0 && !selectedPayoutMethod) ||
+                (activeStep === 1 &&
+                  !selectedPaymentMethod &&
+                  selectedPayoutMethod?.type === PaymentMethodType.ACH)
+              }
+              onClick={handleSubmitPayoutMethod}
+            >
+              {activeStep === 0 ? 'Next' : null}
+              {activeStep === 1 ? 'Withdraw' : null}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

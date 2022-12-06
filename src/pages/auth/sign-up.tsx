@@ -10,6 +10,9 @@ import { UrlPaths } from '~/constants/UrlPaths';
 import { supabase } from '~/utils/supabaseClient';
 import { trpc } from '~/utils/trpc';
 import ReferralModal from '~/components/ReferralModal';
+import ChangeRouteLoadingContainer from '~/containers/ChangeRouteLoadingContainer/ChangeRouteLoadingContainer';
+import BackdropLoading from '~/components/BackdropLoading';
+import { TRPCClientError } from '@trpc/client';
 
 export type SignupInputs = {
   email: string;
@@ -43,7 +46,11 @@ const Auth = () => {
       });
       router.push(UrlPaths.Challenge);
     } catch (error) {
-      toast.error('There was an error registering. Please try again later.');
+      const e = error as TRPCClientError<any>;
+      toast.error(
+        e.shape?.message ||
+          'There was an error registering. Please try again later.',
+      );
     }
   };
 
@@ -85,6 +92,8 @@ const Auth = () => {
 
   return (
     <LandingLayout>
+      <ChangeRouteLoadingContainer />
+      <BackdropLoading open={mutation.isLoading} />
       <div className="flex p-4 justify-center items-center">
         <form
           onSubmit={handleSubmit(onSubmit)}

@@ -4,7 +4,6 @@ import mastercard from '~/assets/mastercard.svg';
 import amex from '~/assets/amex.svg';
 import discover from '~/assets/discover.svg';
 import paypal from '~/assets/paypal.svg';
-import ftx from '~/assets/FTX_Logo_black.svg';
 import ach from '~/assets/ach.svg';
 import { CardTypes } from '~/constants/CardTypes';
 import {
@@ -15,8 +14,8 @@ import {
 import { PaymentMethodInterface } from '~/components/Profile/AccountDeposit/DepositMethod/DepositMethod';
 import {
   BillingAddressInterface,
+  GIDXPaymentMethod,
   GidxPaymentMethodInterface,
-  IDeviceGPS,
   UserDetailsInput,
 } from '~/lib/tsevo-gidx/GIDX';
 import { trpc } from '~/utils/trpc';
@@ -30,13 +29,19 @@ import DepositDeclineDialog from '~/components/Profile/AccountDeposit/DepositDec
 import { TRPCClientError } from '@trpc/client';
 import { useRouter } from 'next/router';
 import { UrlPaths } from '~/constants/UrlPaths';
-import { useAppSelector } from '~/state/hooks';
-import { AppSettingName, PaymentMethodType, Session } from '@prisma/client';
+import { useAppDispatch, useAppSelector } from '~/state/hooks';
+import {
+  AppSettingName,
+  PaymentMethodType,
+  Session,
+  Transaction,
+} from '@prisma/client';
 import SessionExpiredDialog from '~/components/Profile/AccountDeposit/SessionExpiredDialog';
 import BackdropLoading from '~/components/BackdropLoading';
-import DeviceLocationContainer from '~/containers/DeviceLocationContainer';
 import { ActionType } from '~/constants/ActionType';
 import { AccountDepositResponseInterface } from '~/server/routers/user/accountDeposit';
+import { setOpenLocationDialog } from '~/state/profile';
+import { useDeviceGPS } from '~/hooks/useDeviceGPS';
 
 export const PAYMENT_METHODS = [
   {
@@ -70,12 +75,6 @@ export const PAYMENT_METHODS = [
     type: PaymentMethodType.Paypal,
   },
   {
-    key: 'ftx',
-    image: ftx,
-    object: 'object-fit',
-    type: PaymentMethodType.FTX,
-  },
-  {
     key: 'ach',
     image: ach,
     object: 'object-fit',
@@ -96,6 +95,7 @@ export interface PaymentFormDataInterface {
 const AccountDepositContainer = ({
   clientIp,
 }: AccountDepositContainerProps) => {
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const [nextLoading, setNextLoading] = React.useState<boolean>(false);
   const [activeStep, setActiveStep] = React.useState<number>(0);
@@ -107,12 +107,7 @@ const AccountDepositContainer = ({
 
   const [openVerifyDialog, setOpenVerifyDialog] =
     React.useState<boolean>(false);
-  const [deviceGPS, setDeviceGPS] = useState<IDeviceGPS>({
-    Latitude: 0,
-    Longitude: 0,
-  });
-  const [openLocationDialog, setOpenLocationDialog] =
-    React.useState<boolean>(false);
+  const deviceGPS = useDeviceGPS();
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<PaymentMethodInterface>();
@@ -131,6 +126,7 @@ const AccountDepositContainer = ({
   const {
     mutateAsync: mutateCreateMerchantTransactionData,
     data: createMerchantTransactionData,
+    isLoading: createMerchantTransactionDataLoading,
   } = trpc.user.createMerchantTransaction.useMutation();
 
   const {
@@ -138,6 +134,11 @@ const AccountDepositContainer = ({
     isLoading: mutateAccountRegisterLoading,
     error: registerError,
   } = trpc.user.accountRegister.useMutation();
+
+  const {
+    mutateAsync: mutateAccountSavePaymentMethod,
+    isLoading: savedPaymentMethodLoading,
+  } = trpc.user.accountSavePaymentMethod.useMutation();
 
   const maxMatchDeposit = Number(
     appSettings?.find(
@@ -149,7 +150,13 @@ const AccountDepositContainer = ({
   const handleSubmitDeposit = async (data?: PaymentFormDataInterface) => {
     if (!selectedPaymentMethod || !data) return;
 
-    if (!createMerchantTransactionData) return;
+    if (
+      !createMerchantTransactionData?.session ||
+      !createMerchantTransactionData?.transaction
+    ) {
+      toast.error('Invalid session! Please refresh the page.');
+      return;
+    }
 
     try {
       const creditAmount =
@@ -170,13 +177,19 @@ const AccountDepositContainer = ({
 
   const handleSubmitRegisterUser = async (userDetails: UserDetailsInput) => {
     if (!createMerchantTransactionData) return;
-
+    if (!deviceGPS) {
+      toast.error('Invalid location!');
+      return;
+    }
     try {
       await mutateAccountRegister({
         userDetails,
         session: createMerchantTransactionData?.session,
+        deviceGPS,
+        ipAddress: clientIp,
       });
       setOpenVerifyDialog(false);
+      await handleAccountVerify();
     } catch (error) {
       const e = error as TRPCClientError<any>;
       toast.error(e?.message);
@@ -188,39 +201,52 @@ const AccountDepositContainer = ({
   };
 
   const handleCreateMerchantTransactionData = async () => {
+    if (!deviceGPS) {
+      toast.error('Invalid location!');
+      return;
+    }
     try {
       const creditAmount =
         depositAmount <= maxMatchDeposit ? depositAmount : maxMatchDeposit;
-      const { session } = await mutateCreateMerchantTransactionData({
+      const response = await mutateCreateMerchantTransactionData({
         ipAddress: clientIp,
         amountProcess: depositAmount,
         amountBonus: creditAmount,
         deviceGPS,
         serviceType: ActionType.PAY,
       });
-      return session as Session;
+      return response as { session: Session; transaction: Transaction };
     } catch (error) {
       const e = error as TRPCClientError<any>;
       toast.error(e?.message);
     }
   };
 
-  const handleAccountVerify = async (session?: Session) => {
-    if (!session) toast.error('Invalid session! Please refresh the page.');
-
+  const handleAccountVerify = async () => {
+    const response = await handleCreateMerchantTransactionData();
+    if (!response) {
+      toast.error('Invalid session! Please refresh the page.');
+      return false;
+    }
+    if (!deviceGPS) {
+      toast.error('Invalid location!');
+      return;
+    }
     try {
       return await mutateAccountVerify({
-        session,
+        session: response?.session,
+        deviceGPS,
+        ipAddress: clientIp,
       });
     } catch (error) {
       const e = error as TRPCClientError<any>;
       toast.error(e?.message);
-      setOpenVerifyDialog(true);
+      setOpenVerifyDialog(e?.data.code !== 'FORBIDDEN');
     }
   };
 
   const onPaymentSelect = (
-    newSelectedPaymentMethod: PaymentMethodInterface,
+    newSelectedPaymentMethod?: PaymentMethodInterface,
   ) => {
     setSelectedPaymentMethod(newSelectedPaymentMethod);
   };
@@ -231,18 +257,11 @@ const AccountDepositContainer = ({
     setNextLoading(false);
   };
 
-  const handleNext = async (data?: PaymentFormDataInterface) => {
+  const handleNextDepositAmount = async () => {
     setNextLoading(true);
-
-    if (activeStep === maxSteps - 1) {
-      await router.push(UrlPaths.Challenge);
-      setNextLoading(false);
-      return;
-    }
-
     const permissionStatus = await getGeolocationPermissionStatus();
     if (permissionStatus !== GeolocationPermissionStatus.GRANTED) {
-      setOpenLocationDialog(true);
+      dispatch(setOpenLocationDialog(true));
       setNextLoading(false);
       return;
     }
@@ -252,17 +271,17 @@ const AccountDepositContainer = ({
       return;
     }
 
-    if (!createMerchantTransactionData) {
-      const session = await handleCreateMerchantTransactionData();
-      const verifyResult = await handleAccountVerify(session);
-      if (!verifyResult) {
-        setOpenVerifyDialog(true);
-        setNextLoading(false);
-        return;
-      }
+    const verifyResult = await handleAccountVerify();
+    if (!verifyResult) {
+      setNextLoading(false);
+      return;
     }
+    handleNext();
+  };
 
-    if (activeStep === 1 && data) {
+  const handleNextSubmitDeposit = async (data?: PaymentFormDataInterface) => {
+    setNextLoading(true);
+    if (data) {
       if (transaction) {
         setOpenSessionExpiredDialog(true);
         setNextLoading(false);
@@ -280,16 +299,70 @@ const AccountDepositContainer = ({
         setNextLoading(false);
         return;
       }
+      handleNext();
     }
-
     setNextLoading(false);
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
 
-  const handlePaypalFtxNext = async (data: PaymentFormDataInterface) => {
+  const handleNext = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    setNextLoading(false);
+  };
+
+  const handlePaypalNext = async (data: PaymentFormDataInterface) => {
     const transaction = await handleSubmitDeposit(data);
     setTransaction(transaction);
     return transaction;
+  };
+
+  const handleDeletePaymentMethod = async (
+    paymentMethod: GIDXPaymentMethod,
+  ) => {
+    const session = createMerchantTransactionData?.session;
+    if (!session) {
+      toast.error('Invalid session! Please refresh the page.');
+      return;
+    }
+    setSelectedPaymentMethod(undefined);
+    try {
+      await mutateAccountSavePaymentMethod({
+        fullName: verifiedData?.firstname || '',
+        billingAddress: {
+          address1: verifiedData?.address1,
+          address2: verifiedData?.address2,
+          city: verifiedData?.city,
+          state: verifiedData?.state,
+          postalCode: verifiedData?.postalCode,
+          countyCode: 'US',
+        },
+        paymentMethod: {
+          type: paymentMethod?.Type as PaymentMethodType,
+          ...((paymentMethod?.Type as PaymentMethodType) ===
+            PaymentMethodType.CC && {
+            creditCard: {
+              token: paymentMethod.Token,
+              cardNumber: '',
+              cardExpirationDate: '',
+              cvv: 111,
+              cardType: '',
+            },
+          }),
+          ...(selectedPaymentMethod?.type === PaymentMethodType.ACH && {
+            ach: {
+              token: paymentMethod.Token,
+              accountNumber: '',
+              routingNumber: '',
+            },
+          }),
+        },
+        session,
+        save: false,
+      });
+      await handleCreateMerchantTransactionData();
+    } catch (error) {
+      const e = error as TRPCClientError<any>;
+      toast.error(e?.message);
+    }
   };
 
   const steps = useMemo(
@@ -299,7 +372,7 @@ const AccountDepositContainer = ({
         content: (
           <DepositAmount
             setDepositAmount={setDepositAmount}
-            handleNext={handleNext}
+            handleNext={handleNextDepositAmount}
             isFirstDeposit={isFirstDeposit}
             depositAmount={depositAmount}
             maxMatchDeposit={maxMatchDeposit}
@@ -312,17 +385,20 @@ const AccountDepositContainer = ({
           <DepositMethod
             depositAmount={depositAmount}
             handleBack={handleBack}
-            handleNext={handleNext}
+            handleNext={handleNextSubmitDeposit}
             paymentMethods={PAYMENT_METHODS}
             onPaymentSelect={onPaymentSelect}
             selectedPaymentMethod={selectedPaymentMethod}
-            deviceGPS={deviceGPS}
             verifiedData={verifiedData}
             handleCancel={handleCancel}
             savedPaymentMethods={
               createMerchantTransactionData?.gidxSession.PaymentMethods
             }
-            handlePaypalFtxNext={handlePaypalFtxNext}
+            handlePaypalNext={handlePaypalNext}
+            handleDeletePaymentMethod={handleDeletePaymentMethod}
+            isLoading={
+              savedPaymentMethodLoading || createMerchantTransactionDataLoading
+            }
           />
         ),
       },
@@ -331,10 +407,7 @@ const AccountDepositContainer = ({
         content: (
           <DepositConfirmation
             depositAmount={depositAmount}
-            handleBack={handleBack}
-            handleNext={handleNext}
             transaction={transaction}
-            handleCancel={handleCancel}
           />
         ),
       },
@@ -349,20 +422,21 @@ const AccountDepositContainer = ({
       maxMatchDeposit,
       handleNext,
       handleBack,
+      savedPaymentMethodLoading,
+      createMerchantTransactionDataLoading,
     ],
   );
-
-  const maxSteps = steps.length;
 
   return (
     <div className="flex flex-col w-full h-full gap-4 lg:p-4">
       {steps[activeStep]?.content}
-      <BackdropLoading open={isLoading || nextLoading} />
-      <DeviceLocationContainer
-        deviceGPS={deviceGPS}
-        setDeviceGPS={setDeviceGPS}
-        openLocationDialog={openLocationDialog}
-        setOpenLocationDialog={setOpenLocationDialog}
+      <BackdropLoading
+        open={
+          isLoading ||
+          nextLoading ||
+          savedPaymentMethodLoading ||
+          createMerchantTransactionDataLoading
+        }
       />
       <GetVerifiedDialog
         open={openVerifyDialog}
@@ -370,6 +444,7 @@ const AccountDepositContainer = ({
         onSubmit={handleSubmitRegisterUser}
         isLoading={mutateAccountRegisterLoading}
         hasError={!!registerError}
+        verifiedData={userDetails || verifiedData}
       />
       <DepositDeclineDialog
         open={openDeclineDialog}

@@ -1,10 +1,8 @@
 export const UserIcon = (props: any) => (
   <svg
-    width="17"
-    height="19"
-    viewBox="0 0 17 19"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 20 20"
     {...props}
   >
     <path
@@ -15,7 +13,7 @@ export const UserIcon = (props: any) => (
     />
     <circle
       cx="8.5"
-      cy="4"
+      cy="5"
       r="4"
       strokeWidth="2"
       strokeLinecap="round"

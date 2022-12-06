@@ -27,3 +27,4 @@ export * from './LeaderBoardRow';
 export * from './LeaderBoardTable';
 export * from './TabPanel';
 export * from './Modal';
+export * from './Header';

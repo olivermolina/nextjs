@@ -11,23 +11,31 @@ interface Props {
   status?: PickStatus;
   potentialWin?: number | InsuredPayoutInterface;
   stakeType?: BetStakeType;
+  payout?: number;
 }
 
 const PickCardFooter = (props: Props) => {
   const pickStatus = props.status;
 
   return (
-    <div className="p-1 md:p-5 flex flex-row justify-between">
+    <div className="p-1 md:p-2 flex flex-row justify-between gap-1">
+      {/*Footer Contents*/}
       <div className={'flex flex-col items-center'}>
-        <p className="text-gray-400 text-sm">Risk</p>
-        <p className="font-bold">{props.risk}</p>
+        <p className="text-gray-400 text-sm">Entry</p>
+        <div className="flex font-bold h-full items-center">${props.risk}</div>
       </div>
       <div className={'flex flex-col items-center'}>
         <p className="text-gray-400 text-sm">
-          {pickStatus === PickStatus.WON ? 'Winnings' : 'Potential Win'}
+          {pickStatus === PickStatus.WIN ? 'Winnings' : 'Potential Win'}
         </p>
-        {props.stakeType === BetStakeType.ALL_IN ? (
-          <p className="font-bold">{props.potentialWin as number}</p>
+        {props.stakeType === BetStakeType.ALL_IN ||
+        pickStatus === PickStatus.WIN ? (
+          <div className="font-bold flex font-bold h-full items-center">
+            $
+            {pickStatus === PickStatus.PENDING
+              ? (props.potentialWin as number)
+              : props.payout}
+          </div>
         ) : (
           <Stack
             sx={{
@@ -39,7 +47,7 @@ const PickCardFooter = (props: Props) => {
             direction={'row'}
             justifyContent={'space-evenly'}
             alignItems="center"
-            spacing={1}
+            spacing={{ xs: 0.25, md: 1 }}
             className={'text-sm'}
           >
             <div
@@ -99,18 +107,22 @@ const PickCardFooter = (props: Props) => {
       </div>
       <div className={'flex flex-col items-center'}>
         <p className="text-gray-400 text-sm">Status</p>
-        <div className={'flex flex-row gap-1 items-center'}>
+        <div className={'flex flex-col md:flex-row gap-1 items-center h-full'}>
           {pickStatus === PickStatus.PENDING ? (
             <div className="w-4 h-4 border border-gray-300 rounded-full" />
           ) : null}
-          {pickStatus === PickStatus.LOST ? (
+          {pickStatus === PickStatus.LOSS ? (
             <XCircle className="w-6 h-6 fill-red-500" />
           ) : null}
 
-          {pickStatus === PickStatus.WON ? (
+          {pickStatus === PickStatus.WIN ? (
             <CheckCircle className="w-6 h-6 fill-green-500" />
           ) : null}
-          <p className="font-bold capitalize text-sm">{pickStatus}</p>
+          <p className="font-bold capitalize text-sm">
+            {pickStatus === PickStatus.PENDING ? pickStatus : null}
+            {pickStatus === PickStatus.WIN ? 'WON' : null}
+            {pickStatus === PickStatus.LOSS ? 'LOST' : null}
+          </p>
         </div>
       </div>
     </div>

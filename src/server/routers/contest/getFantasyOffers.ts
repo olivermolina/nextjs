@@ -2,6 +2,8 @@ import { League, Status } from '@prisma/client';
 import { FantasyOffer } from '~/types';
 import { prisma } from '~/server/prisma';
 import { mapData } from '~/server/routers/contest/mapData';
+import { filter } from 'lodash';
+import dayjs from 'dayjs';
 
 /**
  * This function gets all the fantasy offers currently available for a given league.
@@ -26,5 +28,9 @@ export async function getFantasyOffers(
       player: true,
     },
   });
-  return markets.map(mapData);
+
+  return filter(
+    markets.map(mapData),
+    (offer) => !dayjs(offer.matchTime).isBefore(new Date().getDate() - 1),
+  );
 }

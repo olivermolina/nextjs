@@ -12,28 +12,51 @@ import { Cart, CartProps } from '~/components/Cart';
 import { formatLegType } from '~/utils/formatLegType';
 import { BetType, ContestWagerType } from '@prisma/client';
 import { trpc } from '~/utils/trpc';
-import { useQueryParams } from '~/hooks/useQueryParams';
+import {
+  GeolocationPermissionStatus,
+  getGeolocationPermissionStatus,
+} from '~/utils/getGeolocationPermissionStatus';
+import { setOpenLocationDialog } from '~/state/profile';
+import { useDeviceGPS } from '~/hooks/useDeviceGPS';
 
-const CartContainer = () => {
+interface Props {
+  clientIp: string;
+}
+
+const CartContainer = (props: Props) => {
   const dispatch = useAppDispatch();
-  const { contestCategoryId } = useQueryParams();
+  const contestCategory = useAppSelector(
+    (state) => state.ui.selectedContestCategory,
+  );
+  const deviceGPS = useDeviceGPS();
   const { isLoading, mutateAsync } = trpc.bets.placeBet.useMutation();
   const [selectedTab, setTab] = useState<CartProps['activeTab']>('playerOU');
   const bets = useAppSelector((state) => selectAllBets(state));
   const selectedContest = useAppSelector((state) => state.ui.selectedContest);
 
   const onSubmitBet = async () => {
+    const permissionStatus = await getGeolocationPermissionStatus();
+    if (permissionStatus !== GeolocationPermissionStatus.GRANTED) {
+      dispatch(setOpenLocationDialog(true));
+      return;
+    }
+
     const betModels = bets;
     for (const bet of betModels) {
       try {
         const isTeaser = 'type' in bet;
         if (isTeaser && bet.legs.length !== 2) {
-          toast.error(`Teasers require two bets`);
+          toast.error(`Teasers require two entries`);
           return;
         }
 
-        if (bet.legs.length !== bet.contestCategory.numberOfPicks) {
-          toast.error(`Bet require ${bet.contestCategory.numberOfPicks} bets.`);
+        if (bet.legs.length !== contestCategory?.numberOfPicks) {
+          toast.error(`Require ${contestCategory?.numberOfPicks} entries.`);
+          return;
+        }
+
+        if (!deviceGPS) {
+          toast.error(`Invalid location.`);
           return;
         }
 
@@ -47,20 +70,22 @@ const CartContainer = () => {
             total: l.total,
           })),
           contestId: bet.contest,
-          contestCategoryId: bet.contestCategory.id,
+          contestCategoryId: contestCategory.id,
           type: isTeaser
             ? BetType.TEASER
             : bet.legs.length > 1
             ? BetType.PARLAY
             : BetType.STRAIGHT,
           stakeType: bet.stakeType,
+          ipAddress: props.clientIp,
+          deviceGPS,
         });
         dispatch(removeBet(bet.betId));
-        toast.success(`Successfully placed bet with id: ${bet.betId}.`);
+        toast.success(`Successfully placed entry with id: ${bet.betId}.`);
       } catch (error: any) {
         toast.error(
           error.shape?.message ||
-            `There was an error submitting bet with id: ${bet.betId}.`,
+            `There was an error submitting entry with id: ${bet.betId}.`,
         );
         dispatch(
           updateBet({
@@ -94,7 +119,7 @@ const CartContainer = () => {
             }
           }
         }),
-    [bets, selectedTab, selectedContest, contestCategoryId],
+    [bets, selectedTab, selectedContest, contestCategory],
   );
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { t } from '~/server/trpc';
 import { TRPCError } from '@trpc/server';
 import {
+  AppSettingName,
   PaymentMethodType,
   Session,
   Transaction,
@@ -14,6 +15,7 @@ import GIDX, {
 import { prisma } from '~/server/prisma';
 import dayjs from 'dayjs';
 import { ActionType } from '~/constants/ActionType';
+import { createTransaction } from '~/server/routers/bets/createTransaction';
 
 export interface AccountDepositResponseInterface {
   transactionId: string | number;
@@ -91,9 +93,6 @@ const accountDeposit = t.procedure
         case PaymentMethodType.Paypal:
           paymentMethodTypeDesc = 'PAYPAL';
           break;
-        case PaymentMethodType.FTX:
-          paymentMethodTypeDesc = 'FTX';
-          break;
         default:
           paymentMethodTypeDesc = '';
       }
@@ -131,13 +130,36 @@ const accountDeposit = t.procedure
         url: data?.Action?.URL,
       };
 
-      // Disable isFirstDeposit after a successful deposit
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          isFirstDeposit: false,
-        },
-      });
+      if (user.isFirstDeposit) {
+        // Disable isFirstDeposit after a successful deposit
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            isFirstDeposit: false,
+          },
+        });
+
+        const referralUser = await prisma.user.findFirst({
+          where: {
+            username: user.referral,
+          },
+        });
+
+        if (referralUser) {
+          const referralAppSetting = await prisma.appSettings.findFirst({
+            where: {
+              name: AppSettingName.REFERRAL_CREDIT_AMOUNT,
+            },
+          });
+          await createTransaction({
+            userId: referralUser.id,
+            amountProcess: 0,
+            amountBonus: Number(referralAppSetting?.value) || 25,
+            actionType: ActionType.ADD_FREE_CREDIT,
+            transactionType: TransactionType.CREDIT,
+          });
+        }
+      }
 
       return depositResponse;
     } catch (e: any) {

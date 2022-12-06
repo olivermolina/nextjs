@@ -14,7 +14,7 @@ const PendingSummary: React.FC<PendingSummaryProps> = (props) => {
   return (
     <div
       className={
-        'grid grid-rows-1 grid-cols-5 md:grid-rows-1 md:grid-cols-5 gap-2 md:gap-4 p-4'
+        'grid grid-rows-1 grid-cols-5 md:grid-rows-1 md:grid-cols-5 gap-2 md:gap-4 p-2 md:p-4 overflow-x-auto'
       }
     >
       {props.items
@@ -23,11 +23,11 @@ const PendingSummary: React.FC<PendingSummaryProps> = (props) => {
           <div
             key={`${value}-${label}`}
             className={
-              'flex flex-col rounded p-2 md:p-4 bg-gray-100 justify-between'
+              'flex flex-col rounded p-1 md:p-4 bg-gray-100 justify-between md:justify-around gap-1 md:gap-2'
             }
           >
-            <p className={'text-gray-400 text-xs'}>{label}</p>
-            <p className={'font-bold text-md'}>{value}</p>
+            <p className={'text-gray-400 text-xs md:text-md'}>{label}</p>
+            <p className={'font-bold text-sm md:text-lg'}>{value}</p>
           </div>
         ))}
     </div>

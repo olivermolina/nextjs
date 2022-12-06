@@ -48,7 +48,7 @@ export const Cart: React.FC<CartProps> = (props) => {
       {/* Show if no items */}
       {props.cartItems.length === 0 && (
         <div className="text-center text-sm text-gray-400 m-4 w-full">
-          There are no bets to place of this type.
+          There are no entries to place of this type.
         </div>
       )}
 

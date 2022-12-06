@@ -5,6 +5,7 @@ import { TRPCError } from '@trpc/server';
 import { ActionType } from '~/constants/ActionType';
 import { prisma } from '~/server/prisma';
 import defaultLogger from '~/utils/logger';
+import { customerProfile } from '~/server/routers/user/customerProfile';
 
 export const integrationRouter = t.router({
   gidxCallback: t.procedure
@@ -107,6 +108,58 @@ export const integrationRouter = t.router({
             message: e.message,
           });
         }
+      }
+    }),
+  gidxProfileNotification: t.procedure
+    .input(
+      yup.object({
+        MerchantCustomerID: yup.string().required(),
+        NotificationType: yup.string().required(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { MerchantCustomerID, NotificationType } = input;
+      const logger = defaultLogger.child({ input });
+
+      if (!MerchantCustomerID) {
+        logger.info(`Invalid GIDX merchant customer id`);
+        return;
+      }
+      const user = await prisma.user.findUnique({
+        where: {
+          id: MerchantCustomerID,
+        },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'User not found',
+        });
+      }
+
+      switch (NotificationType) {
+        case 'CustomerProfile':
+          const session = await prisma.session.create({
+            data: {
+              userId: user.id,
+              serviceType: ActionType.GET_CUSTOMER_PROFILE,
+              deviceLocation: '',
+              sessionRequestRaw: '',
+            },
+          });
+          await customerProfile({
+            user,
+            session,
+            ipAddress: '127.0.0.1',
+            deviceGPS: {
+              Latitude: 0,
+              Longitude: 0,
+            },
+          });
+          break;
+        default:
+        // Do nothing
       }
     }),
 });

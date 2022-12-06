@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ContestWagerType } from '@prisma/client';
+import { ContestCategory, ContestWagerType } from '@prisma/client';
 
 interface ContestUI {
   id: string;
@@ -13,12 +13,16 @@ interface UIModel {
    */
   activeContestDetailModal?: string;
   selectedContest?: ContestUI;
+  selectedContestCategory?: ContestCategory;
+  contestCategories?: ContestCategory[];
 }
 
 const initialUI: UIModel = {
   loading: false,
   activeContestDetailModal: undefined,
   selectedContest: undefined,
+  selectedContestCategory: undefined,
+  contestCategories: [],
 };
 
 const uiSlice = createSlice({
@@ -37,6 +41,14 @@ const uiSlice = createSlice({
       state.selectedContest = payload.payload;
       return state;
     },
+    setSelectedContestCategory(state, payload: PayloadAction<ContestCategory>) {
+      state.selectedContestCategory = payload.payload;
+      return state;
+    },
+    setContestCategories(state, payload: PayloadAction<ContestCategory[]>) {
+      state.contestCategories = payload.payload;
+      return state;
+    },
   },
 });
 
@@ -45,6 +57,8 @@ export const {
   reset,
   setActiveContestDetailModal,
   setSelectedContest,
+  setSelectedContestCategory,
+  setContestCategories,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

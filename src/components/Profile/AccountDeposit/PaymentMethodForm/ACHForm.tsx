@@ -159,7 +159,7 @@ const ACHForm = (props: ACHFormProps) => {
           <FormErrorText>{errors.routingNumber?.message}</FormErrorText>
         </label>
 
-        <BillingAddressForm />
+        {!savedPaymentMethod ? <BillingAddressForm /> : null}
       </form>
     </FormProvider>
   );

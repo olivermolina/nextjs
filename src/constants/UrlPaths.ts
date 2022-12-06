@@ -13,4 +13,5 @@ export enum UrlPaths {
   Logout = '/logout',
   Contests = '/contests',
   Cart = '/cart',
+  ProfileManagement = '/profile/management',
 }

@@ -16,6 +16,7 @@ const accountSavePaymentMethod = t.procedure
       billingAddress: yup.mixed<BillingAddressInterface>().required(),
       paymentMethod: yup.mixed<GidxPaymentMethodInterface>().required(),
       session: yup.mixed<Session>().required(),
+      save: yup.boolean().required(),
     }),
   )
   .mutation(async ({ input, ctx }) => {
@@ -33,7 +34,7 @@ const accountSavePaymentMethod = t.procedure
     }
 
     try {
-      const { billingAddress, paymentMethod, session, fullName } = input;
+      const { billingAddress, paymentMethod, session, fullName, save } = input;
 
       const gidx = await new GIDX(
         user,
@@ -44,6 +45,7 @@ const accountSavePaymentMethod = t.procedure
         fullName,
         paymentMethod,
         billingAddress,
+        save,
       });
     } catch (e: any) {
       throw new TRPCError({

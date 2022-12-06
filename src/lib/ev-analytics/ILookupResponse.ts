@@ -13,18 +13,19 @@ interface Game {
 }
 
 interface Team {
-  id: number;
+  id: string;
   name: string;
   abbreviation: string;
   nickname: string;
 }
 
 interface Player {
-  id: number;
+  id: string;
   name: string;
   position: string;
-  teamid: number;
+  teamid: string;
   team: string;
+  headshot: string;
 }
 
 export interface ILookupRepsonse {

@@ -55,6 +55,11 @@ export interface FantasyCardProps {
    * @example KC
    */
   playerTeam: string;
+  /**
+   * Game time
+   * @example '2022-10-02 13:35:01',
+   */
+  matchTime?: string;
 }
 
 export const FantasyCard = (props: FantasyCardProps) => {
@@ -130,6 +135,8 @@ export const FantasyCard = (props: FantasyCardProps) => {
         </div>
         {/* Player Name */}
         <div className="font-bold text-lg text-black">{props.playerName}</div>
+        {/* Game DateTime */}
+        <div className="text-sm text-gray-500">{props.matchTime}</div>
         {/* Card Tags */}
         <div className="flex gap-2">
           <CardTag>{props.playerPosition}</CardTag>

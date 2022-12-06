@@ -1,4 +1,3 @@
-import { NextPageWithLayout } from '../_app';
 import CartContainer from '~/containers/CartContainer/CartContainer';
 import ContestPickerContainer from '~/containers/ContestContainer/ContestPickerContainer';
 import MatchPickerTableContainer from '~/containers/MatchPickerTableContainer/MatchPickerTableContainer';
@@ -7,8 +6,14 @@ import { GetServerSideProps } from 'next';
 import { withAuth } from '~/hooks/withAuthServerSideProps';
 import ContestPickerCategoryContainer from '~/containers/ContestPickerCategoryContainer/ContestPickerCategoryContainer';
 import { Grid } from '@mui/material';
+import React from 'react';
+import requestIp from 'request-ip';
 
-const IndexPage: NextPageWithLayout = () => {
+interface Props {
+  clientIp: string;
+}
+
+const ChallengePage = (props: Props) => {
   return (
     <LayoutContainer>
       <Grid
@@ -33,7 +38,7 @@ const IndexPage: NextPageWithLayout = () => {
           md={4}
           lg={3}
         >
-          <CartContainer />
+          <CartContainer {...props} />
         </Grid>
         <Grid
           item
@@ -56,10 +61,14 @@ const IndexPage: NextPageWithLayout = () => {
   );
 };
 
-export default IndexPage;
+export default ChallengePage;
 
-export const getServerSideProps: GetServerSideProps = withAuth(async () => {
-  return {
-    props: {},
-  };
-});
+export const getServerSideProps: GetServerSideProps = withAuth(
+  async (context) => {
+    const { req } = context;
+    const clientIp = requestIp.getClientIp(req);
+    return {
+      props: { clientIp },
+    };
+  },
+);

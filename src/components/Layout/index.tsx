@@ -7,6 +7,8 @@ import { navItems } from './navItems';
 import { CashAmount } from './CashAmount';
 import { useQueryParams } from '~/hooks/useQueryParams';
 import Link from 'next/link';
+import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
+import { ContestCategory } from '@prisma/client';
 
 interface Props {
   onClickCartDetails?: React.MouseEventHandler<HTMLButtonElement>;
@@ -19,6 +21,9 @@ interface Props {
   onClickAddUserCash?: React.MouseEventHandler<HTMLButtonElement>;
   showSubNav?: boolean;
   showTokenCount?: boolean;
+  playersSelected?: number;
+  showMobileCart?: boolean;
+  contestCategory?: ContestCategory;
 }
 
 function NavLink(props: { link: string; icon: any; name: string }) {
@@ -127,32 +132,46 @@ export const Layout: React.FC<Props> = (props) => {
 
       {/* Bottom Bar */}
       <div className="block lg:hidden">
-        {props.cartItemsCount !== 0 && (
+        {props.cartItemsCount !== 0 &&
+        props.playersSelected !== 0 &&
+        props.showMobileCart ? (
           <button
             onClick={props.onClickCartDetails}
-            className="rounded-lg rounded-b-none text-white shadow-md p-2 w-full bg-blue-600"
+            className="rounded-lg rounded-b-none text-white shadow-md p-1 w-full bg-blue-600"
+            disabled={
+              props.contestCategory?.numberOfPicks !== props.playersSelected
+            }
           >
-            <div className="flex px-2 justify-between">
-              <div>
-                <span className="py-1 text-blue-600 px-1 bg-white font-bold text-xs rounded-full">
-                  {String(props.cartItemsCount).padStart(2, '0')}
-                </span>
-              </div>
-              <div className="flex gap-4">
-                <div className="text-left text-xs">
-                  <span className="text-blue-400">Stake</span>
-                  <div>{props.cartStake?.toLocaleString('en-US')}</div>
+            {Number(props.contestCategory?.numberOfPicks) ===
+            Number(props.playersSelected) ? (
+              <div className="flex justify-evenly items-center">
+                <div>
+                  <span className="text-white text-md lg:text-xl opacity-40">
+                    {props.playersSelected} Players Selected
+                  </span>
                 </div>
-                <div className="text-left text-xs">
-                  <span className="text-blue-400">Potential Payout</span>
-                  <div>
-                    {props.cartPotentialPayout?.toLocaleString('en-US')}
+                <div className="flex justify-center items-center gap-2">
+                  <span className="text-white text-md lg:text-xl">
+                    Finalize Entry
+                  </span>
+                  <div className="pt-1">
+                    <ArrowRightAltIcon fontSize={'large'} />
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex justify-center items-center">
+                <span className="text-white text-xl opacity-40">
+                  Select{' '}
+                  {Number(props.contestCategory?.numberOfPicks) -
+                    Number(props.playersSelected)}{' '}
+                  More Player to Proceed.
+                </span>
+              </div>
+            )}
           </button>
-        )}
+        ) : null}
+
         <nav className="overflow-x-auto bg-blue-600 p-4 justify-between flex gap-4">
           {navItems.map(({ link, icon, name }) => (
             <NavLink key={link} link={link} icon={icon} name={name}></NavLink>

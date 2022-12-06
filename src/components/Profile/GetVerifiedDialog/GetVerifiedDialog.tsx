@@ -9,12 +9,17 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import dayjs, { Dayjs } from 'dayjs';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import { UserDetailsInput } from '~/lib/tsevo-gidx/GIDX';
 import WarningIcon from '@mui/icons-material/Warning';
+
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
 
 const InputValidationSchema = Yup.object().shape({
   firstname: Yup.string().required('First name is required'),
@@ -23,6 +28,7 @@ const InputValidationSchema = Yup.object().shape({
   city: Yup.string().required('City is required'),
   state: Yup.string().required('State is required'),
   postalCode: Yup.string().required('Postal / Zip code is required'),
+  dob: Yup.string().required('Date of Birth is required'),
 });
 
 interface Props {
@@ -31,6 +37,7 @@ interface Props {
   onSubmit: (data: UserDetailsInput) => void;
   isLoading: boolean;
   hasError?: boolean;
+  verifiedData?: UserDetailsInput;
 }
 
 const GetVerifiedDialog = (props: Props) => {
@@ -42,7 +49,15 @@ const GetVerifiedDialog = (props: Props) => {
     handleSubmit,
   } = useForm<UserDetailsInput>({
     resolver: yupResolver(InputValidationSchema),
+    defaultValues: props.verifiedData,
   });
+  const [value, setValue] = React.useState<Dayjs | null>(
+    dayjs(props.verifiedData?.dob || new Date()),
+  );
+
+  const handleChange = (newValue: Dayjs | null) => {
+    setValue(newValue);
+  };
 
   return (
     <Dialog
@@ -59,10 +74,13 @@ const GetVerifiedDialog = (props: Props) => {
             direction="row"
             justifyContent="space-between"
             alignItems="center"
-            spacing={5}
+            spacing={{ xs: 2, md: 5 }}
             sx={(theme) => ({
               borderRadius: 5,
-              p: 3,
+              p: 1,
+              [theme.breakpoints.up('sm')]: {
+                p: 3,
+              },
               backgroundColor: hasError
                 ? theme.palette.error.main
                 : theme.palette.primary.main,
@@ -118,7 +136,7 @@ const GetVerifiedDialog = (props: Props) => {
         </Box>
 
         <Grid container spacing={2} sx={{ p: 2 }}>
-          <Grid item xs={6}>
+          <Grid item xs={12} md={4}>
             <TextField
               label="First name"
               variant="outlined"
@@ -128,7 +146,7 @@ const GetVerifiedDialog = (props: Props) => {
               helperText={errors?.firstname?.message}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={12} md={4}>
             <TextField
               label="Last name"
               variant="outlined"
@@ -137,6 +155,26 @@ const GetVerifiedDialog = (props: Props) => {
               error={!!errors?.lastname}
               helperText={errors?.lastname?.message}
             />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <MobileDatePicker
+                label="Date of Birth"
+                inputFormat="MM/DD/YYYY"
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    fullWidth
+                    {...register('dob')}
+                    error={!!errors?.dob}
+                    helperText={errors?.dob?.message}
+                  />
+                )}
+                value={value}
+                onChange={handleChange}
+              />
+            </LocalizationProvider>
           </Grid>
           <Grid item xs={12}>
             <TextField
@@ -156,7 +194,7 @@ const GetVerifiedDialog = (props: Props) => {
               {...register('address2')}
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={12} md={4}>
             <TextField
               label="City"
               variant="outlined"
@@ -166,7 +204,7 @@ const GetVerifiedDialog = (props: Props) => {
               helperText={errors?.city?.message}
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={12} md={4}>
             <TextField
               label="State"
               variant="outlined"
@@ -176,7 +214,7 @@ const GetVerifiedDialog = (props: Props) => {
               helperText={errors?.state?.message}
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={12} md={4}>
             <TextField
               label="Postal/Zip Code"
               variant="outlined"

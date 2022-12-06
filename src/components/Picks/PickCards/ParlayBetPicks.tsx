@@ -3,10 +3,13 @@ import { DefaultPickProps } from '~/components/Picks/PickCards/StraightCard';
 import { CheckCircle, XCircle } from '~/components/Picks/Icons';
 import { PickStatus } from '~/constants/PickStatus';
 import { BetLegType } from '@prisma/client';
+import { CardTag } from '~/components/FantasyPicker/CardTag';
 
 export interface ParlayBetPickProps extends DefaultPickProps {
   gameInfo?: string;
   matchTime?: string;
+  teamAbbrev?: string;
+  team?: string;
 }
 
 interface ParlayBetPicksProps {
@@ -27,6 +30,8 @@ const ParlayBetPicks: React.FC<ParlayBetPicksProps> = (props) => {
           status,
           odd,
           category,
+          team,
+          league,
         }) => (
           <div key={id} className="flex">
             <div className="flex flex-col items-center mr-2">
@@ -35,10 +40,10 @@ const ParlayBetPicks: React.FC<ParlayBetPicksProps> = (props) => {
                   {status === PickStatus.PENDING && (
                     <div className="w-4 h-4 border border-gray-300 rounded-full" />
                   )}
-                  {status === PickStatus.LOST && (
+                  {status === PickStatus.LOSS && (
                     <XCircle className="w-6 h-6 fill-red-500" />
                   )}
-                  {status === PickStatus.WON && (
+                  {status === PickStatus.WIN && (
                     <CheckCircle className="w-6 h-6 fill-green-500" />
                   )}
                 </div>
@@ -46,16 +51,19 @@ const ParlayBetPicks: React.FC<ParlayBetPicksProps> = (props) => {
               <div className="w-px h-full bg-gray-300" />
             </div>
             <div className="flex flex-col justify-between w-full h-full">
-              <div className="flex flex-column justify-between border-b pb-2 mb-2">
+              <div className="flex flex-column justify-between items-center border-b pb-1 mb-1">
                 <div className={'flex flex-col gap-1 text-sm text-gray-400'}>
                   <p className="font-bold text-black">{name}</p>
-                  <p>{description}</p>
                   <p>{gameInfo}</p>
                   <p>{matchTime}</p>
+                  <div className={'flex flex-row gap-2'}>
+                    <CardTag>{description}</CardTag>
+                    <CardTag>{team}</CardTag>
+                    <CardTag>{league}</CardTag>
+                  </div>
                 </div>
-
-                <div className={'p-2 md:p-4 text-left'}>
-                  <p className={'font-bold text-md'}>
+                <div className={'p-1 lg:p-4 text-right'}>
+                  <p className={'font-bold text-sm md:text-md'}>
                     {odd === BetLegType.OVER_ODDS ? 'More ' : 'Less '}
                     {value} {category}
                   </p>

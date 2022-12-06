@@ -58,6 +58,7 @@ const LeaderboardContainer: React.FC = () => {
           // no returned filters should be disabled
           disabled: false,
           children: <span className="capitalize text-xs">{contest.name}</span>,
+          name: contest.name,
         };
       })}
       leaders={leaders}

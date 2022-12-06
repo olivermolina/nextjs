@@ -27,18 +27,21 @@ Default.args = {
       disabled: false,
       children: <>Pill1</>,
       selected: true,
+      name: 'Pill1',
     },
     {
       onClick: () => alert('clicked'),
       disabled: false,
       children: <>Pill1</>,
       selected: false,
+      name: 'Pill2',
     },
     {
       onClick: () => alert('clicked'),
       disabled: true,
       children: <>Pill1</>,
       selected: false,
+      name: 'Pill1',
     },
   ],
 };

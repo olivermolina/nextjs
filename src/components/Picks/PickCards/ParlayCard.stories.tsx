@@ -21,7 +21,7 @@ export const ParlayCard = Template.bind({});
 
 ParlayCard.args = {
   id: 232,
-  name: 'Parlay Bet',
+  name: 'Parlay Entry',
   gameInfo:
     'Golden State Warriors, Tampa Bay Lightning, Woverhampton Wanderers',
   contestType: 'Token Contest',
@@ -44,7 +44,7 @@ ParlayCard.args = {
       gameInfo: 'Florida Panthers vs TampaBay Lightning',
       value: 140,
       matchTime: 'Sept 30, 2021 @ 7:30PM',
-      status: PickStatus.WON,
+      status: PickStatus.WIN,
       odd: BetLegType.UNDER_ODDS,
     },
     {
@@ -54,7 +54,7 @@ ParlayCard.args = {
       gameInfo: 'Liverpool vs Woverhampton Wanderers',
       value: 1620,
       matchTime: 'Sept 30, 2021 @ 7:30PM',
-      status: PickStatus.LOST,
+      status: PickStatus.LOSS,
       odd: BetLegType.OVER_ODDS,
     },
   ],

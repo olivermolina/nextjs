@@ -4,9 +4,12 @@ import ParlayBetPicks, {
 } from '~/components/Picks/PickCards/ParlayBetPicks';
 import { DefaultPickProps } from '~/components/Picks/PickCards/StraightCard';
 import PickCardFooter from '~/components/Picks/PickCards/PickCardFooter';
+import { PickStatus } from '~/constants/PickStatus';
 
 export interface ParlayCardProps extends DefaultPickProps {
   picks?: ParlayBetPickProps[];
+  status: PickStatus;
+  payout?: number;
 }
 
 const ParlayCard: React.FC<ParlayCardProps> = (props) => {
@@ -15,17 +18,16 @@ const ParlayCard: React.FC<ParlayCardProps> = (props) => {
   return (
     <div className="border divide-y rounded-md">
       {/*Card Header*/}
-      <div className="flex flex-column justify-between p-1 md:p-5">
+      <div className="flex flex-column justify-between p-1 md:p-2">
         <div className={'text-sm'}>
-          <p className={'text-gray-400 text-xs'}>
+          <p className={'text-lg md:text-xl font-bold'}>
             {props.name} ({props.picks?.length} Picks)
           </p>
-          <p className={'font-bold'}>{props.gameInfo}</p>
           <p>
             <span className={'text-gray-400 mr-2'}>Contest Type:</span>{' '}
-            <span className="font-semibold">{props.contestType}</span>
+            <span className="font-semibold text-md">{props.contestType}</span>
           </p>
-          <p className={'text-gray-400 text-xs'}>{props.pickTime}</p>
+          <p className="text-gray-400">{props.pickTime}</p>
         </div>
         <div className={'p-4'}>
           <button
@@ -47,10 +49,7 @@ const ParlayCard: React.FC<ParlayCardProps> = (props) => {
       </div>
 
       {/*Card Footer*/}
-      <PickCardFooter
-        {...props}
-        status={(props.picks?.find(Boolean) as DefaultPickProps)?.status}
-      />
+      <PickCardFooter {...props} status={props.status} payout={props.payout} />
     </div>
   );
 };

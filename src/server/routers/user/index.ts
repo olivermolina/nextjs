@@ -9,7 +9,10 @@ import login from './login';
 import signUp from './signUp';
 import createMerchantTransaction from './createMerchantTransaction';
 import accountSavePaymentMethod from './accountSavePaymentMethod';
-import userTotalCashAmount from './userTotalCashAmount';
+import logout from './logout';
+import userTotalBalance from './userTotalBalance';
+import users from './users';
+import addCredit from './addCredit';
 
 export const userRouter = t.router({
   accountDeposit,
@@ -22,7 +25,10 @@ export const userRouter = t.router({
   signUp,
   createMerchantTransaction,
   accountSavePaymentMethod,
-  userTotalCashAmount,
+  logout,
+  userTotalBalance,
+  users,
+  addCredit,
 });
 
 export default userRouter;

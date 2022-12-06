@@ -21,7 +21,7 @@ const LandingLayout = (props: Props) => {
       </div>
 
       {/* Footer */}
-      <footer className="flex flex-col md:flex-row px-10 py-4 border-t border-gray-400 items-center gap-1 md:gap-5 place-content-between">
+      <footer className="flex flex-col md:flex-row px-2 md:px-10 py-4 border-t border-gray-400 items-center gap-1 md:gap-5 place-content-between">
         <div className="flex gap-1 md:gap-6 items-center justify-between">
           <Logo scale={4} />
           <UnderlinedLink>

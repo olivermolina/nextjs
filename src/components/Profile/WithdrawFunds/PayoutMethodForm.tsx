@@ -25,7 +25,7 @@ interface Props {
   savedPaymentMethods?: GIDXPaymentMethod[];
   onPaymentSelect: (selectedPaymentMethod: PaymentMethodInterface) => void;
   selectedPaymentMethod?: PaymentMethodInterface;
-  handleSavePaymentMethod: (data: AchInputs) => void;
+  handleSavePaymentMethod: (data: AchInputs, save: boolean) => void;
   isLoading: boolean;
   user?: UserDetails;
 }
@@ -50,12 +50,12 @@ const PayoutMethodForm = (props: Props) => {
       savedPaymentMethods?.filter(
         (savedPaymentMethod) =>
           savedPaymentMethod.Type === PaymentMethodType.ACH,
-      ),
+      ) || [],
     [savedPaymentMethods],
   );
 
   const onSubmitPaymentMethod: SubmitHandler<AchInputs> = async (data) => {
-    await handleSavePaymentMethod(data);
+    await handleSavePaymentMethod(data, true);
     handleClose();
   };
 
@@ -67,6 +67,20 @@ const PayoutMethodForm = (props: Props) => {
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handleDeletePaymentMethod = async (
+    paymentMethod: GIDXPaymentMethod,
+  ) => {
+    await handleSavePaymentMethod(
+      {
+        fullName: verifiedData?.firstname || '',
+        token: paymentMethod.Token,
+        accountNumber: '',
+        routingNumber: '',
+      },
+      false,
+    );
   };
 
   return (
@@ -96,16 +110,18 @@ const PayoutMethodForm = (props: Props) => {
       </div>
       {selectedPayoutMethod?.key === PaymentMethodType.ACH ? (
         <div className={'mt-5'}>
-          {achPaymentMethods?.length ? (
-            <SavedPaymentMethodCardList
-              paymentMethods={PAYMENT_METHODS}
-              onPaymentSelect={onPaymentSelect}
-              selectedPaymentMethod={selectedPaymentMethod}
-              savedPaymentMethods={achPaymentMethods}
-              showAddButton={achPaymentMethods.length < 5}
-              handleAdd={handleOpen}
-            />
-          ) : (
+          <SavedPaymentMethodCardList
+            paymentMethods={PAYMENT_METHODS}
+            onPaymentSelect={onPaymentSelect}
+            selectedPaymentMethod={selectedPaymentMethod}
+            savedPaymentMethods={achPaymentMethods}
+            showAddButton={!isLoading && achPaymentMethods?.length < 5}
+            handleAdd={handleOpen}
+            onDeletePaymentMethod={handleDeletePaymentMethod}
+            isLoading={isLoading}
+          />
+
+          {!isLoading && !achPaymentMethods?.length && (
             <div className={'flex flex-col items-center justify-center gap-2'}>
               <AccountBalanceIcon />
               <p className={'font-bold text-sm'}>
@@ -113,7 +129,7 @@ const PayoutMethodForm = (props: Props) => {
               </p>
               <p className={'text-sm'}>
                 {' '}
-                Add a payout mehod to receive payouts.
+                Add a payout method to receive payouts.
               </p>
               <button
                 className="p-2 capitalize text-white rounded font-bold w-auto h-auto bg-blue-600 disabled:opacity-50"
@@ -124,7 +140,7 @@ const PayoutMethodForm = (props: Props) => {
             </div>
           )}
 
-          <Dialog open={open}>
+          <Dialog open={open} fullWidth maxWidth={'md'}>
             <Card
               className={'flex h-full w-full'}
               sx={{
@@ -148,7 +164,7 @@ const PayoutMethodForm = (props: Props) => {
                 }
                 title={'Add Payout Method'}
               />
-              <CardContent>
+              <CardContent className={'overflow-y-auto'}>
                 <ACHForm
                   paymentMethod={selectedPayoutMethod}
                   onSubmit={onSubmitPaymentMethod}

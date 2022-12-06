@@ -11,7 +11,7 @@ export type PillButtonsProps = InferPropTypes<typeof PillButtonsPropTypes>;
 
 export const PillButtons = (props: PillButtonsProps) => {
   return (
-    <div className="flex gap-1 py-1 w-full overflow-x-auto hide-scrollbar">
+    <div className="flex gap-1 py-1 w-full overflow-x-auto">
       {props.pills?.map((pill, i) => (
         <PillButton key={i} {...pill}></PillButton>
       ))}

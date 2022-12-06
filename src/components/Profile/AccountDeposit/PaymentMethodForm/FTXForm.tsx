@@ -33,7 +33,7 @@ const FTXForm = ({ verifiedData, handleFTXNext, handleNext }: FTXFormProps) => {
           countyCode: 'US',
         },
         paymentMethod: {
-          type: PaymentMethodType.FTX,
+          type: PaymentMethodType.OTHERS,
         },
       });
       setTransaction(newTransaction);

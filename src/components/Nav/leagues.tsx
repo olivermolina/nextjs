@@ -5,6 +5,8 @@ import { BaseballIcon } from './submenu/baseball';
 import { TrophyIcon } from './submenu/trophy';
 import { TennisIcon } from './submenu/tennis';
 import { BoxingIcon } from './submenu/boxing';
+import { GolfIcon } from './submenu/golf';
+import { SoccerIcon } from './submenu/soccer';
 import { UrlPaths } from '~/constants/UrlPaths';
 
 export interface SportsIconProps {
@@ -36,10 +38,6 @@ const leagues = {
     link: UrlPaths.Challenge + '?league=ncaaf',
     Icon: (props: any) => <FootballIcon {...props} />,
   },
-  WNBA: {
-    link: UrlPaths.Challenge + '?league=wnba',
-    Icon: (props: any) => <BasketballIcon {...props} />,
-  },
   TENNIS: {
     link: UrlPaths.Challenge + '?league=tennis',
     Icon: (props: any) => <TennisIcon {...props} />,
@@ -48,9 +46,13 @@ const leagues = {
     link: UrlPaths.Challenge + '?league=mma',
     Icon: (props: any) => <BoxingIcon {...props} />,
   },
-  WBC: {
-    link: UrlPaths.Challenge + '?league=wbc',
-    Icon: (props: any) => <BoxingIcon {...props} />,
+  GOLF: {
+    link: UrlPaths.Challenge + '?league=pga',
+    Icon: (props: any) => <GolfIcon {...props} />,
+  },
+  SOCCER: {
+    link: UrlPaths.Challenge + '?league=mls',
+    Icon: (props: any) => <SoccerIcon {...props} />,
   },
 };
 export default leagues;

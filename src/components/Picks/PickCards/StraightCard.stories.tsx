@@ -20,7 +20,7 @@ export const StraightCard = Template.bind({});
 
 StraightCard.args = {
   id: 232,
-  name: 'Straight Bet',
+  name: 'Straight Entry',
   description: 'New Your Rangers, Moneyline Away',
   gameInfo: 'New Yourk Rangers vs Tampa Bay Lightning ',
   contestType: 'More or Less',

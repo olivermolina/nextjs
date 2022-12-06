@@ -8,7 +8,6 @@ import mastercard from '~/assets/mastercard.svg';
 import amex from '~/assets/amex.svg';
 import discover from '~/assets/discover.svg';
 import paypal from '~/assets/paypal.svg';
-import ftx from '~/assets/FTX_Logo_black.svg';
 import ach from '~/assets/ach.svg';
 import { PaymentMethodType } from '@prisma/client';
 
@@ -70,11 +69,6 @@ DepositMethod.args = {
       key: 'paypal',
       image: paypal,
       type: PaymentMethodType.Paypal,
-    },
-    {
-      key: 'ftx',
-      image: ftx,
-      type: PaymentMethodType.FTX,
     },
     {
       key: 'ach',

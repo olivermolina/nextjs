@@ -1,6 +1,8 @@
 import React from 'react';
 import LandingLayout from '~/components/LandingLayout';
 import Content from '~/components/LandingLayout/Content';
+import dayjs from 'dayjs';
+import ChangeRouteLoadingContainer from '~/containers/ChangeRouteLoadingContainer/ChangeRouteLoadingContainer';
 
 const cards = [
   {
@@ -13,6 +15,7 @@ const cards = [
     image: '/assets/images/patrick-mahomes.png',
     playerPosition: 'QB',
     playerTeam: 'KC',
+    matchTime: dayjs(new Date()).format('MM/DD/YYYY hh:mm A'),
   },
   {
     onClickLess: () => console.log('clicked'),
@@ -24,6 +27,7 @@ const cards = [
     image: '/assets/images/tyrod-taylor.png',
     playerPosition: 'QB',
     playerTeam: 'KC',
+    matchTime: dayjs(new Date()).format('MM/DD/YYYY hh:mm A'),
   },
   {
     onClickLess: () => console.log('clicked'),
@@ -35,6 +39,7 @@ const cards = [
     image: '/assets/images/dallas-goedert.png',
     playerPosition: 'QB',
     playerTeam: 'KC',
+    matchTime: dayjs(new Date()).format('MM/DD/YYYY hh:mm A'),
   },
 ];
 
@@ -48,7 +53,7 @@ const explainers = [
   {
     title: 'More or Less',
     description:
-      "Our More or Less game is exactly as it sounds. Pick 2-4 of your favorite player's as shown above and select if their stats will go Over or Under that amount to win 3x, 5x, or 10x your cash!",
+      "Our More or Less contest is exactly as it sounds. Pick 2-4 of your favorite player's as shown above and select if their stats will go Over or Under that amount to win 3x, 5x, or 10x your cash!",
     image: '/assets/images/up-down-arrow.svg',
   },
   {
@@ -62,6 +67,7 @@ const explainers = [
 const LandingLayoutContainer: React.FC = () => {
   return (
     <LandingLayout>
+      <ChangeRouteLoadingContainer />
       <Content cards={cards} explainers={explainers} />
     </LandingLayout>
   );

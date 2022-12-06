@@ -13,7 +13,6 @@ type useQueryParamsReturnType = {
   contestId: string | null;
   league: IOffer['league'] | null;
   contestFilter: string | null;
-  contestCategoryId: string | null;
 };
 
 /**
@@ -60,7 +59,6 @@ export function useQueryParams(): useQueryParamsReturnType {
       contestId: null,
       league: null,
       contestFilter: null,
-      contestCategoryId: null,
     };
   }
 

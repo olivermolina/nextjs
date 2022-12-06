@@ -3,13 +3,25 @@ import { prisma } from '~/server/prisma';
 import { ActionType } from '~/constants/ActionType';
 import { PaymentMethodType, TransactionType } from '@prisma/client';
 
-export const createTransaction = async (
-  userId: string,
-  amountProcess: number,
-  contestEntryId: string,
-  transactionType: TransactionType,
-  actionType: ActionType,
-) => {
+interface CreateTransactionInput {
+  userId: string;
+  amountProcess: number;
+  amountBonus: number;
+  contestEntryId?: string;
+  transactionType: TransactionType;
+  actionType: ActionType;
+}
+
+export const createTransaction = async (input: CreateTransactionInput) => {
+  const {
+    userId,
+    amountProcess,
+    amountBonus,
+    contestEntryId,
+    transactionType,
+    actionType,
+  } = input;
+
   const session = await prisma.session.create({
     data: {
       userId: userId,
@@ -27,7 +39,7 @@ export const createTransaction = async (
       actionType: actionType,
       userId: userId,
       amountProcess,
-      amountBonus: 0,
+      amountBonus: amountBonus,
       transactionCurrency: 'USD',
       contestEntryId,
     },

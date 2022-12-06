@@ -5,6 +5,8 @@ import { TRPCError } from '@trpc/server';
 import { prisma } from '~/server/prisma';
 import * as yup from '~/utils/yup';
 import { setAuthResponse } from './setAuthResponse';
+import { autoJoinDefaultContest } from '~/server/routers/user/autoJoinDefaultContest';
+import { CustomErrorMessages } from '~/constants/CustomErrorMessages';
 
 const signUp = t.procedure
   .input(
@@ -45,7 +47,10 @@ const signUp = t.procedure
         logger.error('There was an error signing up.', result.error);
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'No user.',
+          message:
+            result?.error?.status === 400
+              ? CustomErrorMessages.SIGNUP_DUPLICATE_ERROR
+              : CustomErrorMessages.SIGNUP_ERROR,
         });
       }
       const session = result.session;
@@ -93,6 +98,10 @@ const signUp = t.procedure
           username: input.username,
         },
       });
+
+      // Auto join more or less contest
+      await autoJoinDefaultContest(uid);
+
       setAuthResponse(
         ctx,
         result.session?.access_token,

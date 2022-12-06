@@ -3,14 +3,11 @@ import { AccountDepositResponseInterface } from '~/server/routers/user/accountDe
 
 interface DepositConfirmationProps {
   depositAmount: number;
-  handleBack: () => void;
-  handleNext: () => void;
   transaction?: AccountDepositResponseInterface;
-  handleCancel: () => void;
 }
 
 const DepositConfirmation = (props: DepositConfirmationProps) => {
-  const { depositAmount, handleNext } = props;
+  const { depositAmount } = props;
   return (
     <div className="flex flex-col shadow-md rounded-md divide-y gap-2 bg-white">
       <div className="flex flex-col p-6 gap-2">
@@ -59,13 +56,6 @@ const DepositConfirmation = (props: DepositConfirmationProps) => {
         </div>
       </div>
       <div className="flex flex-col p-6 gap-2">
-        <button
-          className="p-4 capitalize text-white rounded font-bold w-auto h-auto bg-blue-600"
-          type="submit"
-          onClick={handleNext}
-        >
-          Confirm
-        </button>
         <p className="text-sm">
           Next: It may take to 60 seconds for this deposit amount to show as
           credited in your account.

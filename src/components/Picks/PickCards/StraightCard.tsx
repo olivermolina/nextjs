@@ -23,6 +23,7 @@ export interface DefaultPickProps {
   odd?: BetLegType;
   category?: string;
   stakeType?: BetStakeType;
+  league?: string;
 }
 
 export interface StraightPickProps extends DefaultPickProps {

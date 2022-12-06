@@ -14,7 +14,7 @@ const mapOffer = (
   league: Prisma.OfferCreateWithoutMarketsInput['league'],
 ) =>
   ({
-    gid: e.gid.toString(),
+    gid: `${e.gid.toString()}-${league.toLowerCase()}`,
     gamedate: e.gamedate,
     epoch: e.epoch,
     start_utc: e.start_utc,
@@ -23,8 +23,8 @@ const mapOffer = (
     status: e.status.replace('-', '').replace('/', ''),
     matchup: e.matchup,
     gametime: e.gametime,
-    homeTeamId: e.home.id,
-    awayTeamId: e.away.id,
+    homeTeamId: `${e.home?.id?.toString()}-${league.toLowerCase()}`,
+    awayTeamId: `${e.away?.id?.toString()}-${league.toLowerCase()}`,
     league,
   } as Prisma.XOR<
     Prisma.OfferCreateWithoutMarketsInput,
@@ -82,21 +82,34 @@ export const ingest = async (
 
       const teamMap: TeamMapType = new Map(
         teams.map((t) => [
-          t.id,
+          `${t.id.toString()}-${league}`,
           {
             ...t,
+            id: `${t.id.toString()}-${league}`,
             code: t.abbreviation,
           },
         ]),
       );
 
-      const playersMap: PlayerMapType = new Map(players.map((p) => [p.id, p]));
+      const playersMap: PlayerMapType = new Map(
+        players.map((p) => [
+          `${p.id.toString()}-${league}`,
+          { ...p, id: `${p.id.toString()}-${league}` },
+        ]),
+      );
 
       if (options?.players) {
         const playersProfile = logger.startTimer();
+        const playerData = players.map(
+          ({ headshot, id, teamid, ...otherFields }) => ({
+            ...otherFields,
+            id: `${id.toString()}-${league}`,
+            teamid: `${teamid.toString()}-${league}`,
+          }),
+        );
         await prisma.player.createMany({
           skipDuplicates: true,
-          data: players,
+          data: playerData,
         });
         playersProfile.done({ message: 'Finished creating players.' });
       }
@@ -106,7 +119,7 @@ export const ingest = async (
         await prisma.team.createMany({
           skipDuplicates: true,
           data: teams.map((t) => ({
-            id: t.id,
+            id: `${t.id.toString()}-${league}`,
             name: t.name,
             code: t.abbreviation || 'NA',
           })),
@@ -122,7 +135,7 @@ export const ingest = async (
             let markets: Prisma.Prisma__MarketClient<Market>[] = [];
             if (options?.offers) {
               offer = prisma.offer.upsert({
-                where: { gid: e.gid.toString() },
+                where: { gid: `${e.gid.toString()}-${league}` },
                 create: mapOffer(e, league.toUpperCase() as League),
                 update: mapOffer(e, league.toUpperCase() as League),
               });
@@ -136,14 +149,15 @@ export const ingest = async (
                       sel_id: m.sel_id,
                     },
                   },
-                  create: mapMarkets(m, e, playersMap, teamMap),
-                  update: mapMarkets(m, e, playersMap, teamMap),
+                  create: mapMarkets(m, e, playersMap, teamMap, league),
+                  update: mapMarkets(m, e, playersMap, teamMap, league),
                 }),
               );
             }
             return [offer, ...markets];
           }),
         ]);
+
         offersProfile.done({
           message: `Finished creating ${options?.offers ? 'offers' : ' '} ${
             options?.markets ? 'markets' : ''
@@ -204,10 +218,10 @@ function mapMarkets(
   e: IOddsResponse['events'][0],
   players: PlayerMapType,
   teams: TeamMapType,
+  league: string,
 ): Prisma.MarketCreateManyInput {
-  const createPlayer = players.get(m.sel_id)!;
-  const createTeam = teams.get(m.sel_id)!;
-
+  const createPlayer = players.get(`${m.sel_id.toString()}-${league}`)!;
+  const createTeam = teams.get(`${m.sel_id.toString()}-${league}`)!;
   return {
     id: m.id,
     sel_id: m.sel_id,
@@ -218,7 +232,7 @@ function mapMarkets(
       : {
           teamId: createTeam.id,
         }),
-    offerId: e.gid.toString(),
+    offerId: `${e.gid.toString()}-${league.toLowerCase()}`,
     type: m.type,
     category: m.category,
     name: m.name,

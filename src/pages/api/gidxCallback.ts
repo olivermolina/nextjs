@@ -7,7 +7,7 @@ import defaultLogger from '~/utils/logger';
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req?.method !== 'POST') {
     res.status(200).send({
-      message: 'success',
+      MerchantTransactionID: '',
     });
     return;
   }
@@ -16,22 +16,21 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   logger.info(`Received GIDX callback status`);
   const caller = appRouter.createCaller({} as any);
   try {
-    const result = req?.body?.result;
+    const result =
+      typeof req?.body?.result === 'object'
+        ? req?.body?.result
+        : JSON.parse(req?.body?.result);
     if (result) {
       logger.info(`GIDX callback result`, {
         result,
       });
       // the server-side call
-      const callbackResult =
-        typeof result === 'object' ? result : JSON.parse(result);
-      await caller.integration.gidxCallback({ result: callbackResult });
-      res.status(200).send({
-        MerchantTransactionID: result.MerchantTransactionID,
-      });
-      return;
+      await caller.integration.gidxCallback({ result });
     }
 
-    res.status(200).end();
+    res.status(200).send({
+      MerchantTransactionID: result?.MerchantTransactionID || '',
+    });
   } catch (cause) {
     // If this a tRPC error, we can extract additional information.
     if (cause instanceof TRPCError) {

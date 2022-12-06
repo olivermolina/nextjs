@@ -7,7 +7,6 @@ import { UserDetailsInput } from '~/lib/tsevo-gidx/GIDX';
 import { PaymentMethodType } from '@prisma/client';
 import PaypalForm from './PaypalForm';
 import { PaymentFormDataInterface } from '~/containers/ProfileAccountDepositContainer';
-import FTXForm from '~/components/Profile/AccountDeposit/PaymentMethodForm/FTXForm';
 import { AccountDepositResponseInterface } from '~/server/routers/user/accountDeposit';
 
 interface Props {
@@ -16,7 +15,7 @@ interface Props {
   selectedPaymentMethod?: PaymentMethodInterface;
   verifiedData?: UserDetailsInput;
   depositAmount: number;
-  handlePaypalFtxNext: (
+  handlePaypalNext: (
     data: PaymentFormDataInterface,
   ) => Promise<AccountDepositResponseInterface | undefined>;
   handleNext: (data?: PaymentFormDataInterface) => void;
@@ -28,7 +27,7 @@ const PaymentMethodForm = (props: Props) => {
     onSubmit,
     handleChangePaymentMethod,
     verifiedData,
-    handlePaypalFtxNext,
+    handlePaypalNext,
     handleNext,
   } = props;
 
@@ -56,16 +55,7 @@ const PaymentMethodForm = (props: Props) => {
       {selectedPaymentMethod?.type === PaymentMethodType.Paypal ? (
         <PaypalForm
           depositAmount={props.depositAmount.toString()}
-          handlePaypalNext={handlePaypalFtxNext}
-          verifiedData={verifiedData}
-          handleNext={handleNext}
-        />
-      ) : null}
-
-      {selectedPaymentMethod?.type === PaymentMethodType.FTX ? (
-        <FTXForm
-          depositAmount={props.depositAmount.toString()}
-          handleFTXNext={handlePaypalFtxNext}
+          handlePaypalNext={handlePaypalNext}
           verifiedData={verifiedData}
           handleNext={handleNext}
         />

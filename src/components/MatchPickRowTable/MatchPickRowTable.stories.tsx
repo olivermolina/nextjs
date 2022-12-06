@@ -27,18 +27,21 @@ Default.args = {
       onClick: () => alert('test'),
       disabled: false,
       children: <>Val 1</>,
+      name: 'Val 1',
     },
     {
       selected: false,
       onClick: () => alert('test'),
       disabled: false,
       children: <>Val 2</>,
+      name: 'Val 2',
     },
     {
       selected: false,
       onClick: () => alert('test'),
       disabled: false,
       children: <>Val 3</>,
+      name: 'Val 3',
     },
   ],
   matches: [

@@ -6,15 +6,15 @@ describe('EVAnaltyics', () => {
       game: '1',
       date: formatDate(new Date(0)),
     });
-    expect(formatGetLeagueURL(LeagueEnum.MLB, params)).toBe(
-      'https://api.evanalytics.com/odds/v1/leagues/mlb?game=1&date=1969-12-31',
+    expect(formatGetLeagueURL(LeagueEnum.NBA, params)).toBe(
+      'https://api.evanalytics.com/odds/v1/leagues/nba?game=1&date=1969-12-31',
     );
   });
 
   it('should properly format getLeague params when params are empty', () => {
     const params = new URLSearchParams();
-    expect(formatGetLeagueURL(LeagueEnum.MLB, params)).toBe(
-      'https://api.evanalytics.com/odds/v1/leagues/mlb?',
+    expect(formatGetLeagueURL(LeagueEnum.NBA, params)).toBe(
+      'https://api.evanalytics.com/odds/v1/leagues/nba?',
     );
   });
 });

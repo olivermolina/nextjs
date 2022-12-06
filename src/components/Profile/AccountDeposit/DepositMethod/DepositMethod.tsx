@@ -1,14 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PaymentMethodForm from '~/components/Profile/AccountDeposit/PaymentMethodForm';
 import { SubmitHandler } from 'react-hook-form';
 import { CreditCardInputs } from '~/components/Profile/AccountDeposit/PaymentMethodForm/CreditCardForm';
 import classNames from 'classnames';
 import { ReactComponent } from '~/components/Icons/Icons';
-import {
-  GIDXPaymentMethod,
-  IDeviceGPS,
-  UserDetailsInput,
-} from '~/lib/tsevo-gidx/GIDX';
+import { GIDXPaymentMethod, UserDetailsInput } from '~/lib/tsevo-gidx/GIDX';
 import { PaymentFormDataInterface } from '~/containers/ProfileAccountDepositContainer';
 import { AchInputs } from '~/components/Profile/AccountDeposit/PaymentMethodForm/ACHForm';
 import { PaymentMethodType } from '@prisma/client';
@@ -33,14 +29,15 @@ interface DepositMethodProps {
   handleNext: (data?: PaymentFormDataInterface) => void;
   paymentMethods: PaymentMethodInterface[];
   selectedPaymentMethod?: PaymentMethodInterface;
-  onPaymentSelect?: (selectedPaymentMethod: PaymentMethodInterface) => void;
-  deviceGPS: IDeviceGPS;
+  onPaymentSelect?: (selectedPaymentMethod?: PaymentMethodInterface) => void;
   verifiedData?: UserDetailsInput;
   handleCancel: () => void;
   savedPaymentMethods?: GIDXPaymentMethod[];
-  handlePaypalFtxNext: (
+  handlePaypalNext: (
     data: PaymentFormDataInterface,
   ) => Promise<AccountDepositResponseInterface | undefined>;
+  handleDeletePaymentMethod: (paymentMethod: GIDXPaymentMethod) => void;
+  isLoading: boolean;
 }
 
 const DepositMethod = (props: DepositMethodProps) => {
@@ -54,7 +51,9 @@ const DepositMethod = (props: DepositMethodProps) => {
     selectedPaymentMethod,
     savedPaymentMethods,
     verifiedData,
-    handlePaypalFtxNext,
+    handlePaypalNext,
+    handleDeletePaymentMethod,
+    isLoading,
   } = props;
 
   const onSubmit: SubmitHandler<CreditCardInputs | AchInputs> = async (
@@ -98,6 +97,10 @@ const DepositMethod = (props: DepositMethodProps) => {
     });
   };
 
+  const onDeletePaymentMethod = async (paymentMethod: GIDXPaymentMethod) => {
+    await handleDeletePaymentMethod?.(paymentMethod);
+  };
+
   const handleChangePaymentMethod = async (key: string) => {
     const newPaymentMethod = paymentMethods.find(
       (paymentMethod) => paymentMethod.key === key,
@@ -107,6 +110,10 @@ const DepositMethod = (props: DepositMethodProps) => {
 
   const [paymentMethodOption, setPaymentMethodOption] =
     useState<PaymentMethodRadioOptions>(PaymentMethodRadioOptions.SAVED);
+
+  useEffect(() => {
+    onPaymentSelect?.(undefined);
+  }, [paymentMethodOption]);
 
   return (
     <div className="flex flex-col shadow-md rounded-md divide-y gap-2 bg-white">
@@ -149,6 +156,8 @@ const DepositMethod = (props: DepositMethodProps) => {
             onPaymentSelect={onPaymentSelect}
             selectedPaymentMethod={selectedPaymentMethod}
             savedPaymentMethods={savedPaymentMethods}
+            onDeletePaymentMethod={onDeletePaymentMethod}
+            isLoading={isLoading}
           />
         )}
 
@@ -156,10 +165,9 @@ const DepositMethod = (props: DepositMethodProps) => {
           <Grid
             container
             direction="row"
-            justifyContent="space-evenly"
+            justifyContent={{ xs: 'space-evenly', md: 'flex-start' }}
             alignItems="center"
-            spacing={2}
-            columns={{ xs: 4, sm: 8, md: 12 }}
+            spacing={4}
           >
             {paymentMethods.map((paymentMethod) => {
               const Image = paymentMethod.image as ReactComponent;
@@ -190,7 +198,7 @@ const DepositMethod = (props: DepositMethodProps) => {
         verifiedData={verifiedData}
         onSubmit={onSubmit}
         depositAmount={depositAmount}
-        handlePaypalFtxNext={handlePaypalFtxNext}
+        handlePaypalNext={handlePaypalNext}
         handleNext={handleNext}
       />
       <div className="flex flex-col p-6 gap-2">

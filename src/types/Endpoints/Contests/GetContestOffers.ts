@@ -59,6 +59,10 @@ export type FantasyOffer = {
    * i.e. KC
    */
   playerTeam: string;
+  /**
+   * Market type
+   */
+  type: string;
 };
 
 export type GetContestOffers = {

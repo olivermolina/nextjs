@@ -39,7 +39,7 @@ export const MatchPickRowTable = (props: Props) => {
       <PillButtons pills={props.filters} />
       <div className="flex flex-col gap-2">
         {props.matches.map((items, idx, arr) => (
-          <Fragment key={items.id}>
+          <Fragment key={`${items.id}_${items.matchTime}_${idx}`}>
             <MatchPickRow {...items} showHeader={idx === 0} />
             {arr.length - 1 !== idx && <hr />}
           </Fragment>

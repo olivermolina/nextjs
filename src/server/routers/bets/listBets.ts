@@ -7,23 +7,30 @@ import {
   BetStakeType,
   BetStatus,
   BetType,
+  ContestCategory,
   ContestWagerType,
   Market,
   Offer,
-  ContestCategory,
 } from '@prisma/client';
 import { prisma } from '~/server/prisma';
 import { PickSummaryProps } from '~/components/Picks/Picks';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { PickStatus } from '~/constants/PickStatus';
 import { calculateInsuredPayout } from '~/utils/calculateInsuredPayout';
+import {
+  EntryDateFormat,
+  EntryDatetimeFormat,
+} from '~/constants/EntryDatetimeFormat';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 const mapBetStatusToPickStatus = (status: BetStatus) => {
   switch (status) {
     case BetStatus.LOSS:
-      return PickStatus.LOST;
+      return PickStatus.LOSS;
     case BetStatus.WIN:
-      return PickStatus.WON;
+      return PickStatus.WIN;
     case BetStatus.PENDING:
       return PickStatus.PENDING;
     case BetStatus.PUSH:
@@ -40,28 +47,54 @@ const getInsuredPayout = (stake: number, contestCategory: ContestCategory) => {
 };
 
 export const listBets = t.procedure
+  .input(
+    yup.object({
+      startDate: yup.mixed<Dayjs>(),
+      endDate: yup.mixed<Dayjs>(),
+    }),
+  )
   .output(
     yup
-      .mixed<Omit<PickSummaryProps, 'handleChangeTab' | 'selectedTabStatus'>>()
+      .mixed<
+        Omit<
+          PickSummaryProps,
+          | 'handleChangeTab'
+          | 'selectedTabStatus'
+          | 'setDateRangeValue'
+          | 'isLoading'
+          | 'dateRangeValue'
+        >
+      >()
       .required(),
   )
-  .query(async ({ ctx }) => {
+  .query(async ({ ctx, input }) => {
     if (!ctx.session.user) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
       });
     }
+    const { startDate, endDate } = input;
     const bets = await prisma.bet.findMany({
       where: {
         owner: {
           id: ctx.session.user.id,
         },
+        ...(startDate &&
+          endDate && {
+            created_at: {
+              gte: dayjs(startDate).toDate(),
+              lte: dayjs(endDate).toDate(),
+            },
+          }),
+      },
+      orderBy: {
+        created_at: 'desc',
       },
       include: {
         legs: {
           include: {
             market: {
-              include: { offer: true },
+              include: { offer: true, player: true },
             },
           },
         },
@@ -80,26 +113,28 @@ export const listBets = t.procedure
             status: mapBetStatusToPickStatus(b.status),
             data: {
               id: b.id,
-              name: 'Parlay Bet',
+              name: 'Parlay Entry',
               gameInfo: b.legs.map((l) => l.market.offer?.matchup).join(', '),
               contestType:
                 b?.ContestEntries?.contest?.wagerType === ContestWagerType.CASH
                   ? 'More or Less'
                   : 'Token Contest',
-              pickTime: dayjs(b.created_at).format('DD/MM/YYYY'),
+              pickTime: dayjs(b.created_at).format(EntryDateFormat),
               picks: b.legs.map((l) => ({
                 id: l.id,
                 name: l.market.name,
-                description: l.market.name,
+                description: l.market.player?.position,
                 gameInfo: l.market.offer?.matchup,
                 value: l.total.toNumber(),
                 matchTime: dayjs(
-                  l.market.offer?.start_utc ||
-                    `${l.market.offer?.gamedate} ${l.market.offer?.gametime} `,
-                ).format('DD/MM/YYYY hh:mm A'),
+                  `${l.market.offer?.gamedate} ${l.market.offer?.gametime} `,
+                ).format(EntryDatetimeFormat),
                 status: l.status,
                 odd: l.type,
                 category: l.market.category,
+                teamAbbrev: l.market.teamAbbrev,
+                team: l.market.player?.team,
+                league: l.market.offer?.league,
               })),
               potentialWin:
                 b.stakeType === BetStakeType.INSURED
@@ -107,6 +142,7 @@ export const listBets = t.procedure
                   : b.payout.toNumber(),
               risk: b.stake.toNumber(),
               stakeType: b.stakeType,
+              payout: b.payout.toNumber(),
             },
           }
         : {
@@ -118,7 +154,7 @@ export const listBets = t.procedure
               description: b.legs[0]!.market.name,
               gameInfo: b.legs[0]!.market.offer?.matchup,
               contestType: 'More or Less',
-              pickTime: dayjs(b.created_at).format('DD/MM/YYYY'),
+              pickTime: dayjs(b.created_at).format(EntryDateFormat),
               potentialWin:
                 b.stakeType === BetStakeType.INSURED
                   ? getInsuredPayout(b.stake.toNumber(), b.ContestCategory)
@@ -128,6 +164,10 @@ export const listBets = t.procedure
               value: b.legs[0]!.total.toNumber(),
               odd: b.legs[0]!.type,
               stakeType: b.stakeType,
+              payout: b.payout.toNumber(),
+              teamAbbrev: b.legs[0]!.market.teamAbbrev,
+              team: b.legs[0]!.market.player?.team,
+              league: b.legs[0]!.market.offer?.league,
             },
           },
     );
@@ -182,7 +222,7 @@ function getSummaries(
       label: 'Debit Lost',
       value: bets.reduce(
         (acc, curr) =>
-          acc + (curr.status === BetStatus.LOSS ? curr.payout.toNumber() : 0),
+          acc + (curr.status === BetStatus.LOSS ? curr.stake.toNumber() : 0),
         0,
       ),
       priority: 5,

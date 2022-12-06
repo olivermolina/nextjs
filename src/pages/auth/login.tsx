@@ -10,6 +10,8 @@ import { trpc } from '~/utils/trpc';
 import { FormErrorText } from '~/components/Form/FormErrorText';
 import { useRouter } from 'next/router';
 import { TRPCClientError } from '@trpc/client';
+import BackdropLoading from '~/components/BackdropLoading';
+import ChangeRouteLoadingContainer from '~/containers/ChangeRouteLoadingContainer/ChangeRouteLoadingContainer';
 
 type Inputs = {
   email: string;
@@ -36,9 +38,10 @@ const Create = () => {
       toast.error(e.message);
     }
   };
-
   return (
     <LandingLayout>
+      <ChangeRouteLoadingContainer />
+      <BackdropLoading open={mutation.isLoading} />
       <div className="flex p-4 justify-center items-center">
         <form
           onSubmit={handleSubmit(onSubmit)}

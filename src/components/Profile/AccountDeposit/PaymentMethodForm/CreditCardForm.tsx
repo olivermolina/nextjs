@@ -276,7 +276,7 @@ const CreditCardForm = (props: CreditCardFormProps) => {
           <FormErrorText>{errors.cvv?.message}</FormErrorText>
         </label>
 
-        <BillingAddressForm />
+        {!savedPaymentMethod ? <BillingAddressForm /> : null}
       </form>
     </FormProvider>
   );

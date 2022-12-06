@@ -30,6 +30,7 @@ Default.args = {
       // no returned filters should be disabled
       disabled: false,
       children: <span className="capitalize text-xs">Contest 1</span>,
+      name: 'Pill1',
     },
     {
       selected: true,
@@ -39,6 +40,7 @@ Default.args = {
       // no returned filters should be disabled
       disabled: false,
       children: <span className="capitalize text-xs">Contest 2</span>,
+      name: 'Pill1',
     },
     {
       selected: true,
@@ -48,6 +50,7 @@ Default.args = {
       // no returned filters should be disabled
       disabled: false,
       children: <span className="capitalize text-xs">Contest 3</span>,
+      name: 'Pill1',
     },
   ],
   leaders: [

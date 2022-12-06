@@ -22,9 +22,8 @@ export enum MLB {
 }
 
 export enum NHL {
-  SHOTS_ON_GOAL = 'Shots on Goal',
+  SHOTS_ON_GOAL = 'Shots On Goal',
   GOALS_ALLOWED = 'Goals Allowed',
-  GOALIE_SAVES = 'Goalie Saves',
   HITS = 'Hits',
   GOALS = 'Goals',
   ASSISTS = 'Assists',

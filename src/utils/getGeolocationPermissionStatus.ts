@@ -14,25 +14,18 @@ export enum GeolocationPermissionStatus {
 export async function getGeolocationPermissionStatus(): Promise<
   'denied' | 'granted' | 'prompt'
 > {
-  if ('permissions' in navigator) {
-    return (await navigator.permissions.query({ name: 'geolocation' })).state;
-  }
-
   return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
       // successfully got location
       () => resolve(GeolocationPermissionStatus.GRANTED),
-      (error) => {
-        // permission denied
-        if (error.code == error.PERMISSION_DENIED)
-          resolve(GeolocationPermissionStatus.DENIED);
-
-        // some other error, but not one which is related to a denied permission
-        resolve(GeolocationPermissionStatus.GRANTED);
+      // permission denied
+      () => {
+        resolve(GeolocationPermissionStatus.DENIED);
       },
       {
-        maximumAge: Infinity,
-        timeout: 0,
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
       },
     );
   });

@@ -17,14 +17,26 @@ export function FantasyPicker(props: Props) {
       {/* Fantasy Grid */}
       <Grid container spacing={2} sx={{ mt: 1 }} alignItems="flex-start">
         {props.cards.map((card) => {
+          const filterSelected = props.filters?.find(
+            (filter) => filter.selected,
+          );
           const betLeg = props.legs?.find(
-            (leg) => leg.name === card.playerName,
+            (leg) =>
+              leg.name === card.playerName &&
+              filterSelected?.name === leg.statName,
           );
           const isSelected = !!betLeg;
           const isOver = betLeg?.team === 'over';
 
           return (
-            <Grid item key={card.playerName} xs={12} sm={6} lg={4} xl={3}>
+            <Grid
+              item
+              key={`${card.playerName}_${card.matchTime}`}
+              xs={12}
+              sm={6}
+              lg={4}
+              xl={3}
+            >
               <FantasyCard
                 {...card}
                 imageSize={'small'}

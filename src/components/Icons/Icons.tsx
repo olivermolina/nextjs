@@ -13,6 +13,8 @@ import ClipboardDocument from '~/assets/icons/clipboard-document.svg';
 import WithdrawFunds from '~/assets/icons/withdraw-funds.svg';
 import Paypal from '~/assets/icons/paypal.svg';
 import Bank from '~/assets/icons/bank.svg';
+import Logout from '~/assets/icons/logout.svg';
+import WrenchScrewdriver from '~/assets/icons/wrench-screwdriver.svg';
 
 const importedIcons = {
   Camera,
@@ -29,6 +31,8 @@ const importedIcons = {
   WithdrawFunds,
   Paypal,
   Bank,
+  Logout,
+  WrenchScrewdriver,
 };
 
 type IconName = keyof typeof importedIcons;
